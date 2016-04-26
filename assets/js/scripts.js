@@ -1,7 +1,7 @@
 window.onload = function() {
 
   var messagesEl = document.querySelector('.messages');
-  var typingSpeed = 6;
+  var typingSpeed = 10;
   var loadingText = '<b>•</b><b>•</b><b>•</b>';
   var messageIndex = 0;
 
