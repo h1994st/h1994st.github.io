@@ -10,19 +10,19 @@ window.onload = function() {
     var hours =  date.getHours();
     var minutes =  date.getMinutes();
     var current = hours + (minutes * .01);
-    if (current >= 5 && current < 19) return 'Have a nice day';
-    if (current >= 19 && current < 22) return 'Have a nice evening';
-    if (current >= 22 || current < 5) return 'Have a good night';
+    if (current >= 5 && current < 19) return 'Have a nice day!';
+    if (current >= 19 && current < 22) return 'Have a nice evening!';
+    if (current >= 22 || current < 5) return 'Have a good night!';
   }
 
   var messages = [
-    'Hi, I\'m Hu Shengtuo',
-    'A senior undergrad at <a href="http://www.tongji.edu.cn/" onclick="ga(\'send\', \'event\', \'Jump\', \'click\', \'TJ\');">Tongji University</a>,<br>majoring in <a href="http://sse.tongji.edu.cn/" onclick="ga(\'send\', \'event\', \'Jump\', \'click\', \'TJSSE\');">Software Engineering</a>',
+    'Hi, I\'m Hu Shengtuo  👀',
+    'A senior undergrad at <a href="http://www.tongji.edu.cn/" onclick="ga(\'send\', \'event\', \'Jump\', \'click\', \'TJ\');">Tongji University</a>',
     'Currently, I\'m working as a research assistant<br>at <a href="http://www.polyu.edu.hk/" onclick="ga(\'send\', \'event\', \'Jump\', \'click\', \'PolyU\');">The Hong Kong Polytechnic University</a>',
-    'I like photography',
+    'I like photography  📷',
     'Most of my works are in <a href="https://anananan.tuchong.com" onclick="ga(\'send\', \'event\', \'Jump\', \'click\', \'Tuchong\');">Tuchong</a>',
     'You can also follow me in <a href="https://www.instagram.com/h1994st/" onclick="ga(\'send\', \'event\', \'Jump\', \'click\', \'Instagram\');">h1994st@Instagram</a></li>',
-    'Besides, I\'m a developer',
+    'Besides, I\'m a developer  💻',
     'Here is my <a href="http://blog.h1994st.com" onclick="ga(\'send\', \'event\', \'Jump\', \'click\', \'Blog\');">Blog</a> and my <a href="https://github.com/h1994st" onclick="ga(\'send\', \'event\', \'Jump\', \'click\', \'Github\');">Github</a>',
     getCurrentTime(),
     'Designed by <a href="https://onepagelove.com/julian-garnier">Julian Garnier</a>'
