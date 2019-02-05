@@ -10,7 +10,7 @@
     ga('send', 'event', {
       eventCategory: 'Jump',
       eventAction: 'click',
-      eventLabel: event.target.dataset.label + ' (' + navigator.userAgent + ')'
+      eventLabel: event.target.dataset.label
     });
   }
 
