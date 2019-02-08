@@ -8,9 +8,9 @@
 (function(window, document) {
   function handleOutboundLinkClicks(event) {
     ga('send', 'event', {
-      eventCategory: 'Jump',
-      eventAction: 'click',
-      eventLabel: event.target.dataset.label + ' (' + navigator.userAgent + ')'
+      eventCategory: 'Click',
+      eventAction: event.target.dataset.label,
+      eventLabel: navigator.userAgent
     });
   }
 
