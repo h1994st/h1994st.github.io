@@ -17,4 +17,10 @@
   document.querySelectorAll('a[data-label]').forEach(function (element) {
     element.onclick = handleOutboundLinkClicks;
   });
+
+  ga('send', 'event', {
+    eventCategory: 'Visit',
+    eventAction: 'Loaded',
+    eventLabel: 'Datetime: ' + (new Date()).toString() + ', UA: ' + navigator.userAgent
+  });
 })(window, document);
