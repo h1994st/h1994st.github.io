@@ -14,8 +14,8 @@
   gtag('config', 'G-ZMH6NLL7C7');
 
   function handleOutboundLinkClicks(event) {
-    gtag('event', 'click', {
-      event_category: 'Custom',
+    gtag('event', 'stats', {
+      event_category: 'Click',
       event_label: event.target.dataset.label,
       value: navigator.userAgent
     });
@@ -26,8 +26,7 @@
   });
 
   gtag('event', 'page_view', {
-    event_category: 'Custom',
-    event_label: 'Loaded',
+    event_category: 'Loaded',
     user_agent: navigator.userAgent,
     value: 'Datetime: ' + (new Date()).toString()
   });
