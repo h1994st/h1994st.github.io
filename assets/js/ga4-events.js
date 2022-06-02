@@ -22,11 +22,7 @@
   }
 
   document.querySelectorAll('a[data-label]').forEach(function (element) {
-    let old_onclick = element.onclick;
-    element.onclick = function (event) {
-      old_onclick(event);
-      handleOutboundLinkClicks(event);
-    };
+    element.onclick = handleOutboundLinkClicks
   });
 
   gtag('event', 'page_view', {
