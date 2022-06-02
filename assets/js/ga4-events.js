@@ -22,7 +22,9 @@
   }
 
   document.querySelectorAll('a[data-label]').forEach(function (element) {
-    element.onclick = handleOutboundLinkClicks
+    element.onclick = handleOutboundLinkClicks;
+    element.target = '_blank';
+    element.rel = 'noopener noreferrer';
   });
 
   gtag('event', 'page_view', {
