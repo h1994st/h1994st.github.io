@@ -25,6 +25,10 @@ show_copy_button = true
 show_reading_time = true
 show_share_button = true
 
+scripts = [
+  "js/ga4-events.js",
+]
+
 [extra.nav]
 show_feed = true
 show_theme_switcher = true
