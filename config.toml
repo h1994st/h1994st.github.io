@@ -28,7 +28,7 @@ show_share_button = true
 scripts = [
   # Google Analytics 4: use statically downloaded script
   # TODO: should update the template to use https://www.googletagmanager.com/gtag/js?id=G-ZMH6NLL7C7 directly
-  "gtag.js",
+  "js/gtag.js",
   "js/ga4-events.js",
 ]
 
