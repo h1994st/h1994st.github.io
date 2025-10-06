@@ -38,4 +38,4 @@ sudo nmap -vv -sC -sV -T4 -A $ipaddr
 
 ## Reference
 
-- [HTB: Lame](https://0xdf.gitlab.io/2020/04/07/htb-lame.html)
+- [HTB: Lame | 0xdf hacks stuff](https://0xdf.gitlab.io/2020/04/07/htb-lame.html)

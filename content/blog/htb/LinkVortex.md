@@ -10,10 +10,6 @@ toc = true
 toc_sidebar = true
 +++
 
-> Reference:
->
-> - <https://0xdf.gitlab.io/2025/04/12/htb-linkvortex.html>
-
 ## Port Scanning
 
 ```bash
@@ -289,3 +285,7 @@ There are several ways to exploit `/opt/ghost/clean_symlink.sh`
 - Double symlinks: create a symbolic link chain, e.g., `a.png` --> `b` --> `/root/root.txt`
 - `CHECK_CONTENT`: set `CHECK_CONTENT` to `bash` to obtain a shell
 - TOCTOU (time-of-check time-of-use): initiate a loop to keep overwriting the symbolic link file that will appear in the quarantined directory
+
+## Reference
+
+- [HTB: LinkVortex | 0xdf hacks stuff](https://0xdf.gitlab.io/2025/04/12/htb-linkvortex.html)

@@ -127,4 +127,4 @@ root@dog:~# cat root.txt
 
 ## References
 
-- [HTB: Dog](https://0xdf.gitlab.io/2025/07/12/htb-dog.html)
+- [HTB: Dog | 0xdf hacks stuff](https://0xdf.gitlab.io/2025/07/12/htb-dog.html)
