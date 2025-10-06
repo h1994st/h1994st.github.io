@@ -61,6 +61,9 @@ Host your-host-name*
     Port 22
     IdentityFile ~/.ssh/id_rsa
 
+Host your-host-name
+    ForwardX11 no
+
 Host your-host-name-x11
     ForwardX11 yes
 ```
