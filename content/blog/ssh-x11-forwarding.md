@@ -1,6 +1,6 @@
 +++
 authors = ["Shengtuo Hu"]
-title = "X11 forwarding over SSH"
+title = "X11 Forwarding over SSH"
 description = "Setting up X11 forwarding over SSH from Linux to macOS"
 date = 2025-10-05T21:48:00-07:00
 [taxonomies]
