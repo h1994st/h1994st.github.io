@@ -5,6 +5,9 @@ description = "Setting up X11 forwarding over SSH from Linux to macOS"
 date = 2025-10-05T21:48:00-07:00
 [taxonomies]
 tags = ["Tutorial", "X11"]
+[extra]
+toc = true
+toc_sidebar = true
 +++
 
 I am debugging a GUI application, running on my remote Linux machine, and want to stay in my macOS development environment. This tutorial briefly goes through SSH configurations on both sides (Linux, macOS) for X11 forwarding.
