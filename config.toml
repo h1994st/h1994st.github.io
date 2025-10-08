@@ -36,8 +36,11 @@ scripts = [
   "js/ga4-events.js",
 ]
 
+source_url = "https://github.com/h1994st/h1994st.github.io"
+
 [extra.nav]
 show_feed = true
+show_repo = true
 show_theme_switcher = true
 
 links = [
