@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>{{ section.title }}</h1>
+
+{{ section.content | safe }}
+
+{%- if section.subsections -%}
+<div class="notebook-toc">
+    <ul>
+        {%- for s in section.subsections %}
+        {% set subsection = get_section(path=s) %}
+        {% set subsection_num = loop.index %}
+        <li>
+            <a href="{{ subsection.permalink | safe }}">{{ subsection_num }}. {{ subsection.title }}</a>
+            {%- if subsection.pages | length > 0 -%}
+            <ul>
+                {%- for page in subsection.pages %}
+                <li>
+                    <a href="{{ page.permalink | safe }}">{{ subsection_num }}.{{ loop.index }}. {{ page.title }}</a>
+                </li>
+                {%- endfor %}
+            </ul>
+            {%- endif %}
+        </li>
+        {%- endfor %}
+    </ul>
+</div>
+{%- elif section.pages -%}
+<div class="notebook-toc">
+    <ul>
+        {%- for page in section.pages %}
+        <li>
+            <a href="{{ page.permalink | safe }}">{{ loop.index }}. {{ page.title }}</a>
+        </li>
+        {%- endfor %}
+    </ul>
+</div>
+{%- endif -%}
+
+{% endblock content %}
