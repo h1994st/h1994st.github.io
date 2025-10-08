@@ -42,6 +42,7 @@ show_theme_switcher = true
 
 links = [
   {url = "@/blog/_index.md", name = "Blog"},
+  {url = "@/notebook/_index.md", name = "Notebook"},
   {url = "@/publications/index.md", name = "Publications"},
   {name = "Others", menu = [
     {url = "https://github.com/h1994st/playground", name = "My Playground"},
@@ -56,6 +57,7 @@ show_source = false
 
 links = [
   {url = "@/blog/_index.md", name = "Blog"},
+  {url = "@/notebook/_index.md", name = "Notebook"},
 ]
 
 # Social media links, shown as icons in the footer
