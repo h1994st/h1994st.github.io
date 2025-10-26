@@ -1,6 +1,6 @@
 +++
 title = "Designning Data-Intensive Applications"
-weight = 1
+weight = 2
 sort_by = "weight"
 template = "notebook.html"
 page_template = "article.html"

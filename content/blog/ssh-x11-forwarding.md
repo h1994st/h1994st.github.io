@@ -25,7 +25,7 @@ sudo systemctl status ssh
 
 Then, edit `/etc/ssh/sshd_config` to at least enable the following entries:
 
-```/etc/ssh/sshd_config
+```txt,name=/etc/ssh/sshd_config
 AllowTcpForwarding yes
 X11Forwarding yes
 X11DisplayOffset 10
@@ -54,7 +54,7 @@ ssh -X foo@your.host.ip.addr
 
 Usually, I would prefer saving the host and options in `~/.ssh/config` as shown below:
 
-```~/.ssh/config
+```txt,name=~/.ssh/config
 Host your-host-name*
     HostName your.host.ip.addr
     User foo
