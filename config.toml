@@ -16,11 +16,7 @@ taxonomies = [{name = "tags", feed = true}]
 [markdown]
 github_alerts = true
 highlight_code = true
-highlight_theme = "css"
-highlight_themes_css = [
-  {theme = "base16-ocean-dark", filename = "syntax-theme-dark.css"},
-  {theme = "base16-ocean-light", filename = "syntax-theme-light.css"},
-]
+highlight_theme = "agola-dark"
 insert_anchor_links = "left"
 
 external_links_target_blank = true
@@ -34,6 +30,10 @@ show_copy_button = true
 show_reading_time = true
 show_share_button = true
 
+styles = [
+  "css/extra-syntax-styles.css",
+]
+
 scripts = [
   # Google Analytics 4: use statically downloaded script
   # TODO: should update the template to use https://www.googletagmanager.com/gtag/js?id=G-ZMH6NLL7C7 directly
@@ -46,7 +46,7 @@ source_url = "https://github.com/h1994st/h1994st.github.io"
 [extra.nav]
 show_feed = true
 show_repo = true
-show_theme_switcher = true
+show_theme_switcher = false
 
 links = [
   {url = "@/blog/_index.md", name = "Blog"},

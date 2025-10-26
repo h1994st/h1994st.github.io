@@ -40,7 +40,7 @@ A stack is allocated at a high address and grows towards lower addresses
 
 The memory addresses are not fully randomized, particularly the lower 3 bits of the base address, even when PIE is enabled.
 
-```txt,linenos,hl_lines=6
+```txt,linenos,hl_lines=6-10
 pwndbg> info proc mappings
 process 67443
 Mapped address spaces:
