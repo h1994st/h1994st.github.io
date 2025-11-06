@@ -30,9 +30,11 @@ toc_sidebar = true
 
 ## Memory Layout
 
+![memory layout](Memory-Layout-of-C-Program.webp)
+
 ### Stack Frame Layout
 
-A stack is allocated at a high address and grows towards lower addresses
+A stack is allocated at a high address and grows towards lower addresses.
 
 ![stack frame layout](x64_frame_nonleaf.png)
 
@@ -71,9 +73,49 @@ Start Addr         End Addr           Size               Offset             Perm
 0xffffffffff600000 0xffffffffff601000 0x1000             0x0                --xp  [vsyscall]
 ```
 
+### Heap
+
+Unlike the stack, the heap segment starts at a low address and grows towards
+higher memory addresses. The basic concept in the heap meamory allocation is
+`chunk`, as defined below.
+
+```c
+/*
+  This struct declaration is misleading (but accurate and necessary).
+  It declares a "view" into memory allowing access to necessary
+  fields at known offsets from a given base. See explanation below.
+*/
+
+struct malloc_chunk {
+
+  INTERNAL_SIZE_T      mchunk_prev_size;  /* Size of previous chunk (if free).  */
+  INTERNAL_SIZE_T      mchunk_size;       /* Size in bytes, including overhead. */
+
+  struct malloc_chunk* fd;         /* double links -- used only if free. */
+  struct malloc_chunk* bk;
+
+  /* Only used for large blocks: pointer to next larger size.  */
+  struct malloc_chunk* fd_nextsize; /* double links -- used only if free. */
+  struct malloc_chunk* bk_nextsize;
+};
+```
+
+#### House of Force
+
+"House Of Force" is an exploitation approach against the heap memory. This
+exploitation requires the attacker can override the size field in the top
+chunk's header. Then, the attacker can leverage the integer overflow to control
+the memory address that `malloc` will return, further leading to arbitrary
+memory read/write.
+
 ## References
 
+- [Memory Layout of C Program](https://www.geeksforgeeks.org/c/memory-layout-of-c-program/)
 - [Stack frame layout on x86-64 - Eli Bendersky's website](https://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64)
 - [x64 Cheat Sheet](https://cs.brown.edu/courses/cs033/docs/guides/x64_cheatsheet.pdf)
 - [CS107 Guide to x86-64](https://web.stanford.edu/class/archive/cs/cs107/cs107.1174/guide_x86-64.html)
 - [Position Independent Executables < BorderGate](https://www.bordergate.co.uk/position-independent-executables/)
+- [Heap Structure - CTF Wiki](https://ctf-wiki.org/pwn/linux/user-mode/heap/ptmalloc2/heap-structure/)
+- [House Of Force - CTF Wiki](https://ctf-wiki.org/pwn/linux/user-mode/heap/ptmalloc2/house-of-force/)
+- [>House of Force | heap-exploitation](https://heap-exploitation.dhavalkapil.com/attacks/house_of_force)
+- [malloc.c - malloc/malloc.c -  Glibc source code glibc-2.42 - Bootlin Elixir Cross Referencer](https://elixir.bootlin.com/glibc/glibc-2.42/source/malloc/malloc.c)
