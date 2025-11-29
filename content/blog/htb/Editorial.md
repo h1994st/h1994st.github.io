@@ -10,7 +10,7 @@ toc = true
 toc_sidebar = true
 +++
 
-<https://app.hackthebox.com/machines/608>
+<https://www.hackthebox.com/machines/editorial>
 
 ## Port Scanning
 
@@ -333,7 +333,7 @@ async with asyncssh.connect(
     print(result.stdout, end="")
 ```
 
-## Reference
+## References
 
 - [HTB: Editorial | 0xdf hacks stuff](https://0xdf.gitlab.io/2024/10/19/htb-editorial.html)
 - [Remote Code Execution (RCE) in gitpython | CVE-2022-24439 | Snyk](https://security.snyk.io/vuln/SNYK-PYTHON-GITPYTHON-3113858)
