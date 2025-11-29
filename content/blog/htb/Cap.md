@@ -10,6 +10,9 @@ toc = true
 toc_sidebar = true
 +++
 
+- Cap (Easy): <https://www.hackthebox.com/machines/cap>
+- My notes: <https://github.com/h1994st/HTB/blob/main/Cap/NOTES.md>
+
 ## Port Scanning
 
 ```bash

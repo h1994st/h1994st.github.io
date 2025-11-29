@@ -10,6 +10,9 @@ toc = true
 toc_sidebar = true
 +++
 
+- Dog (Easy): <https://www.hackthebox.com/machines/dog>
+- My notes: <https://github.com/h1994st/HTB/blob/main/Dog/NOTES.md>
+
 ## Port Scanning
 
 ```bash

@@ -10,7 +10,8 @@ toc = true
 toc_sidebar = true
 +++
 
-<https://www.hackthebox.com/machines/boardlight>
+- BoardLight (Easy): <https://www.hackthebox.com/machines/boardlight>
+- My notes: <https://github.com/h1994st/HTB/blob/main/BoardLight.ipynb>
 
 ## Port Scanning
 

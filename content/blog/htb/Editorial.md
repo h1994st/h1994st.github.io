@@ -10,7 +10,8 @@ toc = true
 toc_sidebar = true
 +++
 
-<https://www.hackthebox.com/machines/editorial>
+- Editorial (Easy): <https://www.hackthebox.com/machines/editorial>
+- My notes: <https://github.com/h1994st/HTB/blob/main/Editorial/exploit.ipynb>
 
 ## Port Scanning
 

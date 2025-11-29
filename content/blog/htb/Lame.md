@@ -10,6 +10,9 @@ toc = true
 toc_sidebar = true
 +++
 
+- Lame (Easy): <https://www.hackthebox.com/machines/lame>
+- My notes: <https://github.com/h1994st/HTB/blob/main/Lame/NOTES.md>
+
 ## Port Scanning
 
 ```bash

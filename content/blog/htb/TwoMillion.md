@@ -10,6 +10,9 @@ toc = true
 toc_sidebar = true
 +++
 
+- TwoMillion (Easy): <https://www.hackthebox.com/machines/twomillion>
+- My notes: <https://github.com/h1994st/HTB/blob/main/TwoMillion/NOTES.md>
+
 ## Port Scanning
 
 ```bash

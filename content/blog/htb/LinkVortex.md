@@ -10,6 +10,9 @@ toc = true
 toc_sidebar = true
 +++
 
+- LinkVortex (Easy): <https://www.hackthebox.com/machines/linkvortex>
+- My notes: <https://github.com/h1994st/HTB/blob/main/LinkVortex/NOTES.md>
+
 ## Port Scanning
 
 ```bash
