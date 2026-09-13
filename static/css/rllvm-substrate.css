@@ -1,0 +1,231 @@
+/* Diagrams for the rllvm analysis-substrate post. */
+
+.substrate-fig {
+	--s-ink: var(--fg-color);
+	--s-muted: color-mix(in srgb, var(--fg-color) 58%, transparent);
+	--s-rule: color-mix(in srgb, var(--fg-color) 22%, transparent);
+	--s-raised: color-mix(in srgb, var(--fg-color) 6%, transparent);
+
+	margin: 2rem 0;
+	max-width: 42rem;
+	font-family: var(--font-monospace-code);
+}
+
+.substrate-fig strong,
+.substrate-fig b {
+	font-weight: 500;
+}
+
+.substrate-fig small,
+.substrate-fig .substrate-kicker {
+	display: block;
+	color: var(--s-muted);
+	font-size: var(--font-size-x-small);
+}
+
+.substrate-fig .substrate-kicker {
+	margin-bottom: 0.35rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.substrate-fig figcaption {
+	max-width: 36rem;
+	margin-top: 0.9rem;
+	color: var(--s-muted);
+	font-family: var(--font-monospace-code);
+	font-size: var(--font-size-x-small);
+	line-height: 1.5;
+	text-align: left;
+}
+
+/* Two evidence sources converging on one catalog. */
+
+.substrate-sources {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.8rem;
+}
+
+.substrate-card,
+.substrate-catalog,
+.substrate-filter,
+.substrate-outputs span {
+	padding: 0.85rem 1rem;
+	border: 1px solid var(--s-rule);
+	border-radius: 8px;
+	background: var(--s-raised);
+}
+
+.substrate-card strong,
+.substrate-catalog strong {
+	display: block;
+	margin-bottom: 0.25rem;
+	font-size: var(--font-size-small);
+}
+
+.substrate-down {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	height: 1.5rem;
+	margin: 0 12.5%;
+}
+
+.substrate-down span {
+	position: relative;
+}
+
+.substrate-down span::before {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 50%;
+	border-bottom: 1px solid var(--s-rule);
+	content: "";
+}
+
+.substrate-down span:first-child::before {
+	right: 0;
+	border-right: 1px solid var(--s-rule);
+}
+
+.substrate-down span:last-child::before {
+	left: 0;
+	border-left: 1px solid var(--s-rule);
+}
+
+.substrate-catalog {
+	width: min(22rem, 80%);
+	margin: 0 auto;
+	border-color: var(--accent-color);
+	text-align: center;
+}
+
+.substrate-catalog strong {
+	color: var(--accent-color);
+}
+
+/* Catalog rows flowing through selection to several output forms. */
+
+.substrate-materialize {
+	display: grid;
+	grid-template-columns: minmax(13rem, 1.4fr) minmax(10rem, 1fr);
+	gap: 0.8rem;
+}
+
+.substrate-materialize figcaption {
+	grid-column: 1 / -1;
+}
+
+.substrate-modules {
+	grid-row: span 2;
+	display: grid;
+	align-content: center;
+	border-block: 1px solid var(--s-rule);
+}
+
+.substrate-modules span {
+	display: grid;
+	grid-template-columns: 2rem 1fr auto;
+	gap: 0.45rem;
+	padding: 0.45rem 0.65rem;
+	border-bottom: 1px solid var(--s-rule);
+	font-size: var(--font-size-small);
+}
+
+.substrate-modules span:last-child {
+	border-bottom: 0;
+}
+
+.substrate-modules b,
+.substrate-modules i {
+	color: var(--s-muted);
+	font-size: var(--font-size-x-small);
+	font-style: normal;
+}
+
+.substrate-modules .substrate-dim {
+	opacity: 0.48;
+}
+
+.substrate-filter {
+	position: relative;
+	align-self: end;
+	border-color: var(--accent-color);
+	font-size: var(--font-size-small);
+}
+
+.substrate-filter::before,
+.substrate-filter::after {
+	position: absolute;
+	left: -0.85rem;
+	width: 0.85rem;
+	height: 1px;
+	background: var(--s-rule);
+	content: "";
+}
+
+.substrate-filter::before {
+	top: 50%;
+}
+
+.substrate-filter::after {
+	top: calc(50% - 3px);
+	left: -0.3rem;
+	width: 0.4rem;
+	transform: rotate(45deg);
+	transform-origin: right center;
+}
+
+.substrate-filter strong {
+	color: var(--accent-color);
+}
+
+.substrate-outputs {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 0.4rem;
+}
+
+.substrate-outputs span {
+	padding: 0.6rem 0.35rem;
+	color: var(--s-muted);
+	font-size: var(--font-size-x-small);
+	line-height: 1.35;
+	text-align: center;
+}
+
+.substrate-outputs b {
+	color: var(--s-ink);
+}
+
+@media (max-width: 34rem) {
+	.substrate-sources,
+	.substrate-materialize {
+		grid-template-columns: 1fr;
+	}
+
+	.substrate-down {
+		display: block;
+		height: 1rem;
+		margin: 0;
+		border-left: 1px solid var(--s-rule);
+	}
+
+	.substrate-down span {
+		display: none;
+	}
+
+	.substrate-catalog {
+		width: auto;
+	}
+
+	.substrate-modules {
+		grid-row: auto;
+	}
+
+	.substrate-filter::before,
+	.substrate-filter::after {
+		display: none;
+	}
+}
