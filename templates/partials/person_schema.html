@@ -1,7 +1,16 @@
-{#- Person entity, emitted on the homepage only.
+{#- ProfilePage wrapping the Person entity, emitted on the homepage only.
     Values come from [extra.person] and [extra] in config.toml.
-    `sameAs` is the part that matters: it tells search engines this site and
-    the external profiles (Scholar, dblp, GitHub, ...) are one entity. -#}
+
+    Why the ProfilePage wrapper: Google's Rich Results Test only reports types
+    that are eligible for a rich result. A bare Person is not one of them, so
+    valid Person markup reports "No items detected" there (validator.schema.org
+    accepts it either way). ProfilePage is a supported type, and the homepage is
+    an About-Me page -- a bio focused on a single person affiliated with the
+    site -- which is the case Google scopes ProfilePage to.
+
+    `sameAs` stays on the Person, which keeps its stable `#person` @id: that is
+    the part that matters, telling search engines this site and the external
+    profiles (Scholar, dblp, GitHub, ...) are one entity. -#}
 
 {%- set person = config.extra.person -%}
 {#- Normalise to exactly one trailing slash so @id/url match rel=canonical. -#}
@@ -10,42 +19,47 @@
 <script type="application/ld+json">
 {
 	"@context": "https://schema.org",
-	"@type": "Person",
-	"@id": {{ site_url ~ "#person" | json_encode | safe }},
+	"@type": "ProfilePage",
+	"@id": {{ site_url ~ "#profilepage" | json_encode | safe }},
 	"url": {{ site_url | json_encode | safe }},
-	"name": {{ person.name | json_encode | safe }}
-	{%- if person.alternate_name %},
-	"alternateName": {{ person.alternate_name | json_encode | safe }}
-	{%- endif %}
-	{%- set home_description = section.description | default(value=config.description) %}
-	{%- if home_description %},
-	"description": {{ home_description | json_encode | safe }}
-	{%- endif %}
-	{%- if person.works_for %},
-	"worksFor": {
-		"@type": "Organization",
-		"name": {{ person.works_for | json_encode | safe }}
-		{%- if person.works_for_url %},
-		"url": {{ person.works_for_url | json_encode | safe }}
+	"mainEntity": {
+		"@type": "Person",
+		"@id": {{ site_url ~ "#person" | json_encode | safe }},
+		"url": {{ site_url | json_encode | safe }},
+		"name": {{ person.name | json_encode | safe }}
+		{%- if person.alternate_name %},
+		"alternateName": {{ person.alternate_name | json_encode | safe }}
+		{%- endif %}
+		{%- set home_description = section.description | default(value=config.description) %}
+		{%- if home_description %},
+		"description": {{ home_description | json_encode | safe }}
+		{%- endif %}
+		{%- if person.works_for %},
+		"worksFor": {
+			"@type": "Organization",
+			"name": {{ person.works_for | json_encode | safe }}
+			{%- if person.works_for_url %},
+			"url": {{ person.works_for_url | json_encode | safe }}
+			{%- endif %}
+		}
+		{%- endif %}
+		{%- if person.alumni_of %},
+		"alumniOf": [
+			{%- for school in person.alumni_of %}
+			{
+				"@type": "CollegeOrUniversity",
+				"name": {{ school.name | json_encode | safe }},
+				"url": {{ school.url | json_encode | safe }}
+			}{% if not loop.last %},{% endif %}
+			{%- endfor %}
+		]
+		{%- endif %}
+		{%- if person.knows_about %},
+		"knowsAbout": {{ person.knows_about | json_encode | safe }}
+		{%- endif %}
+		{%- if person.same_as %},
+		"sameAs": {{ person.same_as | json_encode | safe }}
 		{%- endif %}
 	}
-	{%- endif %}
-	{%- if person.alumni_of %},
-	"alumniOf": [
-		{%- for school in person.alumni_of %}
-		{
-			"@type": "CollegeOrUniversity",
-			"name": {{ school.name | json_encode | safe }},
-			"url": {{ school.url | json_encode | safe }}
-		}{% if not loop.last %},{% endif %}
-		{%- endfor %}
-	]
-	{%- endif %}
-	{%- if person.knows_about %},
-	"knowsAbout": {{ person.knows_about | json_encode | safe }}
-	{%- endif %}
-	{%- if person.same_as %},
-	"sameAs": {{ person.same_as | json_encode | safe }}
-	{%- endif %}
 }
 </script>
