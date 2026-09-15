@@ -1,5 +1,6 @@
 +++
 title = "Publications"
+description = "Peer-reviewed papers by Shengtuo Hu on connected-vehicle security, protocol analysis and censorship circumvention, from USENIX Security, CVPR, AsiaCCS and SRDS."
 +++
 
 ## Research Papers {#research}

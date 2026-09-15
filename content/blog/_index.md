@@ -1,5 +1,6 @@
 +++
 title = "nu1lptr's Blog"
+description = "Posts by Shengtuo Hu on program analysis and LLVM tooling, reverse shells and terminal workflow, plus Hack The Box machine writeups."
 sort_by = "date"
 template = "article_list.html"
 page_template = "article.html"

@@ -1,0 +1,24 @@
+{#- Page name WITHOUT the site-title suffix, for og:title / twitter:title.
+    og:site_name already carries "nu1lptr", so repeating it inside og:title
+    just wastes characters in social cards. Mirrors the branch order of
+    partials/title.html. -#}
+
+{%- if lang != config.default_language %}
+	{%- set base_path = "/" ~ lang ~ "/" %}
+{%- else -%}
+	{%- set base_path = "/" %}
+{%- endif %}
+
+{%- if current_path and current_path == base_path -%}
+	{{- config.extra.home_title | default(value=config.title) -}}
+{% elif title -%}
+	{{- title -}}
+{% elif section.title -%}
+	{{- section.title -}}
+{% elif page.title -%}
+	{{- page.title -}}
+{% elif term.name -%}
+	{{- term.name -}}
+{% else -%}
+	{{- config.title -}}
+{%- endif -%}

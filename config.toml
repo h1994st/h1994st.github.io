@@ -41,6 +41,42 @@ scripts = [
 
 source_url = "https://github.com/h1994st/h1994st.github.io"
 
+# --- Identity ---------------------------------------------------------------
+# Used by partials/title.html (homepage <title>), partials/footer.html
+# (copyright) and partials/person_schema.html (JSON-LD). The homepage
+# description lives in content/_index.md, like every other page.
+home_title = "Shengtuo Hu - Security Researcher"
+copyright_name = "Shengtuo Hu"
+twitter_handle = "@ShengtuoHu"
+
+
+# Person entity emitted as JSON-LD on the homepage. `same_as` is what ties this
+# site to the external profiles that currently outrank it for "Shengtuo Hu".
+[extra.person]
+name = "Shengtuo Hu"
+alternate_name = "nu1lptr"
+works_for = "Palo Alto Networks"
+works_for_url = "https://www.paloaltonetworks.com/"
+knows_about = [
+  "Program analysis",
+  "LLVM",
+  "Fuzzing",
+  "Network security",
+  "Connected and autonomous vehicle security",
+]
+alumni_of = [
+  { name = "University of Michigan", url = "https://umich.edu/" },
+  { name = "Tongji University", url = "https://en.tongji.edu.cn/" },
+]
+same_as = [
+  "https://github.com/h1994st",
+  "https://scholar.google.com/citations?user=VOefXMMAAAAJ",
+  "https://dblp.org/pid/203/0829.html",
+  "https://www.linkedin.com/in/shengtuo/",
+  "https://x.com/ShengtuoHu",
+  "https://www.instagram.com/hst_nullderef/",
+]
+
 [extra.nav]
 show_feed = true
 show_repo = false

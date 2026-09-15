@@ -1,5 +1,6 @@
 +++
 title = "Registers and Memory Layout"
+description = "How x86-64 general-purpose registers map onto the process memory layout, and how stack frames are built and torn down across calls."
 weight = 1
 [extra]
 toc = true
