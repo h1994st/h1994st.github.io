@@ -306,7 +306,6 @@ Please download the exploit PoC from [xkaneiki/CVE-2023-0386](https://github.com
 
 ## References
 
-- [Hack the Box TwoMillion Walkthrough](https://s1ffx0.medium.com/hack-the-box-twomillion-walkthrough-a5b1a467067b)
 - [The OverlayFS vulnerability CVE-2023-0386: Overview, detection, and remediation](https://securitylabs.datadoghq.com/articles/overlayfs-cve-2023-0386)
 - [xkaneiki/CVE-2023-0386](https://github.com/xkaneiki/CVE-2023-0386)
 - [leesh3288/CVE-2023-4911](https://github.com/leesh3288/CVE-2023-4911)
