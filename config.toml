@@ -13,6 +13,14 @@ minify_html = true
 
 taxonomies = [{ name = "tags", feed = true }]
 
+# Duckquill's partials/extra_features.html points the search box at
+# search_index.<lang>.json, and partials/head.html only injects the search
+# scripts for a *_json index format. Zola's default is elasticlunr_javascript,
+# which emits search_index.en.js instead -- leaving the nav search box
+# permanently disabled. Keep this set to a _json format.
+[search]
+index_format = "elasticlunr_json"
+
 [markdown]
 github_alerts = true
 highlight_code = true
