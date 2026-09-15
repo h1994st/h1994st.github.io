@@ -23,6 +23,16 @@
         <meta name="fediverse:creator" content="@{{ config.extra.comments.user }}@{{ config.extra.comments.host }}" />
 	{%- endif %}
 
+	{#- Google Analytics 4 -------------------------------------------------
+	     Loaded directly from Google rather than vendored into static/, so it
+	     never goes stale. The gtag bootstrap lives in static/js/ga4-events.js,
+	     which config.extra.scripts injects below; the async library drains
+	     whatever dataLayer already holds, so load order does not matter. -#}
+	{%- if config.extra.google_analytics %}
+	<link rel="preconnect" href="https://www.googletagmanager.com" />
+	<script async src="https://www.googletagmanager.com/gtag/js?id={{ config.extra.google_analytics }}"></script>
+	{%- endif %}
+
 	{%- include "partials/favicon.html" %}
 
 	{%- if config.generate_feeds and config.feed_filenames %}

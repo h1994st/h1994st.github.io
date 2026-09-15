@@ -32,12 +32,14 @@ show_share_button = true
 
 styles = ["css/extra-syntax-styles.css"]
 
-scripts = [
-  # Google Analytics 4: use statically downloaded script
-  # TODO: should update the template to use https://www.googletagmanager.com/gtag/js?id=G-ZMH6NLL7C7 directly
-  "js/gtag.js",
-  "js/ga4-events.js",
-]
+# ga4-events.js holds the gtag bootstrap (dataLayer, gtag(), 'js', 'config')
+# and the click-event wiring. The gtag library itself is loaded straight from
+# Google by partials/head.html -- see google_analytics below.
+scripts = ["js/ga4-events.js"]
+
+# Google Analytics 4 property. Loaded by partials/head.html from
+# https://www.googletagmanager.com/gtag/js?id=<this>
+google_analytics = "G-ZMH6NLL7C7"
 
 source_url = "https://github.com/h1994st/h1994st.github.io"
 
