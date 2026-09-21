@@ -253,8 +253,8 @@ are among them:
 | `quiche_conn_retired_scid_next` | **CVE-2026-11941** |
 | `quiche_conn_source_id` | safe: the dropped `ConnectionId` is the borrowed variant |
 | `quiche_conn_destination_id` | safe: the same |
-| `quiche_accept` | safe: the pointer comes from an *input* |
-| `quiche_conn_new_with_tls` | safe: the same |
+| `quiche_accept` | filter noise: the match was `Option::as_ref` |
+| `quiche_conn_new_with_tls` | filter noise: the same |
 | `quiche_h3_take_last_priority_update` | safe *if* the C callback behaves |
 
 One caveat on how much this proves. I wrote the filter after reading the
@@ -311,13 +311,17 @@ Rust has already freed. The two `fprintf` calls are a three-line reading window.
 
 ## Where the answers stop
 
-Five of those seven candidates are safe, and both reasons come down to the same
-missing capability.
+Five of those seven candidates are safe, for two different kinds of reason.
 
 `ConnectionId` is a Cow-like type: `enum { Vec(Vec<u8>), Ref(&'a [u8]) }`.
 `quiche_conn_source_id` drops one, but it drops the *borrowed* variant, so the
 drop frees nothing and the pointer stays valid. The call graph sees
 `drop_glue::<ConnectionId>` either way and cannot separate the two.
+
+`quiche_accept` and `quiche_conn_new_with_tls` are the cheaper kind of wrong.
+Both call `Option::as_ref`, a borrow helper that hands out no raw pointer at
+all, and my filter matched on the method name. Neither function gives C a
+pointer into anything it later drops, so the pattern never applied to them.
 
 `quiche_h3_take_last_priority_update` is more interesting. It takes a pointer
 into an owned `Vec<u8>`, passes it to a callback supplied by C, and frees the
@@ -326,8 +330,9 @@ callback does with the pointer, and the contract lives in a header comment that
 nothing enforces. I called it safe above by reading the Rust and assuming the C
 behaves. That was an assumption rather than an analysis.
 
-Both cases ask the same question: does this pointer outlive the value behind it?
-`rllvm-query` does not perform data-flow analysis, so it cannot answer either.
+The Cow case and the callback case ask the same question: does this pointer
+outlive the value behind it? `rllvm-query` does not perform data-flow analysis,
+so it cannot answer either.
 The same limit shows up at indirect calls, where `indirect-targets` reports a
 target set when LLVM recorded one and reports the callback above as unresolved.
 Tracking a value through a store, which is how the C side would retain that
