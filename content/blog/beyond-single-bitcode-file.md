@@ -4,7 +4,7 @@ title = "Beyond a Single Bitcode File"
 description = "rllvm 0.5 keeps modules, provenance, and choices intact until an analysis is ready to use them."
 date = 2026-09-13T18:00:00-07:00
 [taxonomies]
-tags = ["LLVM", "Rust", "Static Analysis"]
+tags = ["rllvm", "LLVM", "Rust", "Static Analysis"]
 [extra]
 styles = ["css/rllvm-substrate.css"]
 toc = true

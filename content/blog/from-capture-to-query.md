@@ -1,10 +1,10 @@
 +++
 authors = ["Shengtuo Hu"]
-title = "From Capture to Query"
+title = "rllvm: From Capture to Query"
 description = "rllvm-query adds an analysis step to the rllvm workflow. A real use-after-free in quiche shows what it can answer about a mixed C and Rust program, and what it still cannot."
 date = 2026-09-21T18:00:00-07:00
 [taxonomies]
-tags = ["LLVM", "Rust", "Security", "Static Analysis"]
+tags = ["rllvm", "LLVM", "Rust", "Security", "Static Analysis"]
 [extra]
 styles = ["css/rllvm-ffi.css"]
 toc = true

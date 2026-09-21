@@ -4,7 +4,7 @@ title = "Two Ways to Extract Whole-Program Bitcode"
 description = "rllvm and rules_rllvm solve the same problem from opposite ends: one poses as your compiler, the other asks the build system."
 date = 2026-09-07T18:00:00-07:00
 [taxonomies]
-tags = ["LLVM", "Bazel", "Rust"]
+tags = ["rllvm", "LLVM", "Bazel", "Rust"]
 [extra]
 styles = ["css/diagrams.css"]
 toc = true
