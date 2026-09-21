@@ -238,6 +238,12 @@ done
 # and something that takes a pointer into T
 ```
 
+The leading underscore is Mach-O's prefix on C symbols; an ELF build wants
+`/^quiche_/` instead. That platform dependency, and the fact that this step
+reaches for `nm` at all, is a gap: the catalog already knows which functions a
+Rust module exported to C, so `rllvm-query` should be able to list them itself
+([#243](https://github.com/h1994st/rllvm/issues/243)).
+
 169 entry points reduce to 7 candidates, and both functions the advisory names
 are among them:
 
