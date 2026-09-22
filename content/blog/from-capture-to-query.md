@@ -422,6 +422,9 @@ that to change soon, and the honest move is to keep saying so in the answer.
 
 ---
 
+This post was drafted with Claude Code. Every command in it was run and every
+result verified by me.
+
 `rllvm` is Apache-2.0 and available on
 [GitHub](https://github.com/h1994st/rllvm), including the
 [FFI example](https://github.com/h1994st/rllvm/tree/main/examples/ffi) and
