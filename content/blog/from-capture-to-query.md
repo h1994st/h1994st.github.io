@@ -127,6 +127,29 @@ What goes wrong is that a raw pointer into that value crossed an `extern "C"`
 signature on the way out, and C reads it after the drop. Rust's ownership model
 ends at the signature, and both halves of this program are correct on their own.
 
+The C half is an ordinary loop. quiche's own C examples never touch this
+iterator, so the caller below
+([`cid_logger.c`](https://github.com/h1994st/rllvm/blob/main/examples/external/quiche/cid_logger.c))
+ships with the rllvm example instead:
+
+```c
+static void log_source_ids(quiche_conn *conn) {
+    quiche_connection_id_iter *iter = quiche_conn_source_ids(conn);
+
+    const uint8_t *cid = NULL;
+    size_t cid_len = 0;
+
+    while (quiche_connection_id_iter_next(iter, &cid, &cid_len)) {
+        for (size_t i = 0; i < cid_len; i++) {
+            fprintf(stderr, "%02x", cid[i]);   // reads freed memory
+        }
+        fprintf(stderr, "\n");
+    }
+
+    quiche_connection_id_iter_free(iter);
+}
+```
+
 <figure class="ffi-fig" aria-label="A timeline showing the ConnectionId being cloned, its pointer escaping to C, the value being dropped, and C reading the freed memory">
 <div class="ffi-life">
 <div class="ffi-step is-alive"><span class="ffi-side">Rust</span><span class="ffi-what">clone a <b>ConnectionId</b> out of the iterator<span class="ffi-at">ffi.rs:1157</span></span><span class="ffi-bar"></span></div>
@@ -140,8 +163,8 @@ ends at the signature, and both halves of this program are correct on their own.
 
 ## Asking rllvm-query about it
 
-What follows runs against quiche 0.29.1 with the FFI feature on, plus a small C
-program that uses the iterator the way the advisory describes.
+What follows runs against quiche 0.29.1 with the FFI feature on, linked against
+that C program.
 
 ```bash
 git clone https://github.com/cloudflare/quiche && cd quiche
