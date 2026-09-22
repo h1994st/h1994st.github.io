@@ -156,7 +156,7 @@ static void log_source_ids(quiche_conn *conn) {
 <div class="ffi-step is-alive"><span class="ffi-side">Rust</span><span class="ffi-what">*out = id.as_ptr(), the pointer escapes<span class="ffi-at">ffi.rs:1158</span></span><span class="ffi-bar"></span></div>
 <div class="ffi-step is-dead"><span class="ffi-side">Rust</span><span class="ffi-what">drop_glue::&lt;ConnectionId&gt;, the buffer is freed<span class="ffi-at">ffi.rs:1162</span></span><span class="ffi-bar"></span></div>
 <div class="ffi-return">return to C, and out still holds the pointer</div>
-<div class="ffi-step is-dead is-fault"><span class="ffi-side">C</span><span class="ffi-what">fprintf("%02x", cid[i])<span class="ffi-at">cid_logger.c:21</span></span><span class="ffi-bar"></span></div>
+<div class="ffi-step is-dead is-fault"><span class="ffi-side">C</span><span class="ffi-what">fprintf("%02x", cid[i])<span class="ffi-at">cid_logger.c:22</span></span><span class="ffi-bar"></span></div>
 </div>
 <figcaption>The solid bar is the value's lifetime; the dashed continuation is the pointer outliving it. Only the join between the two halves is wrong, and the join is what neither language's tooling reads.</figcaption>
 </figure>
@@ -173,13 +173,18 @@ git checkout 0.29.1
 export RUSTC_WRAPPER=rllvm-rustc CC=rllvm-cc
 cargo build -p quiche --features ffi
 
-rllvm-cc -g -Iquiche/include cid_logger.c \
-    target/debug/libquiche.a -o cid_logger
+MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion) \
+  rllvm-cc -g -Iquiche/include cid_logger.c \
+           target/debug/libquiche.a -o cid_logger
+
 rllvm-get-bc cid_logger --output-dir cat
 ```
 
-The binary now records both halves. Every answer below is JSON; I have reduced
-each one to the fields under discussion, and shortened Rust crate paths to fit.
+The deployment target is macOS housekeeping: the build script compiles
+BoringSSL against the host SDK, and without it the link reports a few hundred
+"built for newer macOS version" warnings. Plain `clang` does the same.
+
+Every answer is JSON, so the readable form comes from `jq`:
 
 ```bash
 CAT=cat/catalog.json
@@ -189,47 +194,59 @@ FN=quiche_connection_id_iter_next
 The definition is Rust, and the caller is C, each reported at its own line:
 
 ```bash
-rllvm-query --catalog $CAT defs $FN
+rllvm-query --catalog $CAT defs $FN \
+  | jq -r '.results[].location | "\(.file):\(.line)"'
 #   quiche/src/ffi.rs:1154
 
-rllvm-query --catalog $CAT callers $FN
-#   log_source_ids   at cid_logger.c:19
+rllvm-query --catalog $CAT callers $FN | jq -r '
+  .results[] as $r | $r.call_sites[] | .location as $l
+  | "\($r.function.symbol)  \($l.file|split("/")|last):\($l.line)"'
+#   log_source_ids  cid_logger.c:20
 ```
 
-`callees` on the FFI function is the bug in three lines. Rust symbols come back
-demangled, so a cross-language answer reads as one answer:
+`callees` on the FFI function is the bug in three lines. Rust symbols are
+demangled into the envelope's `symbols` table, so the filter looks each one up
+there and drops the panic-handling edges:
 
 ```bash
-rllvm-query --catalog $CAT callees $FN
-#   ffi.rs:1157  <ConnectionIdIter as Iterator>::next
-#   ffi.rs:1158  <ConnectionId as AsRef<[u8]>>::as_ref
-#   ffi.rs:1162  core::ptr::drop_glue::<ConnectionId>
+rllvm-query --catalog $CAT callees $FN | jq -r '
+  .symbols as $s | .results[]
+  | select(.target.kind == "direct")
+  | ($s[.target.callee.symbol] // .target.callee.symbol) as $n
+  | select($n | test("panic") | not)
+  | .location as $l
+  | "\($l.file|split("/")|last):\($l.line)  \($n)"'
+```
+
+```txt
+ffi.rs:1157  <quiche::ffi::ConnectionIdIter as ...Iterator>::next
+ffi.rs:1158  <quiche::packet::ConnectionId as ...AsRef<[u8]>>::as_ref
+ffi.rs:1162  core::ptr::drop_glue::<quiche::packet::ConnectionId>
+ffi.rs:1162  core::ptr::drop_glue::<quiche::packet::ConnectionId>
 ```
 
 Clone, take a pointer, free. Run the same query against 0.29.2 and the
-`drop_glue` line is gone, because the fix stopped owning anything:
+`drop_glue` lines are gone, because the fix stopped owning anything:
 
-```bash
-#   ffi.rs:1146  <Vec<ConnectionId> as Deref>::deref
-#   ffi.rs:1146  <[ConnectionId]>::get::<usize>
-#   ffi.rs:1147  <ConnectionId as AsRef<[u8]>>::as_ref
+```txt
+ffi.rs:1146  <alloc::vec::Vec<...ConnectionId> as ...Deref>::deref
+ffi.rs:1146  <[quiche::packet::ConnectionId]>::get::<usize>
+ffi.rs:1147  <quiche::packet::ConnectionId as ...AsRef<[u8]>>::as_ref
 ```
 
 `reach` walks from the C entry point to the Rust function, and records the
 crossing as its own kind of step:
 
-```json
-[
-  { "kind": "call", "function": { "symbol": "main" },
-    "block_index": 3, "instruction_index": 1 },
-  { "kind": "call", "function": { "symbol": "log_source_ids" },
-    "block_index": 1, "instruction_index": 1 },
-  { "kind": "binding",
-    "symbol": "quiche_connection_id_iter_next",
-    "declared_in": [ "e98486…" ],
-    "candidates": [ { "function": { "module_id": "00a3d4…" } } ],
-    "status": "unique" }
-]
+```bash
+rllvm-query --catalog $CAT reach main $FN | jq -r '.results[]
+  | if .kind == "call" then "call     \(.function.symbol)"
+    else "binding  \(.symbol)  (\(.status))" end'
+```
+
+```txt
+call     main
+call     log_source_ids
+binding  quiche_connection_id_iter_next  (unique)
 ```
 
 Two ordinary calls inside C, then a `binding`: a C declaration that resolved to
@@ -250,21 +267,31 @@ that takes a pointer into `T`, and `drop_glue::<T>`. Both already appear in the
 output, so the scan is a loop.
 
 ```bash
-nm target/debug/libquiche.a \
-  | awk '$2=="T" && $3 ~ /^_quiche_/' | sort -u > surface.txt
+llvm-nm target/debug/libquiche.a 2>/dev/null \
+  | awk '$2=="T" && $3 ~ /^_quiche_/ { print substr($3, 2) }' \
+  | sort -u > surface.txt
 wc -l < surface.txt        # 169 entry points
 
 for fn in $(cat surface.txt); do
-  rllvm-query --catalog $CAT callees "$fn"
+  rllvm-query --catalog $CAT callees "$fn" | jq -r --arg fn "$fn" '
+    .symbols as $s
+    | [ .results[] | (.target.callee.symbol // "") as $y
+                   | ($s[$y] // $y) ] as $n
+    | select(($n | any(test("drop_glue")))
+         and ($n | any(test("::(as_ref|as_ptr|as_slice)$"))))
+    | $fn'
 done
-# keep any whose callees hold both drop_glue::<T>
-# and something that takes a pointer into T
 ```
 
-The leading underscore is Mach-O's prefix on C symbols; an ELF build wants
-`/^quiche_/` instead. That platform dependency, and the fact that this step
-reaches for `nm` at all, is a gap: the catalog already knows which functions a
-Rust module exported to C, so `rllvm-query` should be able to list them itself
+Three details bite here. It has to be LLVM's `llvm-nm`, because rustc ships
+`std` and `core` into the archive with embedded bitcode and a system `nm` built
+on an older LLVM rejects it with `Unknown attribute kind`. Its stderr carries
+harmless "no symbols" notes for empty members. And the `substr` drops Mach-O's
+leading underscore, which the queries do not want; an ELF build matches
+`/^quiche_/` and keeps the whole name.
+Both quirks, and the fact that this step reaches outside the tool at all, are a
+gap: the catalog already knows which functions a Rust module exported to C, so
+`rllvm-query` should be able to list them itself
 ([#243](https://github.com/h1994st/rllvm/issues/243)).
 
 169 entry points reduce to 7 candidates, and both functions the advisory names
@@ -314,11 +341,11 @@ For a caller that does exist, `callees` on it gives the order of operations, so
 you can see what happens after the crossing:
 
 ```txt
-blk 0 #7   line 14   quiche_conn_source_ids
-blk 1 #1   line 19   quiche_connection_id_iter_next   <- the crossing
-blk 4 #6   line 21   fprintf                          <- after it
-blk 6 #1   line 23   fprintf                          <- after it
-blk 7 #1   line 26   quiche_connection_id_iter_free
+blk 0 #7   line 15   quiche_conn_source_ids
+blk 1 #1   line 20   quiche_connection_id_iter_next   <- the crossing
+blk 4 #6   line 22   fprintf                          <- after it
+blk 6 #1   line 24   fprintf                          <- after it
+blk 7 #1   line 27   quiche_connection_id_iter_free
 ```
 
 Anything sequenced after the crossing is a candidate consumer of a pointer that
