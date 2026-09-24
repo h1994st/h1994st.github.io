@@ -167,8 +167,10 @@ What follows runs against quiche 0.29.1 with the FFI feature on, linked against
 that C program.
 
 ```bash
-git clone https://github.com/cloudflare/quiche && cd quiche
+git clone --recursive https://github.com/cloudflare/quiche && cd quiche
 git checkout 0.29.1
+git submodule update --init --recursive
+curl -fsSLO https://raw.githubusercontent.com/h1994st/rllvm/main/examples/external/quiche/cid_logger.c
 
 export RUSTC_WRAPPER=rllvm-rustc CC=rllvm-cc
 cargo build -p quiche --features ffi
@@ -184,7 +186,8 @@ The deployment target is macOS housekeeping: the build script compiles
 BoringSSL against the host SDK, and without it the link reports a few hundred
 "built for newer macOS version" warnings. Plain `clang` does the same.
 
-Every answer is JSON, so the readable form comes from `jq`:
+Answers print as text, with Rust symbols already demangled. Two variables keep
+the commands short:
 
 ```bash
 CAT=cat/catalog.json
@@ -194,59 +197,55 @@ FN=quiche_connection_id_iter_next
 The definition is Rust, and the caller is C, each reported at its own line:
 
 ```bash
-rllvm-query --catalog $CAT defs $FN \
-  | jq -r '.results[].location | "\(.file):\(.line)"'
-#   quiche/src/ffi.rs:1154
-
-rllvm-query --catalog $CAT callers $FN | jq -r '
-  .results[] as $r | $r.call_sites[] | .location as $l
-  | "\($r.function.symbol)  \($l.file|split("/")|last):\($l.line)"'
-#   log_source_ids  cid_logger.c:20
-```
-
-`callees` on the FFI function is the bug in three lines. Rust symbols are
-demangled into the envelope's `symbols` table, so the filter looks each one up
-there and drops the panic-handling edges:
-
-```bash
-rllvm-query --catalog $CAT callees $FN | jq -r '
-  .symbols as $s | .results[]
-  | select(.target.kind == "direct")
-  | ($s[.target.callee.symbol] // .target.callee.symbol) as $n
-  | select($n | test("panic") | not)
-  | .location as $l
-  | "\($l.file|split("/")|last):\($l.line)  \($n)"'
+rllvm-query --catalog $CAT defs $FN
+rllvm-query --catalog $CAT callers $FN
 ```
 
 ```txt
-ffi.rs:1157  <quiche::ffi::ConnectionIdIter as ...Iterator>::next
-ffi.rs:1158  <quiche::packet::ConnectionId as ...AsRef<[u8]>>::as_ref
-ffi.rs:1162  core::ptr::drop_glue::<quiche::packet::ConnectionId>
-ffi.rs:1162  core::ptr::drop_glue::<quiche::packet::ConnectionId>
+quiche/src/ffi.rs:1154  quiche_connection_id_iter_next
+log_source_ids
+    cid_logger.c:20  direct    quiche_connection_id_iter_next
+
+note: 503 indirect call site(s), 4 with an LLVM target bound
+```
+
+`callees` on the FFI function is the bug in three lines. `grep` drops the
+panic-handling edges that every Rust function carries:
+
+```bash
+rllvm-query --catalog $CAT callees $FN | grep -v panic
+```
+
+```txt
+quiche/src/ffi.rs:1157  direct    <quiche::ffi::ConnectionIdIter as core::iter::traits::iterator::Iterator>::next
+quiche/src/ffi.rs:1157  intrinsic llvm.memcpy.p0.p0.i64
+quiche/src/ffi.rs:1158  direct    <quiche::packet::ConnectionId as core::convert::AsRef<[u8]>>::as_ref
+quiche/src/ffi.rs:1162  direct    core::ptr::drop_glue::<quiche::packet::ConnectionId>
+quiche/src/ffi.rs:1162  direct    core::ptr::drop_glue::<quiche::packet::ConnectionId>
 ```
 
 Clone, take a pointer, free. Run the same query against 0.29.2 and the
 `drop_glue` lines are gone, because the fix stopped owning anything:
 
 ```txt
-ffi.rs:1146  <alloc::vec::Vec<...ConnectionId> as ...Deref>::deref
-ffi.rs:1146  <[quiche::packet::ConnectionId]>::get::<usize>
-ffi.rs:1147  <quiche::packet::ConnectionId as ...AsRef<[u8]>>::as_ref
+quiche/src/ffi.rs:1146  direct    <alloc::vec::Vec<quiche::packet::ConnectionId> as core::ops::deref::Deref>::deref
+quiche/src/ffi.rs:1146  direct    <[quiche::packet::ConnectionId]>::get::<usize>
+quiche/src/ffi.rs:1147  direct    <quiche::packet::ConnectionId as core::convert::AsRef<[u8]>>::as_ref
 ```
 
 `reach` walks from the C entry point to the Rust function, and records the
 crossing as its own kind of step:
 
 ```bash
-rllvm-query --catalog $CAT reach main $FN | jq -r '.results[]
-  | if .kind == "call" then "call     \(.function.symbol)"
-    else "binding  \(.symbol)  (\(.status))" end'
+rllvm-query --catalog $CAT reach main $FN
 ```
 
 ```txt
-call     main
-call     log_source_ids
-binding  quiche_connection_id_iter_next  (unique)
+call              main
+call              log_source_ids
+binding           quiche_connection_id_iter_next  (unique, 1 candidate(s))
+
+note: 503 indirect call site(s), 4 with an LLVM target bound
 ```
 
 Two ordinary calls inside C, then a `binding`: a C declaration that resolved to
@@ -273,13 +272,11 @@ llvm-nm target/debug/libquiche.a 2>/dev/null \
 wc -l < surface.txt        # 169 entry points
 
 for fn in $(cat surface.txt); do
-  rllvm-query --catalog $CAT callees "$fn" | jq -r --arg fn "$fn" '
-    .symbols as $s
-    | [ .results[] | (.target.callee.symbol // "") as $y
-                   | ($s[$y] // $y) ] as $n
-    | select(($n | any(test("drop_glue")))
-         and ($n | any(test("::(as_ref|as_ptr|as_slice)$"))))
-    | $fn'
+  out=$(rllvm-query --catalog $CAT callees "$fn")
+  if grep -q drop_glue <<<"$out" &&
+     grep -Eq '::(as_ref|as_ptr|as_slice)$' <<<"$out"; then
+    echo "$fn"
+  fi
 done
 ```
 
@@ -337,15 +334,16 @@ The second row is worth sitting with. `nm` confirms
 `callers` still returns zero. Present and reachable are different facts, and
 only one of them describes your risk.
 
-For a caller that does exist, `callees` on it gives the order of operations, so
-you can see what happens after the crossing:
+For a caller that does exist, `callees log_source_ids` lists its calls in
+program order, so you can see what happens after the crossing (the arrows are
+mine):
 
 ```txt
-blk 0 #7   line 15   quiche_conn_source_ids
-blk 1 #1   line 20   quiche_connection_id_iter_next   <- the crossing
-blk 4 #6   line 22   fprintf                          <- after it
-blk 6 #1   line 24   fprintf                          <- after it
-blk 7 #1   line 27   quiche_connection_id_iter_free
+cid_logger.c:15  direct    quiche_conn_source_ids
+cid_logger.c:20  direct    quiche_connection_id_iter_next   <- the crossing
+cid_logger.c:22  direct    fprintf                          <- after it
+cid_logger.c:24  direct    fprintf                          <- after it
+cid_logger.c:27  direct    quiche_connection_id_iter_free
 ```
 
 Anything sequenced after the crossing is a candidate consumer of a pointer that
