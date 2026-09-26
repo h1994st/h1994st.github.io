@@ -7,6 +7,8 @@ date = 2026-09-21T18:00:00-07:00
 tags = ["rllvm", "LLVM", "Rust", "Security", "Static Analysis"]
 [extra]
 styles = ["css/rllvm-ffi.css"]
+# Served by the rllvm project site (h1994st/rllvm), not this repo.
+card = "rllvm/assets/images/social-card.png"
 toc = true
 toc_sidebar = true
 +++
