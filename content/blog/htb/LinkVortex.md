@@ -141,9 +141,9 @@ git-dumper http://dev.linkvortex.htb/.git ./website
 
 In the downloaded source code, we can find a test email and password. Try to login to the main site using them, but unfortunatelly failed. Chaning the email to `admin@linkvortex.htb` makes it work.
 
-{% alert(note=true) %}
+{% <alert note={true}> %}
 Always try the default username/email, or combining with the website domain.
-{% end %}
+{% </alert> %}
 
 ## CVE-2023-40028
 

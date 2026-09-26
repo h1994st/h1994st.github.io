@@ -80,6 +80,7 @@ Exploit `CVE-2025-24893`
 - <https://www.exploit-db.com/exploits/52136>
 - <https://www.offsec.com/blog/cve-2025-24893/>
 
+{% raw %}
 ```python
 import base64
 import re
@@ -155,6 +156,7 @@ async def exploit_xwiki():
 
 await exploit_xwiki()
 ```
+{% endraw %}
 
 Output:
 

@@ -4,7 +4,7 @@ title = "Home"
 description = "Shengtuo Hu (nu1lptr), security researcher at Palo Alto Networks and Michigan CSE Ph.D. Writing on program analysis, LLVM, fuzzing, and network security."
 +++
 
-{% crt() %}
+{% <crt> %}
 
 ```
 ░  ░░░░  ░░        ░░  ░░░░░░░░░      ░░░░      ░░░  ░░░░  ░░        ░
@@ -23,7 +23,7 @@ description = "Shengtuo Hu (nu1lptr), security researcher at Palo Alto Networks 
    <`-....__.'      /,__________/  `-.___/,_____________----------_)
 ```
 
-{% end %}
+{% </crt> %}
 
 # Shengtuo Hu
 

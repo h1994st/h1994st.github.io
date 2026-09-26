@@ -10,14 +10,14 @@
 {%- endif %}
 
 {%- if current_path and current_path == base_path -%}
-	{{- config.extra.home_title | default(value=config.title) -}}
+	{{- config.extra?.home_title | default(value=config.title) -}}
 {% elif title -%}
 	{{- title -}}
-{% elif section.title -%}
+{% elif section?.title -%}
 	{{- section.title -}}
-{% elif page.title -%}
+{% elif page?.title -%}
 	{{- page.title -}}
-{% elif term.name -%}
+{% elif term?.name -%}
 	{{- term.name -}}
 {% else -%}
 	{{- config.title -}}

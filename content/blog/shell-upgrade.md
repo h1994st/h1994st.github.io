@@ -45,4 +45,4 @@ reset
 
 ## References
 
-{{ youtube(id="DqE6DxqJg8Q") }}
+{{<youtube id="DqE6DxqJg8Q" />}}

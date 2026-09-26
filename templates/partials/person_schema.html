@@ -14,23 +14,23 @@
 
 {%- set person = config.extra.person -%}
 {#- Normalise to exactly one trailing slash so @id/url match rel=canonical. -#}
-{%- set site_root = get_url(path="/") | trim_end_matches(pat="/") -%}
+{%- set site_root = get_url(path="/") | trim_end(pat="/") -%}
 {%- set site_url = site_root ~ "/" -%}
 <script type="application/ld+json">
 {
 	"@context": "https://schema.org",
 	"@type": "ProfilePage",
-	"@id": {{ site_url ~ "#profilepage" | json_encode | safe }},
+	"@id": {{ (site_url ~ "#profilepage") | json_encode | safe }},
 	"url": {{ site_url | json_encode | safe }},
 	"mainEntity": {
 		"@type": "Person",
-		"@id": {{ site_url ~ "#person" | json_encode | safe }},
+		"@id": {{ (site_url ~ "#person") | json_encode | safe }},
 		"url": {{ site_url | json_encode | safe }},
 		"name": {{ person.name | json_encode | safe }}
 		{%- if person.alternate_name %},
 		"alternateName": {{ person.alternate_name | json_encode | safe }}
 		{%- endif %}
-		{%- set home_description = section.description | default(value=config.description) %}
+		{%- set home_description = section?.description | default(value=config.description) %}
 		{%- if home_description %},
 		"description": {{ home_description | json_encode | safe }}
 		{%- endif %}

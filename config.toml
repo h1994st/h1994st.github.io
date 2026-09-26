@@ -23,11 +23,13 @@ index_format = "elasticlunr_json"
 
 [markdown]
 github_alerts = true
-highlight_code = true
-highlight_theme = "agola-dark"
 insert_anchor_links = "left"
 
 external_links_target_blank = true
+
+[markdown.highlighting]
+style = "class"
+theme = "material-theme"
 
 [extra]
 accent_color = "#918072"
@@ -37,8 +39,6 @@ show_backlinks = true
 show_copy_button = true
 show_reading_time = true
 show_share_button = true
-
-styles = ["css/extra-syntax-styles.css"]
 
 # ga4-events.js holds the gtag bootstrap (dataLayer, gtag(), 'js', 'config')
 # and the click-event wiring. The gtag library itself is loaded straight from
