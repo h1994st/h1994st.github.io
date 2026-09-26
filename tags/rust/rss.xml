@@ -1,0 +1,831 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>nu1lptr - Rust</title>
+      <link>https://shengtuo.me</link>
+      <description>Learner // Cybersecurity Ph.D.@UMich CSE // Photographer</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://shengtuo.me/tags/rust/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Mon, 21 Sep 2026 18:00:00 -0700</lastBuildDate>
+      <item>
+          <title>rllvm: From Capture to Query</title>
+          <pubDate>Mon, 21 Sep 2026 18:00:00 -0700</pubDate>
+          <author>Shengtuo Hu</author>
+          <link>https://shengtuo.me/blog/from-capture-to-query/</link>
+          <guid>https://shengtuo.me/blog/from-capture-to-query/</guid>
+          <description xml:base="https://shengtuo.me/blog/from-capture-to-query/">&lt;p&gt;&lt;img src=&quot;https://shengtuo.me/rllvm/assets/images/banner.png&quot; alt=&quot;rllvm: extract, catalog, and query LLVM bitcode from real software&quot; /&gt;&lt;/p&gt;
+&lt;h2 id=&quot;tl-dr&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#tl-dr&quot; aria-label=&quot;Anchor link for: tl-dr&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+TL;DR&lt;/h2&gt;
+&lt;p&gt;The first two posts in this series were about producing artifacts: extracting
+&lt;a href=&quot;https://shengtuo.me/blog/whole-program-bitcode/&quot;&gt;whole-program bitcode&lt;/a&gt;, then keeping the
+modules and their provenance in a
+&lt;a href=&quot;https://shengtuo.me/blog/beyond-single-bitcode-file/&quot;&gt;catalog&lt;/a&gt; instead of merging them away.
+&lt;code&gt;rllvm-query&lt;/code&gt; adds the step those were building toward. It reads a catalog and
+answers questions in source terms: who defines this, who calls it, what does it
+call, what path reaches it.&lt;/p&gt;
+&lt;p&gt;This post puts that step to work on a program written in two languages. The
+example is CVE-2026-11941, a use-after-free in Cloudflare&#39;s quiche that is made
+entirely of safe Rust and still hands C a pointer to freed memory. The queries
+locate it, scan the rest of the library for the same shape, and then run out of
+road in a place worth being precise about.&lt;/p&gt;
+&lt;h2 id=&quot;a-blind-spot-in-mixed-language-programs&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#a-blind-spot-in-mixed-language-programs&quot; aria-label=&quot;Anchor link for: a-blind-spot-in-mixed-language-programs&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+A blind spot in mixed-language programs&lt;/h2&gt;
+&lt;p&gt;Programs written in a single language are becoming the exception. A Rust crate
+pulls in a &lt;code&gt;-sys&lt;/code&gt; dependency and half of its real work happens in C. A C
+codebase adopts Rust one module at a time.&lt;/p&gt;
+&lt;p&gt;The boundary between the two is the riskiest part of such a program. Ownership
+stops being tracked there, error conventions stop matching, and who frees what
+has to be written in a comment because no type carries it across. It is also the
+one place that ordinary tooling does not look, for an understandable reason:
+every ecosystem&#39;s index is scoped to its own build. &lt;code&gt;rust-analyzer&lt;/code&gt; stops at the
+&lt;code&gt;extern &quot;C&quot;&lt;/code&gt; declaration, because Cargo compiled nothing past it. &lt;code&gt;clangd&lt;/code&gt; never
+heard of the Rust caller. &lt;code&gt;cargo audit&lt;/code&gt; reasons over the dependency graph, which
+suits crates and says nothing about the BoringSSL that a build script compiled
+along the way. &lt;code&gt;unsafe&lt;/code&gt; marks where Rust stops trusting itself, and stays silent
+about the other side.&lt;/p&gt;
+&lt;p&gt;So the questions that matter most at the boundary are the ones nobody can ask.&lt;/p&gt;
+&lt;h2 id=&quot;getting-both-languages-into-one-module&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#getting-both-languages-into-one-module&quot; aria-label=&quot;Anchor link for: getting-both-languages-into-one-module&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Getting both languages into one module&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;rustc&lt;/code&gt; and &lt;code&gt;clang&lt;/code&gt; are both LLVM front ends. Once a call across the boundary
+becomes an LLVM &lt;code&gt;call&lt;/code&gt; instruction, the language has been erased: there is a
+caller, a callee, and a source location for each. The boundary belongs to how we
+build software rather than to the compiled program, so the whole job reduces to
+capturing both halves at once. That used to take one environment variable. Now
+it takes two.&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-7&quot;&gt;export&lt;/span&gt;&lt;span&gt; CC&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;=&lt;/span&gt;&lt;span&gt;rllvm-cc CXX&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;=&lt;/span&gt;&lt;span&gt;rllvm-cxx RUSTC_WRAPPER&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;=&lt;/span&gt;&lt;span&gt;rllvm-rustc&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The &lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/h1994st/rllvm/tree/main/examples/ffi&quot;&gt;&lt;code&gt;examples/ffi&lt;/code&gt;&lt;/a&gt;
+directory holds the smallest version of this I could write: two programs whose
+call graphs cross the boundary, one led from each language, because the gap in
+the tooling runs both ways.&lt;/p&gt;
+&lt;figure class=&quot;ffi-fig ffi-crossings&quot; aria-label=&quot;Two small programs whose call graphs cross the FFI boundary, one led from Rust and one led from C&quot;&gt;
+&lt;div class=&quot;ffi-group&quot;&gt;
+&lt;span class=&quot;ffi-kicker&quot;&gt;Rust-led&lt;/span&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;span class=&quot;ffi-lang is-rust&quot;&gt;Rust&lt;/span&gt;&lt;span class=&quot;ffi-fn&quot;&gt;main::main&lt;/span&gt;&lt;span class=&quot;ffi-arrow&quot;&gt;&amp;#9656;&lt;/span&gt;&lt;span class=&quot;ffi-lang is-c&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;ffi-fn&quot;&gt;c_double&lt;/span&gt;&lt;span class=&quot;ffi-arrow&quot;&gt;&amp;#9656;&lt;/span&gt;&lt;span class=&quot;ffi-lang is-rust&quot;&gt;Rust&lt;/span&gt;&lt;span class=&quot;ffi-fn&quot;&gt;rust_add&lt;/span&gt;&lt;span class=&quot;ffi-where&quot;&gt;main.rs:12&lt;/span&gt;&lt;/li&gt;
+&lt;li&gt;&lt;span class=&quot;ffi-lang is-rust&quot;&gt;Rust&lt;/span&gt;&lt;span class=&quot;ffi-fn&quot;&gt;main::main&lt;/span&gt;&lt;span class=&quot;ffi-arrow&quot;&gt;&amp;#9656;&lt;/span&gt;&lt;span class=&quot;ffi-lang is-cxx&quot;&gt;C++&lt;/span&gt;&lt;span class=&quot;ffi-fn&quot;&gt;cxx_triple&lt;/span&gt;&lt;span class=&quot;ffi-where&quot;&gt;main.rs:13&lt;/span&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;
+&lt;div class=&quot;ffi-group&quot;&gt;
+&lt;span class=&quot;ffi-kicker&quot;&gt;C-led&lt;/span&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;span class=&quot;ffi-lang is-c&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;ffi-fn&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;ffi-arrow&quot;&gt;&amp;#9656;&lt;/span&gt;&lt;span class=&quot;ffi-lang is-rust&quot;&gt;Rust&lt;/span&gt;&lt;span class=&quot;ffi-fn&quot;&gt;rust_scale&lt;/span&gt;&lt;span class=&quot;ffi-arrow&quot;&gt;&amp;#9656;&lt;/span&gt;&lt;span class=&quot;ffi-lang is-c&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;ffi-fn&quot;&gt;c_offset&lt;/span&gt;&lt;span class=&quot;ffi-where&quot;&gt;c_main.c:8&lt;/span&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;
+&lt;figcaption&gt;One module holds all three languages, and each crossing is reported at the line that makes the call. Direction matters more than it looks: a Rust staticlib drags in a prebuilt &lt;b&gt;std&lt;/b&gt; that never went through the wrapper, so whichever language leads decides how much of the program you can see.&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;a-real-bug-where-the-languages-meet&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#a-real-bug-where-the-languages-meet&quot; aria-label=&quot;Anchor link for: a-real-bug-where-the-languages-meet&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+A real bug where the languages meet&lt;/h2&gt;
+&lt;p&gt;quiche is Cloudflare&#39;s QUIC and HTTP/3 library: a Cargo workspace that also
+builds BoringSSL through a build script and exposes a C API behind a feature
+flag. In June it published
+&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/cloudflare/quiche/security/advisories/GHSA-mh64-ph39-mrc9&quot;&gt;GHSA-mh64-ph39-mrc9&lt;/a&gt;,
+CVE-2026-11941, a use-after-free in two of its FFI functions, fixed in 0.29.2.&lt;/p&gt;
+&lt;p&gt;The entire defect, from &lt;code&gt;quiche/src/ffi.rs&lt;/code&gt; at 0.29.1:&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;rust&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-10&quot;&gt;impl&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;lt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt; Iterator&lt;/span&gt;&lt;span class=&quot;z-3 z-i&quot;&gt; for&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt; ConnectionIdIter&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;lt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;gt; {&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-7&quot;&gt;    type&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt; Item&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; =&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt; ConnectionId&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;lt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;gt;;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-10&quot;&gt;    fn&lt;/span&gt;&lt;span class=&quot;z-2&quot;&gt; next&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;(&amp;amp;&lt;/span&gt;&lt;span class=&quot;z-7&quot;&gt;mut&lt;/span&gt;&lt;span&gt; self&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;) -&amp;gt;&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt; Option&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span&gt;Self&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt;Item&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;gt; {&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-7&quot;&gt;        let&lt;/span&gt;&lt;span&gt; v&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; =&lt;/span&gt;&lt;span&gt; self&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;.&lt;/span&gt;&lt;span&gt;cids&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;z-2&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;(&lt;/span&gt;&lt;span&gt;self&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;.&lt;/span&gt;&lt;span&gt;index&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;)?;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;        self&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;.&lt;/span&gt;&lt;span&gt;index &lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;+=&lt;/span&gt;&lt;span class=&quot;z-10&quot;&gt; 1&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;        Some&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;(&lt;/span&gt;&lt;span&gt;v&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;z-2&quot;&gt;clone&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;())&lt;/span&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;            // an owned ConnectionId&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3&quot;&gt;    }&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3&quot;&gt;}&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3&quot;&gt;#[&lt;/span&gt;&lt;span&gt;no_mangle&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;]&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-10&quot;&gt;pub&lt;/span&gt;&lt;span class=&quot;z-7&quot;&gt; extern&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; &amp;quot;&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;z-10&quot;&gt; fn&lt;/span&gt;&lt;span class=&quot;z-2&quot;&gt; quiche_connection_id_iter_next&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;(&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;    iter&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;: &amp;amp;&lt;/span&gt;&lt;span class=&quot;z-7&quot;&gt;mut&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt; ConnectionIdIter&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;,&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;    out&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;: &amp;amp;&lt;/span&gt;&lt;span class=&quot;z-7&quot;&gt;mut&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; *&lt;/span&gt;&lt;span class=&quot;z-7&quot;&gt;const&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt; u8&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;,&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;    out_len&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;: &amp;amp;&lt;/span&gt;&lt;span class=&quot;z-7&quot;&gt;mut&lt;/span&gt;&lt;span&gt; size_t&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;,&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3&quot;&gt;) -&amp;gt;&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt; bool&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; {&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3 z-i&quot;&gt;    if&lt;/span&gt;&lt;span class=&quot;z-7&quot;&gt; let&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt; Some&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;(&lt;/span&gt;&lt;span&gt;conn_id&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;) =&lt;/span&gt;&lt;span&gt; iter&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;z-2&quot;&gt;next&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;() {&lt;/span&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;   // owned; dropped below&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-7&quot;&gt;        let&lt;/span&gt;&lt;span&gt; id&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; =&lt;/span&gt;&lt;span&gt; conn_id&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;z-2&quot;&gt;as_ref&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;();&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3&quot;&gt;        *&lt;/span&gt;&lt;span&gt;out&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; =&lt;/span&gt;&lt;span&gt; id&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;z-2&quot;&gt;as_ptr&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;();&lt;/span&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;                // escapes to C&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3&quot;&gt;        *&lt;/span&gt;&lt;span&gt;out_len&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; =&lt;/span&gt;&lt;span&gt; id&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;z-2&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;();&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3 z-i&quot;&gt;        return&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; true;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3&quot;&gt;    }&lt;/span&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;                                      // conn_id freed here&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3&quot;&gt;    false&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3&quot;&gt;}&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;There is no &lt;code&gt;unsafe&lt;/code&gt; block. The borrow checker is satisfied and it is right to
+be: &lt;code&gt;conn_id&lt;/code&gt; is an owned value, dropped correctly at the end of its scope.
+Every guarantee Rust makes holds.&lt;/p&gt;
+&lt;p&gt;What goes wrong is that a raw pointer into that value crossed an &lt;code&gt;extern &quot;C&quot;&lt;/code&gt;
+signature on the way out, and C reads it after the drop. Rust&#39;s ownership model
+ends at the signature, and both halves of this program are correct on their own.&lt;/p&gt;
+&lt;p&gt;The C half is an ordinary loop. quiche&#39;s own C examples never touch this
+iterator, so the caller below
+(&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/h1994st/rllvm/blob/main/examples/external/quiche/cid_logger.c&quot;&gt;&lt;code&gt;cid_logger.c&lt;/code&gt;&lt;/a&gt;)
+ships with the rllvm example instead:&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;c&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-7&quot;&gt;static void&lt;/span&gt;&lt;span class=&quot;z-2&quot;&gt; log_source_ids&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;(&lt;/span&gt;&lt;span&gt;quiche_conn &lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;*&lt;/span&gt;&lt;span class=&quot; z-i&quot;&gt;conn&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;) {&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-9&quot;&gt;    quiche_connection_id_iter &lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;z-9&quot;&gt;iter &lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;z-2&quot;&gt; quiche_conn_source_ids&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;z-9&quot;&gt;conn&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;);&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-7&quot;&gt;    const uint8_t&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; *&lt;/span&gt;&lt;span class=&quot;z-9&quot;&gt;cid &lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;= NULL;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-7&quot;&gt;    size_t&lt;/span&gt;&lt;span class=&quot;z-9&quot;&gt; cid_len &lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;z-10&quot;&gt; 0&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3 z-i&quot;&gt;    while&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; (&lt;/span&gt;&lt;span class=&quot;z-2&quot;&gt;quiche_connection_id_iter_next&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;z-9&quot;&gt;iter&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;, &amp;amp;&lt;/span&gt;&lt;span class=&quot;z-9&quot;&gt;cid&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;, &amp;amp;&lt;/span&gt;&lt;span class=&quot;z-9&quot;&gt;cid_len&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;)) {&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3 z-i&quot;&gt;        for&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; (&lt;/span&gt;&lt;span class=&quot;z-7&quot;&gt;size_t&lt;/span&gt;&lt;span class=&quot;z-9&quot;&gt; i &lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;z-10&quot;&gt; 0&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;z-9&quot;&gt; i &lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;z-9&quot;&gt; cid_len&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;z-9&quot;&gt; i&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;++) {&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-2&quot;&gt;            fprintf&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;z-9&quot;&gt;stderr&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;, &amp;quot;&lt;/span&gt;&lt;span class=&quot;z-9&quot;&gt;%02x&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;quot;,&lt;/span&gt;&lt;span&gt; cid&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;z-9&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;]);&lt;/span&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;   // reads freed memory&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3&quot;&gt;        }&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-2&quot;&gt;        fprintf&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;z-9&quot;&gt;stderr&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;, &amp;quot;&lt;/span&gt;&lt;span&gt;\n&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;quot;);&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3&quot;&gt;    }&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-2&quot;&gt;    quiche_connection_id_iter_free&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;z-9&quot;&gt;iter&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;);&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3&quot;&gt;}&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;figure class=&quot;ffi-fig&quot; aria-label=&quot;A timeline showing the ConnectionId being cloned, its pointer escaping to C, the value being dropped, and C reading the freed memory&quot;&gt;
+&lt;div class=&quot;ffi-life&quot;&gt;
+&lt;div class=&quot;ffi-step is-alive&quot;&gt;&lt;span class=&quot;ffi-side&quot;&gt;Rust&lt;/span&gt;&lt;span class=&quot;ffi-what&quot;&gt;clone a &lt;b&gt;ConnectionId&lt;/b&gt; out of the iterator&lt;span class=&quot;ffi-at&quot;&gt;ffi.rs:1157&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;ffi-bar&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+&lt;div class=&quot;ffi-step is-alive&quot;&gt;&lt;span class=&quot;ffi-side&quot;&gt;Rust&lt;/span&gt;&lt;span class=&quot;ffi-what&quot;&gt;*out = id.as_ptr(), the pointer escapes&lt;span class=&quot;ffi-at&quot;&gt;ffi.rs:1158&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;ffi-bar&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+&lt;div class=&quot;ffi-step is-dead&quot;&gt;&lt;span class=&quot;ffi-side&quot;&gt;Rust&lt;/span&gt;&lt;span class=&quot;ffi-what&quot;&gt;drop_glue::&amp;lt;ConnectionId&amp;gt;, the buffer is freed&lt;span class=&quot;ffi-at&quot;&gt;ffi.rs:1162&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;ffi-bar&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+&lt;div class=&quot;ffi-return&quot;&gt;return to C, and out still holds the pointer&lt;/div&gt;
+&lt;div class=&quot;ffi-step is-dead is-fault&quot;&gt;&lt;span class=&quot;ffi-side&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;ffi-what&quot;&gt;fprintf(&quot;%02x&quot;, cid[i])&lt;span class=&quot;ffi-at&quot;&gt;cid_logger.c:22&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;ffi-bar&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;figcaption&gt;The solid bar is the value&#39;s lifetime; the dashed continuation is the pointer outliving it. Only the join between the two halves is wrong, and the join is what neither language&#39;s tooling reads.&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;asking-rllvm-query-about-it&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#asking-rllvm-query-about-it&quot; aria-label=&quot;Anchor link for: asking-rllvm-query-about-it&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Asking rllvm-query about it&lt;/h2&gt;
+&lt;p&gt;What follows runs against quiche 0.29.1 with the FFI feature on, linked against
+that C program.&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;git&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; clone --recursive https://github.com/cloudflare/quiche&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; &amp;amp;&amp;amp;&lt;/span&gt;&lt;span class=&quot;z-2&quot;&gt; cd&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; quiche&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;git&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; checkout&lt;/span&gt;&lt;span class=&quot;z-10&quot;&gt; 0.29.1&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;git&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; submodule update --init --recursive&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;curl&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; -fsSLO https://raw.githubusercontent.com/h1994st/rllvm/main/examples/external/quiche/cid_logger.c&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-7&quot;&gt;export&lt;/span&gt;&lt;span&gt; RUSTC_WRAPPER&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;=&lt;/span&gt;&lt;span&gt;rllvm-rustc CC&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;=&lt;/span&gt;&lt;span&gt;rllvm-cc&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;cargo&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; build -p quiche --features ffi&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;MACOSX_DEPLOYMENT_TARGET&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;=$(&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt;sw_vers&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; -productVersion&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt; \&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-6&quot;&gt;  rllvm-cc -g -Iquiche/include cid_logger.c&lt;/span&gt;&lt;span&gt; \&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-6&quot;&gt;           target/debug/libquiche.a -o cid_logger&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;rllvm-get-bc&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; cid_logger --output-dir cat&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The deployment target is macOS housekeeping: the build script compiles
+BoringSSL against the host SDK, and without it the link reports a few hundred
+&quot;built for newer macOS version&quot; warnings. Plain &lt;code&gt;clang&lt;/code&gt; does the same.&lt;/p&gt;
+&lt;p&gt;Answers print as text, with Rust symbols already demangled. Two variables keep
+the commands short:&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;CAT&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt;cat/catalog.json&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;FN&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt;quiche_connection_id_iter_next&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The definition is Rust, and the caller is C, each reported at its own line:&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;rllvm-query&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; --catalog&lt;/span&gt;&lt;span&gt; $CAT&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; defs&lt;/span&gt;&lt;span&gt; $FN&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;rllvm-query&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; --catalog&lt;/span&gt;&lt;span&gt; $CAT&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; callers&lt;/span&gt;&lt;span&gt; $FN&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;plain&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;quiche/src/ffi.rs:1154  quiche_connection_id_iter_next&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;log_source_ids&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;    cid_logger.c:20  direct    quiche_connection_id_iter_next&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;note: 503 indirect call site(s), 4 with an LLVM target bound&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;callees&lt;/code&gt; on the FFI function is the bug in three lines. &lt;code&gt;grep&lt;/code&gt; drops the
+panic-handling edges that every Rust function carries:&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;rllvm-query&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; --catalog&lt;/span&gt;&lt;span&gt; $CAT&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; callees&lt;/span&gt;&lt;span&gt; $FN&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; |&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt; grep&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; -v panic&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;plain&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;quiche/src/ffi.rs:1157  direct    &amp;lt;quiche::ffi::ConnectionIdIter as core::iter::traits::iterator::Iterator&amp;gt;::next&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;quiche/src/ffi.rs:1157  intrinsic llvm.memcpy.p0.p0.i64&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;quiche/src/ffi.rs:1158  direct    &amp;lt;quiche::packet::ConnectionId as core::convert::AsRef&amp;lt;[u8]&amp;gt;&amp;gt;::as_ref&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;quiche/src/ffi.rs:1162  direct    core::ptr::drop_glue::&amp;lt;quiche::packet::ConnectionId&amp;gt;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;quiche/src/ffi.rs:1162  direct    core::ptr::drop_glue::&amp;lt;quiche::packet::ConnectionId&amp;gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Clone, take a pointer, free. Run the same query against 0.29.2 and the
+&lt;code&gt;drop_glue&lt;/code&gt; lines are gone, because the fix stopped owning anything:&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;plain&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;quiche/src/ffi.rs:1146  direct    &amp;lt;alloc::vec::Vec&amp;lt;quiche::packet::ConnectionId&amp;gt; as core::ops::deref::Deref&amp;gt;::deref&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;quiche/src/ffi.rs:1146  direct    &amp;lt;[quiche::packet::ConnectionId]&amp;gt;::get::&amp;lt;usize&amp;gt;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;quiche/src/ffi.rs:1147  direct    &amp;lt;quiche::packet::ConnectionId as core::convert::AsRef&amp;lt;[u8]&amp;gt;&amp;gt;::as_ref&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;reach&lt;/code&gt; walks from the C entry point to the Rust function, and records the
+crossing as its own kind of step:&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;rllvm-query&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; --catalog&lt;/span&gt;&lt;span&gt; $CAT&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; reach main&lt;/span&gt;&lt;span&gt; $FN&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;plain&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;call              main&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;call              log_source_ids&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;binding           quiche_connection_id_iter_next  (unique, 1 candidate(s))&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;note: 503 indirect call site(s), 4 with an LLVM target bound&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Two ordinary calls inside C, then a &lt;code&gt;binding&lt;/code&gt;: a C declaration that resolved to
+one candidate definition in a Rust module. The answer distinguishes a call it
+observed from a link it resolved, and says which one carries the path.&lt;/p&gt;
+&lt;h2 id=&quot;scanning-the-whole-ffi-surface&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#scanning-the-whole-ffi-surface&quot; aria-label=&quot;Anchor link for: scanning-the-whole-ffi-surface&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Scanning the whole FFI surface&lt;/h2&gt;
+&lt;p&gt;Everything above starts from knowing the answer. The more useful question is
+whether the bug has a shape you can search for, stated without reference to the
+CVE:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;An &lt;code&gt;extern &quot;C&quot;&lt;/code&gt; entry point hands C a raw pointer into a value, and then drops
+that value before returning.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;In call-graph terms that is two conditions on one function&#39;s callees: something
+that takes a pointer into &lt;code&gt;T&lt;/code&gt;, and &lt;code&gt;drop_glue::&amp;lt;T&amp;gt;&lt;/code&gt;. Both already appear in the
+output, so the scan is a loop over the FFI surface, which &lt;code&gt;ffi-exports&lt;/code&gt; lists
+from the catalog:&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;rllvm-query&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; --catalog&lt;/span&gt;&lt;span&gt; $CAT&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; ffi-exports&lt;/span&gt;&lt;span&gt; \&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3&quot;&gt;  |&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt; awk&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; &amp;#39;&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt;NF &amp;amp;&amp;amp; $1 != &amp;quot;note:&amp;quot; { print $NF }&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;#39; &amp;gt;&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; surface.txt&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;wc&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; -l&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; &amp;lt;&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; surface.txt&lt;/span&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;        # 169 entry points&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3 z-i&quot;&gt;for&lt;/span&gt;&lt;span&gt; fn&lt;/span&gt;&lt;span class=&quot;z-3 z-i&quot;&gt; in&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; $(&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt;cat&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; surface.txt&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;);&lt;/span&gt;&lt;span class=&quot;z-3 z-i&quot;&gt; do&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;  out&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;=$(&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt;rllvm-query&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; --catalog&lt;/span&gt;&lt;span&gt; $CAT&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; callees&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; &amp;quot;&lt;/span&gt;&lt;span&gt;$fn&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;quot;)&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3 z-i&quot;&gt;  if&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt; grep&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; -q drop_glue&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; &amp;lt;&amp;lt;&amp;lt;&amp;quot;&lt;/span&gt;&lt;span&gt;$out&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;quot; &amp;amp;&amp;amp;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;     grep&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; -Eq&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; &amp;#39;&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt;::(as_ref|as_ptr|as_slice)$&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;#39; &amp;lt;&amp;lt;&amp;lt;&amp;quot;&lt;/span&gt;&lt;span&gt;$out&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;quot;;&lt;/span&gt;&lt;span class=&quot;z-3 z-i&quot;&gt; then&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-2&quot;&gt;    echo&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; &amp;quot;&lt;/span&gt;&lt;span&gt;$fn&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;&amp;quot;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3 z-i&quot;&gt;  fi&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-3 z-i&quot;&gt;done&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;ffi-exports&lt;/code&gt; lists the definitions that Rust modules export under an unmangled
+name, which is what &lt;code&gt;#[no_mangle]&lt;/code&gt; produces. It tells a Rust module from a C
+one by its debug info, or by the compiler that &lt;code&gt;llvm.ident&lt;/code&gt; names, and it says
+how many functions it could not attribute instead of guessing. The first
+version of this scan went through &lt;code&gt;llvm-nm&lt;/code&gt;, a &lt;code&gt;quiche_&lt;/code&gt; prefix and Mach-O&#39;s
+leading underscore, which was exactly the kind of step that belongs in the tool
+(&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/h1994st/rllvm/issues/243&quot;&gt;#243&lt;/a&gt;).&lt;/p&gt;
+&lt;p&gt;169 entry points reduce to 7 candidates, and both functions the advisory names
+are among them:&lt;/p&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Candidate&lt;/th&gt;&lt;th&gt;Reading it&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;&lt;code&gt;quiche_connection_id_iter_next&lt;/code&gt;&lt;/td&gt;&lt;td&gt;&lt;strong&gt;CVE-2026-11941&lt;/strong&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;code&gt;quiche_conn_retired_scid_next&lt;/code&gt;&lt;/td&gt;&lt;td&gt;&lt;strong&gt;CVE-2026-11941&lt;/strong&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;code&gt;quiche_conn_source_id&lt;/code&gt;&lt;/td&gt;&lt;td&gt;safe: the dropped &lt;code&gt;ConnectionId&lt;/code&gt; is the borrowed variant&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;code&gt;quiche_conn_destination_id&lt;/code&gt;&lt;/td&gt;&lt;td&gt;safe: the same&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;code&gt;quiche_accept&lt;/code&gt;&lt;/td&gt;&lt;td&gt;filter noise: the match was &lt;code&gt;Option::as_ref&lt;/code&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;code&gt;quiche_conn_new_with_tls&lt;/code&gt;&lt;/td&gt;&lt;td&gt;filter noise: the same&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;code&gt;quiche_h3_take_last_priority_update&lt;/code&gt;&lt;/td&gt;&lt;td&gt;safe &lt;em&gt;if&lt;/em&gt; the C callback behaves&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+&lt;p&gt;One caveat on how much this proves. I wrote the filter after reading the
+advisory. The shape is general, since handing C a pointer into something you
+then drop is a whole class of FFI bug. This run still does not establish that I
+would have picked it blind. What it does establish is that the class fits in two
+predicates over ordinary output, that it ranks both real defects into seven of a
+hundred and sixty-nine, and that the signal disappears when the bug is fixed.&lt;/p&gt;
+&lt;h2 id=&quot;does-it-affect-my-build&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#does-it-affect-my-build&quot; aria-label=&quot;Anchor link for: does-it-affect-my-build&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Does it affect my build?&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;cargo audit&lt;/code&gt; gives one answer for any quiche below 0.29.2: vulnerable. The
+advisory is more careful, and names the thing that actually decides it.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Only applications using those FFI functions are affected. The FFI API is
+disabled by default by a build-time feature flag.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;That is a whole-program question, with four different true answers depending on
+how the program was built.&lt;/p&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Build&lt;/th&gt;&lt;th&gt;Definition present&lt;/th&gt;&lt;th&gt;Callers&lt;/th&gt;&lt;th&gt;What is true&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;default features&lt;/td&gt;&lt;td&gt;no&lt;/td&gt;&lt;td&gt;n/a&lt;/td&gt;&lt;td&gt;the code was never compiled&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;code&gt;--features ffi&lt;/code&gt;, quiche&#39;s own &lt;code&gt;client.c&lt;/code&gt;&lt;/td&gt;&lt;td&gt;yes&lt;/td&gt;&lt;td&gt;0&lt;/td&gt;&lt;td&gt;linked in, never called&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;code&gt;--features ffi&lt;/code&gt;, a C app that iterates CIDs&lt;/td&gt;&lt;td&gt;yes&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;reachable&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;0.29.2, same C app&lt;/td&gt;&lt;td&gt;yes&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;fixed&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+&lt;p&gt;The second row is worth sitting with. &lt;code&gt;nm&lt;/code&gt; confirms
+&lt;code&gt;_quiche_connection_id_iter_next&lt;/code&gt; is in that binary as a defined symbol, and
+&lt;code&gt;callers&lt;/code&gt; still returns zero. Present and reachable are different facts, and
+only one of them describes your risk.&lt;/p&gt;
+&lt;p&gt;For a caller that does exist, &lt;code&gt;callees log_source_ids&lt;/code&gt; lists its calls in
+program order, so you can see what happens after the crossing (the arrows are
+mine):&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;plain&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;cid_logger.c:15  direct    quiche_conn_source_ids&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;cid_logger.c:20  direct    quiche_connection_id_iter_next   &amp;lt;- the crossing&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;cid_logger.c:22  direct    fprintf                          &amp;lt;- after it&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;cid_logger.c:24  direct    fprintf                          &amp;lt;- after it&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;cid_logger.c:27  direct    quiche_connection_id_iter_free&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Anything sequenced after the crossing is a candidate consumer of a pointer that
+Rust has already freed. The two &lt;code&gt;fprintf&lt;/code&gt; calls are a three-line reading window.&lt;/p&gt;
+&lt;figure class=&quot;ffi-fig ffi-funnel&quot; aria-label=&quot;Each step narrows the search: 169 FFI entry points, 7 candidates, 1 caller, 3 lines of C to read&quot;&gt;
+&lt;div class=&quot;ffi-rung&quot;&gt;&lt;span class=&quot;ffi-count&quot;&gt;169&lt;/span&gt;&lt;span class=&quot;ffi-track&quot;&gt;&lt;span class=&quot;ffi-fill&quot; style=&quot;--w:100%&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;ffi-label&quot;&gt;&lt;b&gt;FFI entry points&lt;/b&gt;, listed by ffi-exports&lt;/span&gt;&lt;/div&gt;
+&lt;div class=&quot;ffi-rung&quot;&gt;&lt;span class=&quot;ffi-count&quot;&gt;7&lt;/span&gt;&lt;span class=&quot;ffi-track&quot;&gt;&lt;span class=&quot;ffi-fill&quot; style=&quot;--w:34%&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;ffi-label&quot;&gt;&lt;b&gt;candidates&lt;/b&gt;: callees take a pointer into T and drop T&lt;/span&gt;&lt;/div&gt;
+&lt;div class=&quot;ffi-rung&quot;&gt;&lt;span class=&quot;ffi-count&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;ffi-track&quot;&gt;&lt;span class=&quot;ffi-fill&quot; style=&quot;--w:16%&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;ffi-label&quot;&gt;&lt;b&gt;caller&lt;/b&gt;, with a file and a line&lt;/span&gt;&lt;/div&gt;
+&lt;div class=&quot;ffi-rung&quot;&gt;&lt;span class=&quot;ffi-count&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;ffi-track&quot;&gt;&lt;span class=&quot;ffi-fill&quot; style=&quot;--w:7%&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;ffi-label&quot;&gt;&lt;b&gt;lines of C&lt;/b&gt; left to read&lt;/span&gt;&lt;/div&gt;
+&lt;figcaption&gt;The bars are illustrative rather than to scale. Every step is mechanical except the last one, which is the point: the tool decides where to look and a person decides what is there.&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;where-the-answers-stop&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#where-the-answers-stop&quot; aria-label=&quot;Anchor link for: where-the-answers-stop&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Where the answers stop&lt;/h2&gt;
+&lt;p&gt;Five of those seven candidates are safe, for two different kinds of reason.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ConnectionId&lt;/code&gt; is a Cow-like type: &lt;code&gt;enum { Vec(Vec&amp;lt;u8&amp;gt;), Ref(&amp;amp;&#39;a [u8]) }&lt;/code&gt;.
+&lt;code&gt;quiche_conn_source_id&lt;/code&gt; drops one, but it drops the &lt;em&gt;borrowed&lt;/em&gt; variant, so the
+drop frees nothing and the pointer stays valid. The call graph sees
+&lt;code&gt;drop_glue::&amp;lt;ConnectionId&amp;gt;&lt;/code&gt; either way and cannot separate the two.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;quiche_accept&lt;/code&gt; and &lt;code&gt;quiche_conn_new_with_tls&lt;/code&gt; are the cheaper kind of wrong.
+Both call &lt;code&gt;Option::as_ref&lt;/code&gt;, a borrow helper that hands out no raw pointer at
+all, and my filter matched on the method name. Neither function gives C a
+pointer into anything it later drops, so the pattern never applied to them.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;quiche_h3_take_last_priority_update&lt;/code&gt; is more interesting. It takes a pointer
+into an owned &lt;code&gt;Vec&amp;lt;u8&amp;gt;&lt;/code&gt;, passes it to a callback supplied by C, and frees the
+buffer when the callback returns. Whether that is safe depends on what the C
+callback does with the pointer, and the contract lives in a header comment that
+nothing enforces. I called it safe above by reading the Rust and assuming the C
+behaves. That was an assumption rather than an analysis.&lt;/p&gt;
+&lt;p&gt;The Cow case and the callback case ask the same question: does this pointer
+outlive the value behind it? &lt;code&gt;rllvm-query&lt;/code&gt; does not perform data-flow analysis,
+so it cannot answer either.
+The same limit shows up at indirect calls, where &lt;code&gt;indirect-targets&lt;/code&gt; reports a
+target set when LLVM recorded one and reports the callback above as unresolved.
+Tracking a value through a store, which is how the C side would retain that
+pointer, is outside what a call graph describes at all.&lt;/p&gt;
+&lt;h2 id=&quot;what-comes-next&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#what-comes-next&quot; aria-label=&quot;Anchor link for: what-comes-next&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+What comes next&lt;/h2&gt;
+&lt;p&gt;Two things, in the order I care about them.&lt;/p&gt;
+&lt;p&gt;The queries in this post form a short procedure: is the function here, does
+anything call it, what happens after the crossing. Two of those steps can end
+the investigation early. That belongs in tooling rather than in a blog post.
+&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/h1994st/rllvm/issues/188&quot;&gt;Issue #188&lt;/a&gt; is a Claude Code
+plugin bundling the MCP server with two skills: how to capture bitcode for the
+build in front of you, and how to read an answer without over-claiming it. An
+assistant reading source approximates a call graph by matching names, and across
+an FFI boundary it cannot even approximate. The early exits matter most, because
+&quot;the version range matches, therefore you are affected&quot; is the failure an agent
+would otherwise reproduce at scale.&lt;/p&gt;
+&lt;p&gt;The second is the data flow this post kept needing. I would rather borrow that
+than build it. &lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/secure-software-engineering/phasar&quot;&gt;PhASAR&lt;/a&gt;
+and &lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/SVF-tools/SVF&quot;&gt;SVF&lt;/a&gt; have solved pointer and value
+analysis for years, and have always taken whole-program C and C++ bitcode.
+Getting that file out of a real build was the awkward step they were waiting on.
+A module with Rust in it too is new input for tools that already work. Running
+them behind the same query contract
+(&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/h1994st/rllvm/issues/149&quot;&gt;#149&lt;/a&gt;,
+&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/h1994st/rllvm/issues/242&quot;&gt;#242&lt;/a&gt;) is what would separate a
+borrowed &lt;code&gt;ConnectionId&lt;/code&gt; from an owned one, and say whether a pointer escapes
+past a drop. The output should stay evidence: sources, sinks, and the path. A
+tool that reports &quot;vulnerable&quot; without showing its work has only moved the
+guessing somewhere else.&lt;/p&gt;
+&lt;p&gt;Indirect calls remain the hard problem they have always been. I do not expect
+that to change soon, and the honest move is to keep saying so in the answer.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;This post was drafted with Claude Code. Every command in it was run and every
+result verified by me.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;rllvm&lt;/code&gt; is Apache-2.0 and available on
+&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/h1994st/rllvm&quot;&gt;GitHub&lt;/a&gt;, including the
+&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/h1994st/rllvm/tree/main/examples/ffi&quot;&gt;FFI example&lt;/a&gt; and
+&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/h1994st/rllvm/tree/main/examples/external/quiche&quot;&gt;notes on quiche&lt;/a&gt;
+used here. Measurements were taken on arm64 macOS against quiche 0.29.1 and
+0.29.2, built with rustc 1.98.0 and read with LLVM 23.1.1.&lt;/p&gt;
+</description>
+      </item>
+      <item>
+          <title>Beyond a Single Bitcode File</title>
+          <pubDate>Sun, 13 Sep 2026 18:00:00 -0700</pubDate>
+          <author>Shengtuo Hu</author>
+          <link>https://shengtuo.me/blog/beyond-single-bitcode-file/</link>
+          <guid>https://shengtuo.me/blog/beyond-single-bitcode-file/</guid>
+          <description xml:base="https://shengtuo.me/blog/beyond-single-bitcode-file/">&lt;h2 id=&quot;tl-dr&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#tl-dr&quot; aria-label=&quot;Anchor link for: tl-dr&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+TL;DR&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;rllvm&lt;/code&gt; used to produce one answer: a merged whole-program &lt;code&gt;.bc&lt;/code&gt; file. Version
+0.5 can instead inventory the modules first, keep their identities and known
+provenance in a catalog, select the ones an analysis needs, and only then copy,
+archive, or merge them. It can acquire those modules from a wrapped build or
+regenerate selected C and C++ compilations from &lt;code&gt;compile_commands.json&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The original wrapper workflow still works. It now sits inside a larger model:
+&lt;strong&gt;acquire, catalog, select, materialize&lt;/strong&gt;.&lt;/p&gt;
+&lt;h2 id=&quot;the-bc-file-was-only-the-first-output&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#the-bc-file-was-only-the-first-output&quot; aria-label=&quot;Anchor link for: the-bc-file-was-only-the-first-output&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+The &lt;code&gt;.bc&lt;/code&gt; file was only the first output&lt;/h2&gt;
+&lt;p&gt;In &lt;a href=&quot;https://shengtuo.me/blog/whole-program-bitcode/&quot;&gt;my previous post&lt;/a&gt;, I described &lt;code&gt;rllvm&lt;/code&gt; as the
+third tool in the &lt;code&gt;wllvm&lt;/code&gt; and &lt;code&gt;gllvm&lt;/code&gt; lineage: replace the compiler, build
+normally, then recover one LLVM module from the linked program. I also wrote that
+there was little urgency to switch if either older tool already worked for you.&lt;/p&gt;
+&lt;p&gt;That remains fair for the narrow job of producing one &lt;code&gt;.bc&lt;/code&gt; file. It no longer
+describes the whole project.&lt;/p&gt;
+&lt;p&gt;A merged module is useful, but merging is a poor first step. It collapses module
+boundaries before a consumer can decide what belongs in an analysis. It also
+hides useful distinctions: two compilations of the same source can use different
+flags, a missing module is different from an unsupported one, and a module found
+in an executable says something different from one regenerated from a compilation
+database.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;rllvm&lt;/code&gt; 0.5 makes the unmerged modules addressable. The whole-program file becomes
+one possible output rather than the only interface.&lt;/p&gt;
+&lt;h2 id=&quot;modules-before-merging&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#modules-before-merging&quot; aria-label=&quot;Anchor link for: modules-before-merging&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Modules before merging&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;rllvm-info --json&lt;/code&gt; now inventories bitcode, objects, executables, regular
+archives, and existing catalogs without merging anything:&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;rllvm-info&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; app --json&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; &amp;gt;&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; catalog.json&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Each catalog entry has an opaque module ID and a content hash. Where available,
+it also records source associations, target and data layout, compilation
+configuration, debug-information presence, and diagnostics. A module can be
+&lt;code&gt;available&lt;/code&gt;, &lt;code&gt;missing&lt;/code&gt;, &lt;code&gt;unsupported&lt;/code&gt;, or &lt;code&gt;failed&lt;/code&gt;; failure does not erase the
+other evidence.&lt;/p&gt;
+&lt;p&gt;The catalog is deliberately careful about what it does not know. Finding a
+source filename in debug information does not prove which compiler produced it.
+Finding several modules in an archive does not prove that they form a complete
+program. Those fields stay empty, and whole-program completeness stays unknown.&lt;/p&gt;
+&lt;figure class=&quot;substrate-fig substrate-acquire&quot; aria-label=&quot;Two acquisition paths feed a module catalog: a wrapped build provides link membership, while a compilation database provides compilation configurations from the current source tree&quot;&gt;
+&lt;div class=&quot;substrate-sources&quot;&gt;
+&lt;div class=&quot;substrate-card&quot;&gt;
+&lt;span class=&quot;substrate-kicker&quot;&gt;live build&lt;/span&gt;
+&lt;strong&gt;object · archive · binary&lt;/strong&gt;
+&lt;small&gt;which modules reached the link&lt;/small&gt;
+&lt;/div&gt;
+&lt;div class=&quot;substrate-card&quot;&gt;
+&lt;span class=&quot;substrate-kicker&quot;&gt;recorded build&lt;/span&gt;
+&lt;strong&gt;compile_commands.json&lt;/strong&gt;
+&lt;small&gt;how each source was compiled&lt;/small&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;substrate-down&quot; aria-hidden=&quot;true&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/div&gt;
+&lt;div class=&quot;substrate-catalog&quot;&gt;
+&lt;span class=&quot;substrate-kicker&quot;&gt;shared representation&lt;/span&gt;
+&lt;strong&gt;module catalog&lt;/strong&gt;
+&lt;small&gt;identity · integrity · provenance · uncertainty&lt;/small&gt;
+&lt;/div&gt;
+&lt;figcaption&gt;Both paths produce modules and the same catalog format, but they provide different evidence.&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;two-kinds-of-build-evidence&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#two-kinds-of-build-evidence&quot; aria-label=&quot;Anchor link for: two-kinds-of-build-evidence&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Two kinds of build evidence&lt;/h2&gt;
+&lt;p&gt;The wrapper observes a real build. A path recorded in the finished executable is
+evidence that the corresponding object participated in that link. This answers
+the whole-program question, but the old path section does not record a complete
+compiler identity, environment, or source snapshot.&lt;/p&gt;
+&lt;p&gt;A compilation database answers a different question. It preserves one command
+per translation unit, so &lt;code&gt;rllvm-compdb&lt;/code&gt; can list those entries and regenerate only
+the current-tree modules an analysis asks for:&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;rllvm-compdb&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; list build/&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; &amp;gt;&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; compilations.json&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;rllvm-compdb&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; generate build/ --source src/parser.c&lt;/span&gt;&lt;span&gt; \&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-6&quot;&gt;  --extra-arg=-O0 --output-dir analysis/parser&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The importer keeps duplicate compilations distinct, records the original and
+effective arguments, and puts failures beside successful modules. It does not
+pretend to reconstruct the historical build. Generated headers must exist now,
+the original environment is unknown, and a compile command says nothing about
+which executable eventually used its object.&lt;/p&gt;
+&lt;p&gt;This distinction matters for analysis. Use wrapper capture when linked membership
+is the fact you need. Use the compilation database when you want selected,
+repeatable analysis compilations from the current tree.&lt;/p&gt;
+&lt;h2 id=&quot;select-then-materialize&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#select-then-materialize&quot; aria-label=&quot;Anchor link for: select-then-materialize&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Select, then materialize&lt;/h2&gt;
+&lt;p&gt;Catalogs can be filtered by module ID, source, or known configuration. Alternatives
+within one selector are combined; different selector types intersect. An unmatched
+selector is an error rather than an empty success.&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;rllvm-get-bc&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; app --source src/parser.c --output-dir analysis/selected&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;rllvm-get-bc&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; analysis/selected/catalog.json -o parser.bc&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The first command copies separate, hash-checked modules into a new directory and
+writes the catalog last. Its module paths are relative, so the directory can move
+as a unit. The second command chooses to merge that collection. Archive and partial
+merge strategies remain available when one large link is the wrong shape.&lt;/p&gt;
+&lt;figure class=&quot;substrate-fig substrate-materialize&quot; aria-label=&quot;A module catalog is filtered before three possible outputs: a relocatable collection, a bitcode archive, or merged whole-program bitcode&quot;&gt;
+&lt;div class=&quot;substrate-modules&quot; aria-label=&quot;catalog modules&quot;&gt;
+&lt;span&gt;&lt;b&gt;01&lt;/b&gt; parse.c &lt;i&gt;debug&lt;/i&gt;&lt;/span&gt;
+&lt;span&gt;&lt;b&gt;02&lt;/b&gt; parse.c &lt;i&gt;release&lt;/i&gt;&lt;/span&gt;
+&lt;span&gt;&lt;b&gt;03&lt;/b&gt; lexer.c &lt;i&gt;release&lt;/i&gt;&lt;/span&gt;
+&lt;span class=&quot;substrate-dim&quot;&gt;&lt;b&gt;04&lt;/b&gt; plugin.c &lt;i&gt;missing&lt;/i&gt;&lt;/span&gt;
+&lt;/div&gt;
+&lt;div class=&quot;substrate-filter&quot;&gt;
+&lt;span class=&quot;substrate-kicker&quot;&gt;selection&lt;/span&gt;
+&lt;strong&gt;source + configuration&lt;/strong&gt;
+&lt;/div&gt;
+&lt;div class=&quot;substrate-outputs&quot;&gt;
+&lt;span&gt;relocatable&lt;br&gt;&lt;b&gt;collection&lt;/b&gt;&lt;/span&gt;
+&lt;span&gt;bitcode&lt;br&gt;&lt;b&gt;archive&lt;/b&gt;&lt;/span&gt;
+&lt;span&gt;merged&lt;br&gt;&lt;b&gt;.bc&lt;/b&gt;&lt;/span&gt;
+&lt;/div&gt;
+&lt;figcaption&gt;Selection preserves the useful boundary. Materialization can remain separate or merge only the chosen modules.&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;h2 id=&quot;real-builds-are-mostly-edge-cases&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#real-builds-are-mostly-edge-cases&quot; aria-label=&quot;Anchor link for: real-builds-are-mostly-edge-cases&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Real builds are mostly edge cases&lt;/h2&gt;
+&lt;p&gt;The high-level model works only if acquisition survives actual compiler command
+lines. Recent work therefore looks less glamorous and matters just as much.&lt;/p&gt;
+&lt;p&gt;Response files are expanded for classification while the real compiler still
+receives the original arguments. Nested files, quoting, escapes, byte-order marks,
+and relative paths follow Clang&#39;s rules. Commands generated by &lt;code&gt;rllvm&lt;/code&gt; switch to
+response files automatically when the operating system&#39;s argument limit would be
+too small.&lt;/p&gt;
+&lt;p&gt;LTO needs separate handling because its “object” may already be bitcode. The
+default marker mode covers full and ThinLTO on ELF and Mach-O; save-temps mode can
+capture a full-LTO linker&#39;s optimized module. Rust needs crate-aware markers and
+archive updates. Cross-target builds need architecture and sysroot choices to
+survive secondary compilations.&lt;/p&gt;
+&lt;p&gt;eBPF was the pleasant counterexample. An eBPF object built through &lt;code&gt;rllvm-cc&lt;/code&gt;
+already carried the ordinary &lt;code&gt;.rllvm_bc&lt;/code&gt; section. &lt;code&gt;libbpf&lt;/code&gt; ignored that section
+when loading the program and preserved it when linking objects. Supporting the
+target required an integration test and documentation, not a new production
+backend. A mechanism that composes with a tool it was not written for is a useful
+kind of validation.&lt;/p&gt;
+&lt;h2 id=&quot;measuring-the-tax&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#measuring-the-tax&quot; aria-label=&quot;Anchor link for: measuring-the-tax&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Measuring the tax&lt;/h2&gt;
+&lt;p&gt;Compiler wrappers are not free. C and C++ normally compile twice: once for the
+native object and once for analysis bitcode. &lt;code&gt;rllvm&lt;/code&gt; now has a reproducible
+workflow harness that validates native behavior and extracted IR before accepting
+a timing sample.&lt;/p&gt;
+&lt;p&gt;The first recorded baseline used an Apple M4, LLVM 22.1.8, eight build jobs, and
+three repetitions. Clean build-only time relative to native compilation was:&lt;/p&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Workload&lt;/th&gt;&lt;th style=&quot;text-align: right&quot;&gt;Cache off&lt;/th&gt;&lt;th style=&quot;text-align: right&quot;&gt;Primed cache&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;nghttp2 C&lt;/td&gt;&lt;td style=&quot;text-align: right&quot;&gt;1.84×&lt;/td&gt;&lt;td style=&quot;text-align: right&quot;&gt;1.61×&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;nghttp2 C++&lt;/td&gt;&lt;td style=&quot;text-align: right&quot;&gt;1.83×&lt;/td&gt;&lt;td style=&quot;text-align: right&quot;&gt;1.20×&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Quiche&lt;/td&gt;&lt;td style=&quot;text-align: right&quot;&gt;1.59×&lt;/td&gt;&lt;td style=&quot;text-align: right&quot;&gt;1.50×&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+&lt;p&gt;The cache avoids repeated C/C++ bitcode compilation, but still preprocesses and
+hashes current inputs before declaring a hit. It does not cache Rust compilation.
+The measurements also had an uncontrolled filesystem cache and normal desktop
+activity, so they are evidence for these workloads rather than a universal ratio.
+They compare &lt;code&gt;rllvm&lt;/code&gt; with native builds, not with &lt;code&gt;gllvm&lt;/code&gt; or &lt;code&gt;wllvm&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&quot;the-lineage-now-has-a-fork&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#the-lineage-now-has-a-fork&quot; aria-label=&quot;Anchor link for: the-lineage-now-has-a-fork&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+The lineage now has a fork&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;wllvm&lt;/code&gt;, &lt;code&gt;gllvm&lt;/code&gt;, and &lt;code&gt;rllvm&lt;/code&gt; still share the same good trick: record sidecar
+bitcode paths in object files and let the linker accumulate them. The older tools
+center their interface on extracting a merged module or archive. &lt;code&gt;rllvm&lt;/code&gt; now keeps
+that workflow while adding another acquisition path and a representation between
+capture and merge.&lt;/p&gt;
+&lt;p&gt;That does not make it a strict superset. &lt;code&gt;gllvm&lt;/code&gt; supports Fortran and thin
+archives; &lt;code&gt;wllvm&lt;/code&gt; can drive GCC through dragonegg. But for Clang-based program
+analysis, &lt;code&gt;rllvm&lt;/code&gt; now exposes a much larger surface: Rust, WebAssembly and eBPF,
+real LTO extraction, relocatable paths, validated caching, module catalogs,
+selection, and compilation-database imports.&lt;/p&gt;
+&lt;p&gt;The meaningful difference is no longer implementation language or wrapper speed.
+It is where the tool stops. The older workflow stops when it produces bitcode.
+&lt;code&gt;rllvm&lt;/code&gt; is starting to preserve the structure that the next tool will need.&lt;/p&gt;
+&lt;h2 id=&quot;what-comes-next&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#what-comes-next&quot; aria-label=&quot;Anchor link for: what-comes-next&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+What comes next&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://shengtuo.me/blog/whole-program-bitcode/#what-comes-next&quot;&gt;My previous post&lt;/a&gt; ended with a
+query interface for coding assistants: definitions, callers, callees,
+reachability, possible indirect targets, and an inspectable path back to source.
+The roadmap now gives that idea a clearer shape.&lt;/p&gt;
+&lt;p&gt;The first step is to make program facts easy to ask for. Scripts and coding
+assistants should be able to query a catalog in source-level terms and receive
+the locations and paths that support each answer. Missing modules, unresolved
+calls, and unavailable mappings should remain visible rather than turning into
+false certainty.&lt;/p&gt;
+&lt;p&gt;The second is to make the ask, edit, rebuild, ask loop practical. Unchanged work
+should be reused without letting an answer from an older build appear current.
+From there, simple reachability can grow into deeper security evidence when a
+question needs it, and program facts can be compared across revisions or build
+configurations. The useful result is still evidence a person can inspect, not an
+automatic verdict.&lt;/p&gt;
+&lt;p&gt;The final direction is broader reach: following calls across Rust and C/C++
+boundaries, and carrying a verified analysis snapshot to another machine after
+the original build tree is gone.&lt;/p&gt;
+&lt;p&gt;The progression is from artifacts, to facts, to evidence. Extraction was the
+prerequisite. The catalog is the substrate that keeps every later answer tied to
+what was actually analyzed and what remains unknown.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;&lt;code&gt;rllvm&lt;/code&gt; is Apache-2.0 and available on
+&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/h1994st/rllvm&quot;&gt;GitHub&lt;/a&gt;. The repository includes the
+&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/h1994st/rllvm/blob/main/docs/CATALOG.md&quot;&gt;catalog schema&lt;/a&gt; and
+&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/h1994st/rllvm/tree/main/benchmarks/baselines/2026-09-12-apple-m4&quot;&gt;benchmark evidence&lt;/a&gt;.&lt;/p&gt;
+</description>
+      </item>
+      <item>
+          <title>Two Ways to Extract Whole-Program Bitcode</title>
+          <pubDate>Mon, 07 Sep 2026 18:00:00 -0700</pubDate>
+          <author>Shengtuo Hu</author>
+          <link>https://shengtuo.me/blog/whole-program-bitcode/</link>
+          <guid>https://shengtuo.me/blog/whole-program-bitcode/</guid>
+          <description xml:base="https://shengtuo.me/blog/whole-program-bitcode/">&lt;p&gt;A compiler sees one source file at a time. That is the whole design: hand it a file,
+get back an object file, repeat, and let the linker staple the results together. It
+works so well that we forget it is a constraint.&lt;/p&gt;
+&lt;p&gt;It becomes a constraint the moment you want to analyze a program instead of build it.
+Checking a property that spans function boundaries, running a custom compiler pass
+over everything at once, auditing every call site of a risky API — each of these needs
+the whole program in one piece, in a form built for analysis rather than for
+execution. LLVM bitcode is that form: what the compiler works in after it has
+understood your code but before it has turned it into machine instructions.&lt;/p&gt;
+&lt;p&gt;Getting bitcode for one file is easy. Getting it for a whole program, out of a real
+build, is not. The difficulty is not that the information is missing but that the
+build throws it away. After &lt;code&gt;make&lt;/code&gt; finishes, nothing on disk records which source
+files went into which binary, or how each one was compiled. The linker knew, briefly,
+and did not write it down.&lt;/p&gt;
+&lt;p&gt;I have built two tools that recover it. They share a name, a goal, and almost no code,
+because they come at the problem from opposite ends.&lt;/p&gt;
+&lt;h2 id=&quot;rllvm-pose-as-the-compiler&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#rllvm-pose-as-the-compiler&quot; aria-label=&quot;Anchor link for: rllvm-pose-as-the-compiler&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+rllvm: pose as the compiler&lt;/h2&gt;
+&lt;p&gt;&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://shengtuo.me/rllvm/&quot;&gt;rllvm&lt;/a&gt; is a set of compiler wrappers written in Rust. You
+point your build at them and build normally:&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-7&quot;&gt;export&lt;/span&gt;&lt;span&gt; CC&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;=&lt;/span&gt;&lt;span&gt;rllvm-cc CXX&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;=&lt;/span&gt;&lt;span&gt;rllvm-cxx&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;./configure&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; &amp;amp;&amp;amp;&lt;/span&gt;&lt;span class=&quot;z-12&quot;&gt; make&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;rllvm-get-bc&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; ./myprogram&lt;/span&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;      # produces myprogram.bc&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;how-it-works&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#how-it-works&quot; aria-label=&quot;Anchor link for: how-it-works&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+How it works&lt;/h3&gt;
+&lt;p&gt;Underneath, each source file compiles twice: once to the object file your build
+expects, and once to bitcode written off to the side. The second copy then has to be
+findable again, and that is the interesting part. Every object file carries a small
+extra section — a labelled region of bytes that object files can hold alongside code
+and data — recording the path to that file&#39;s bitcode. The linker has no idea what that
+section means, so it does the one thing linkers do with sections they do not
+recognize: it concatenates them. The finished binary ends up carrying a complete list
+of the bitcode files that make it up, assembled by a tool that does not know it is
+helping.&lt;/p&gt;
+&lt;figure class=&quot;bc-fig bc-ledger&quot; aria-label=&quot;Five source files each record one bitcode path, and the linker concatenates them into a single section naming the whole program&quot;&gt;
+&lt;ol&gt;
+&lt;li style=&quot;--i:0&quot;&gt;&lt;span class=&quot;src&quot;&gt;parse.c&lt;/span&gt;&lt;span class=&quot;tie&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;span class=&quot;bc&quot;&gt;parse.bc&lt;/span&gt;&lt;/li&gt;
+&lt;li style=&quot;--i:1&quot;&gt;&lt;span class=&quot;src&quot;&gt;lexer.c&lt;/span&gt;&lt;span class=&quot;tie&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;span class=&quot;bc&quot;&gt;lexer.bc&lt;/span&gt;&lt;/li&gt;
+&lt;li style=&quot;--i:2&quot;&gt;&lt;span class=&quot;src&quot;&gt;codegen.c&lt;/span&gt;&lt;span class=&quot;tie&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;span class=&quot;bc&quot;&gt;codegen.bc&lt;/span&gt;&lt;/li&gt;
+&lt;li style=&quot;--i:3&quot;&gt;&lt;span class=&quot;src&quot;&gt;util.c&lt;/span&gt;&lt;span class=&quot;tie&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;span class=&quot;bc&quot;&gt;util.bc&lt;/span&gt;&lt;/li&gt;
+&lt;li style=&quot;--i:4&quot;&gt;&lt;span class=&quot;src&quot;&gt;main.c&lt;/span&gt;&lt;span class=&quot;tie&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt;&lt;span class=&quot;bc&quot;&gt;main.bc&lt;/span&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;figcaption&gt;Each object file carries one line. The linker concatenates them into &lt;b&gt;__RLLVM,__rllvm_bc&lt;/b&gt;, so the finished binary holds the whole list, and &lt;b&gt;rllvm-get-bc&lt;/b&gt; reads it back out as &lt;b&gt;prog.bc&lt;/b&gt;.&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;I still think that is a good trick. It borrows the linker as an accumulator, and it
+asks nothing of your project except permission to be its compiler — a knob every build
+system already has.&lt;/p&gt;
+&lt;h3 id=&quot;where-the-idea-came-from&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#where-the-idea-came-from&quot; aria-label=&quot;Anchor link for: where-the-idea-came-from&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Where the idea came from&lt;/h3&gt;
+&lt;p&gt;The trick is not mine. &lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/travitch/whole-program-llvm&quot;&gt;wllvm&lt;/a&gt;
+established it years ago with Python wrappers that build each file normally, build it
+again as bitcode, and record where that bitcode landed in a section called &lt;code&gt;.llvm_bc&lt;/code&gt;;
+a companion tool, &lt;code&gt;extract-bc&lt;/code&gt;, reads the section back out of the finished binary and
+links the pieces together. &lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/SRI-CSL/gllvm&quot;&gt;gllvm&lt;/a&gt; is the same
+design rewritten in Go, and it runs faster for an unglamorous reason: it generates
+bitcode in parallel where the Python wrappers fork and wait. The two differ mostly in
+reach, as wllvm can drive gcc through the dragonegg plugin while gllvm is clang-only
+and its README rules out combining it with link-time optimization.&lt;/p&gt;
+&lt;p&gt;rllvm is the third entry in that lineage, and the naming says so: &lt;code&gt;w&lt;/code&gt; for
+whole-program, &lt;code&gt;g&lt;/code&gt; for Go, &lt;code&gt;r&lt;/code&gt; for Rust. If gllvm or wllvm already work for you, there
+is no urgency to switch.&lt;/p&gt;
+&lt;h3 id=&quot;what-rllvm-adds&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#what-rllvm-adds&quot; aria-label=&quot;Anchor link for: what-rllvm-adds&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+What rllvm adds&lt;/h3&gt;
+&lt;p&gt;What rllvm adds, above all, is records that survive being moved. The original design
+writes down where each bitcode file landed as an absolute path, which holds up exactly
+as long as nothing moves. Rename the directory, run the build inside a container and
+read the results outside it, or reuse a cached object file that another machine
+compiled, and every recorded path names a directory that does not exist. What makes
+this particular failure unpleasant is that extraction does not stop; it simply
+resolves fewer files than it should and hands you a smaller program than you asked
+for. rllvm can record those paths relative to a root you name at extraction time
+instead. Because the section is plain text, both forms can appear in the same binary
+and objects built before the change keep working.&lt;/p&gt;
+&lt;p&gt;The rest of what rllvm adds is reach. Turning on link-time optimization removes the
+object file that the original mechanism needs to write into, so rllvm records the path
+another way and hides the difference behind the same interface. Its rustc wrapper
+copes with cargo naming outputs its own way, so a cargo build gives back bitcode with
+dependency crates included. It produces whole-program bitcode for a linked WebAssembly
+module rather than only for the pieces that went into it. For projects too large to
+link in one pass it can stage the merge directory by directory, or produce an archive
+instead. And &lt;code&gt;rllvm-info&lt;/code&gt; reports what a module actually contains, which is worth more
+than it sounds when the characteristic failure is an empty result.&lt;/p&gt;
+&lt;h3 id=&quot;what-it-costs&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#what-it-costs&quot; aria-label=&quot;Anchor link for: what-it-costs&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+What it costs&lt;/h3&gt;
+&lt;p&gt;The weaknesses follow from the same trick as the strengths. The section holds a path,
+not the bitcode, so the binary is not self-contained: &lt;code&gt;make clean&lt;/code&gt; breaks it, moving
+the directory breaks it, and copying the binary to another machine breaks it. Storing
+the bitcode itself would fix this, and I have a working prototype, but bitcode is
+comparable to or larger than the object code it would ride along with, and I have not
+been willing to pay that in binary size. Compiling every file twice is a real tax on a
+large C++ project. And because a wrapper has to understand the compiler&#39;s command line
+well enough to know what is being built, one misread flag is enough to make bitcode
+stop appearing.&lt;/p&gt;
+&lt;p&gt;Linkers supply the rest of the difficulty, and each lesson arrived the hard way.
+Nothing in the program references that extra section, so a linker that discards
+unreferenced data throws it away unless it is explicitly marked to keep. The
+WebAssembly linker deletes sections with certain LLVM-standard names while faithfully
+keeping every other custom section, which is exactly why rllvm&#39;s sections are not
+named after LLVM&#39;s.&lt;/p&gt;
+&lt;h2 id=&quot;rules-rllvm-ask-the-build-system&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#rules-rllvm-ask-the-build-system&quot; aria-label=&quot;Anchor link for: rules-rllvm-ask-the-build-system&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+rules_rllvm: ask the build system&lt;/h2&gt;
+&lt;p&gt;&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://shengtuo.me/rules_rllvm/&quot;&gt;rules_rllvm&lt;/a&gt; answers the same question for Bazel
+builds, and it does not use rllvm to do it.&lt;/p&gt;
+&lt;h3 id=&quot;why-i-stopped-wrapping-rllvm&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#why-i-stopped-wrapping-rllvm&quot; aria-label=&quot;Anchor link for: why-i-stopped-wrapping-rllvm&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Why I stopped wrapping rllvm&lt;/h3&gt;
+&lt;p&gt;I did not start from scratch. I started by wrapping rllvm inside Bazel rules — keep
+the wrappers, keep the sections, let Bazel drive them — and spent a while on it before
+concluding it could not be made to work properly.&lt;/p&gt;
+&lt;p&gt;The obstacles were not details. Bazel keeps only the files an action declares in
+advance as its outputs, so bitcode written off to the side gets discarded when the
+action finishes and never comes back at all when the build runs on another machine.
+The absolute paths recorded in those sections are wrong on any machine but the one
+that compiled them, which quietly breaks a shared cache. Extraction afterwards is a
+separate pass Bazel knows nothing about, so none of it is incremental or cached. And
+depending on the rllvm binary tied the whole thing to one processor architecture,
+which meant it would not run on my own laptop. Working around all of that meant asking
+Bazel to stop doing the things people use Bazel for.&lt;/p&gt;
+&lt;p&gt;So I stopped wrapping and started again on a better premise. Bazel already knows the
+dependency graph, and it already knows the exact command it used to compile every
+file, because it built that command itself. A wrapper under Bazel spends all its
+ingenuity recovering information that was never lost.&lt;/p&gt;
+&lt;h3 id=&quot;how-it-works-1&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#how-it-works-1&quot; aria-label=&quot;Anchor link for: how-it-works-1&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+How it works&lt;/h3&gt;
+&lt;p&gt;These rules ask instead. They use a Bazel &lt;em&gt;aspect&lt;/em&gt; — a piece of code that walks over
+the targets you already have and attaches extra work to them, without you editing a
+single build file. For each source file it finds, the aspect asks the toolchain for
+the compile command Bazel was going to run anyway, changes where the output goes, and
+declares the result as a proper build output. There is no compiler wrapper, nothing
+hidden inside object files, and no absolute path anywhere in the results.&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;bazel&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; build //:app_bc&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&quot;what-living-in-the-graph-buys&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#what-living-in-the-graph-buys&quot; aria-label=&quot;Anchor link for: what-living-in-the-graph-buys&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+What living in the graph buys&lt;/h3&gt;
+&lt;p&gt;The first thing this buys is that extraction costs nothing until somebody asks for it.
+The bitcode files are not part of what a target normally produces; they sit in a
+separate group you request by name, and Bazel runs work only when something needs its
+output. An ordinary build runs none of it. That is what makes it reasonable to leave
+these rules switched on in a repository other people share, because the people who
+never wanted bitcode never pay for it.&lt;/p&gt;
+&lt;p&gt;The second is that every point in the dependency graph becomes an extraction point.
+The bitcode travels up the graph node by node, which makes a library just as
+addressable as a finished program. &quot;Give me the bitcode for this one library, not
+linked into anything&quot; is a request the wrapper approach cannot express at all, because
+reading those sections starts at the final binary.&lt;/p&gt;
+&lt;p&gt;Handling shared dependencies is where this earns its keep: each point in the graph
+collects only its own source files, never its dependencies&#39;. Folding a dependency&#39;s
+bitcode into everything that uses it would include a shared library twice, and merging
+then fails on the duplicate definitions. Instead the bitcode travels in a set that
+treats the same file as the same file, so when two libraries both depend on a third,
+the shared one contributes exactly one copy.&lt;/p&gt;
+&lt;figure class=&quot;bc-fig bc-graph&quot; aria-label=&quot;A diamond dependency graph in which two libraries both depend on a third, which contributes one copy of its bitcode&quot;&gt;
+&lt;svg viewBox=&quot;0 0 420 300&quot; role=&quot;img&quot;&gt;
+&lt;g class=&quot;edges&quot;&gt;
+&lt;line x1=&quot;172&quot; y1=&quot;66&quot; x2=&quot;112&quot; y2=&quot;128&quot;/&gt;
+&lt;line x1=&quot;248&quot; y1=&quot;66&quot; x2=&quot;308&quot; y2=&quot;128&quot;/&gt;
+&lt;line x1=&quot;112&quot; y1=&quot;172&quot; x2=&quot;172&quot; y2=&quot;234&quot;/&gt;
+&lt;line x1=&quot;308&quot; y1=&quot;172&quot; x2=&quot;248&quot; y2=&quot;234&quot;/&gt;
+&lt;/g&gt;
+&lt;g class=&quot;node&quot; style=&quot;--i:0&quot;&gt;
+&lt;rect x=&quot;155&quot; y=&quot;22&quot; width=&quot;110&quot; height=&quot;44&quot; rx=&quot;8&quot;/&gt;
+&lt;text class=&quot;target&quot; x=&quot;210&quot; y=&quot;41&quot;&gt;//:diamond&lt;/text&gt;
+&lt;text class=&quot;bc&quot; x=&quot;210&quot; y=&quot;57&quot;&gt;diamond.bc&lt;/text&gt;
+&lt;/g&gt;
+&lt;g class=&quot;node&quot; style=&quot;--i:1&quot;&gt;
+&lt;rect x=&quot;37&quot; y=&quot;128&quot; width=&quot;110&quot; height=&quot;44&quot; rx=&quot;8&quot;/&gt;
+&lt;text class=&quot;target&quot; x=&quot;92&quot; y=&quot;147&quot;&gt;//:lib_a&lt;/text&gt;
+&lt;text class=&quot;bc&quot; x=&quot;92&quot; y=&quot;163&quot;&gt;lib_a.bc&lt;/text&gt;
+&lt;/g&gt;
+&lt;g class=&quot;node&quot; style=&quot;--i:1&quot;&gt;
+&lt;rect x=&quot;273&quot; y=&quot;128&quot; width=&quot;110&quot; height=&quot;44&quot; rx=&quot;8&quot;/&gt;
+&lt;text class=&quot;target&quot; x=&quot;328&quot; y=&quot;147&quot;&gt;//:lib_b&lt;/text&gt;
+&lt;text class=&quot;bc&quot; x=&quot;328&quot; y=&quot;163&quot;&gt;lib_b.bc&lt;/text&gt;
+&lt;/g&gt;
+&lt;g class=&quot;node shared&quot; style=&quot;--i:2&quot;&gt;
+&lt;rect x=&quot;155&quot; y=&quot;234&quot; width=&quot;110&quot; height=&quot;44&quot; rx=&quot;8&quot;/&gt;
+&lt;text class=&quot;target&quot; x=&quot;210&quot; y=&quot;253&quot;&gt;//:lib_c&lt;/text&gt;
+&lt;text class=&quot;bc&quot; x=&quot;210&quot; y=&quot;269&quot;&gt;lib_c.bc&lt;/text&gt;
+&lt;/g&gt;
+&lt;/svg&gt;
+&lt;figcaption&gt;Both paths down from &lt;b&gt;//:diamond&lt;/b&gt; arrive at &lt;b&gt;//:lib_c&lt;/b&gt;. Because the bitcode travels in a set keyed on file identity, &lt;b&gt;lib_c.bc&lt;/b&gt; is built once and merged once. The edges are dashed because they are declared during analysis and run nothing until an output group asks for them.&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;The third is that the bitcode always matches the real compile. The aspect never
+interprets a command line; it asks the toolchain for the command Bazel had already
+built and changes only where the output goes. A wrapper has to understand flags it did
+not write, and anything it misreads becomes bitcode that quietly differs from the
+object that actually shipped. Here there is nothing to misread. For the same reason,
+the work behaves like every other step in the build: scheduled, parallelized, cached,
+and distributed across machines, with no special case for a shared cache because there
+are no absolute paths to go stale.&lt;/p&gt;
+&lt;h3 id=&quot;what-it-costs-1&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#what-it-costs-1&quot; aria-label=&quot;Anchor link for: what-it-costs-1&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+What it costs&lt;/h3&gt;
+&lt;p&gt;The cost of all this is that it works with Bazel and nothing else, and with a recent
+Bazel at that, since older-style workspace configuration is no longer supported. What
+makes the approach clean is exactly what makes it narrow.&lt;/p&gt;
+&lt;p&gt;The smaller costs are worth naming too. A rule cannot mark itself as &quot;do not build me
+by default,&quot; so bitcode targets get swept up by a build-everything command unless
+whoever writes them opts out. Running a one-off extraction without editing build files
+works, but the incantation is clumsy and easy to get subtly wrong. Because the aspect
+reuses the toolchain&#39;s own machinery, it is coupled to the internals of the LLVM and
+Rust rule sets, and an upstream release can require changes here; I took that deal
+deliberately, since deriving those commands independently would drift out of sync
+silently, which is worse. It is also early software: not yet in Bazel&#39;s central
+package registry, so depending on it takes an extra line. Objective-C works only on
+macOS and needs an extra flag, and Swift does not work yet because the bitcode it
+emits is newer than what the toolchain&#39;s LLVM tools will read.&lt;/p&gt;
+&lt;h2 id=&quot;which-one-to-use&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#which-one-to-use&quot; aria-label=&quot;Anchor link for: which-one-to-use&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Which one to use&lt;/h2&gt;
+&lt;p&gt;If you build with Bazel, use rules_rllvm. If you build with anything else, use rllvm.
+That is the honest short answer, and the second half covers most existing C and C++
+software.&lt;/p&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;&lt;/th&gt;&lt;th&gt;rllvm&lt;/th&gt;&lt;th&gt;rules_rllvm&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;Build system&lt;/td&gt;&lt;td&gt;Any&lt;/td&gt;&lt;td&gt;Bazel only&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;How you adopt it&lt;/td&gt;&lt;td&gt;Set &lt;code&gt;CC&lt;/code&gt; and build&lt;/td&gt;&lt;td&gt;Point an aspect at existing targets&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Extract from&lt;/td&gt;&lt;td&gt;The finished binary&lt;/td&gt;&lt;td&gt;Any library or binary in the graph&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Cost when unused&lt;/td&gt;&lt;td&gt;Every file compiles twice&lt;/td&gt;&lt;td&gt;Nothing runs&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Result&lt;/td&gt;&lt;td&gt;Points at bitcode by path&lt;/td&gt;&lt;td&gt;Ordinary build outputs&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Portability&lt;/td&gt;&lt;td&gt;The entire point&lt;/td&gt;&lt;td&gt;Not a goal&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+&lt;p&gt;The more useful question is what each tool assumes about your situation. Reach for
+rllvm when you do not control the build — third-party source, a vendored tree,
+reproducing somebody else&#39;s build — or when you need one method that behaves the same
+across many projects that share no build system. Reach for rules_rllvm when you are
+already using Bazel, and especially when you want bitcode for individual libraries,
+when your builds are cached or spread across machines, or when you cannot afford to
+double the cost of a build people run all day.&lt;/p&gt;
+&lt;p&gt;Neither is a strict upgrade on the other. rllvm buys portability with a second compile
+and a result that points at files instead of containing them. rules_rllvm buys
+precision and costs nothing when idle, by giving up every build system but one.&lt;/p&gt;
+&lt;h2 id=&quot;what-building-both-taught-me&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#what-building-both-taught-me&quot; aria-label=&quot;Anchor link for: what-building-both-taught-me&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+What building both taught me&lt;/h2&gt;
+&lt;p&gt;Where you get into the build decides everything else. Both tools answer the same
+question, and nearly every difference between them follows from one choice about where
+to intervene. rllvm intervenes at the compiler, which every build system can be told
+to swap out, so it works everywhere and understands nothing about the project it sits
+inside. rules_rllvm intervenes at the build system, which understands everything and
+exists in exactly one place. Portability, cost, robustness, and what you can even
+extract were not four decisions. They were one, and I did not see that clearly until I
+had built the second tool.&lt;/p&gt;
+&lt;p&gt;Recovering what somebody already knows is a losing game when you have the option of
+asking. rllvm&#39;s central trick reconstructs, after the fact, something the build never
+bothered to record. That is satisfying to make work, and it is also labor that exists
+only because nobody wrote the answer down. Under Bazel the answer is written down, and
+reconstructing it anyway means maintaining a careful parser for command lines that the
+build system generated itself. This does not make reconstruction bad. With make or
+autotools there is nobody to ask, and reconstruction is the only approach that works
+at all. It makes noticing which situation you are in the actual skill, because the
+answer is a property of the environment rather than of the problem.&lt;/p&gt;
+&lt;p&gt;Trying to get both sets of benefits got me neither, which is what the pivot taught me.
+Wrapping rllvm inside Bazel rules looked like reuse: one mechanism, one codebase, a
+thin adapter. What it produced was the fragility of reconstruction plus a constant
+fight with the guarantees that make Bazel worth using. The two designs are not layers.
+They are alternatives, and the honest move was to stop making one wear the other as a
+costume.&lt;/p&gt;
+&lt;h2 id=&quot;what-comes-next&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#what-comes-next&quot; aria-label=&quot;Anchor link for: what-comes-next&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+What comes next&lt;/h2&gt;
+&lt;p&gt;Extraction is a means, not an end. A &lt;code&gt;.bc&lt;/code&gt; file matters only because something else
+reads it, and plenty of things already do: symbolic execution engines like KLEE, and
+static analysis frameworks like SVF and Phasar, all take whole-program bitcode as
+their input. Getting that file out of a real build has always been the awkward step,
+which is why tools like these exist at all.&lt;/p&gt;
+&lt;p&gt;The direction I find most interesting now is handing those facts to a coding
+assistant. An assistant reading your source approximates the call graph by matching
+names and patterns. It cannot know what actually reaches what once everything is
+linked, and indirect calls make the guess worse. Bitcode knows. A small query
+interface over a whole-program module — who calls this function, whether anything can
+reach that one, what an indirect call might actually target — turns a guess into a
+lookup. The answers have to come back as file and line numbers rather than as compiler
+IR, because that is where the work happens.&lt;/p&gt;
+&lt;p&gt;For security review the useful output is evidence, not a verdict. Asking whether
+attacker-controlled input can reach a risky function is a reachability question, and
+the honest answer is the path itself, so a person can read those particular functions
+and decide. Static analysis over-approximates. A tool that reports &quot;vulnerable&quot;
+without showing its work has only moved the guessing somewhere else.&lt;/p&gt;
+&lt;p&gt;None of this is built yet, and two things would decide whether it works. The bitcode
+has to be compiled with debug information and little optimization, or there is nothing
+to map back to source. Indirect calls remain the hard problem they have always been.
+But extraction that works per library and costs nothing when idle is a good substrate
+for a loop that asks a question, changes a file, and asks again.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;p&gt;Both projects are Apache-2.0 and take issues and patches:
+&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/h1994st/rllvm&quot;&gt;rllvm&lt;/a&gt; ·
+&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/h1994st/rules_rllvm&quot;&gt;rules_rllvm&lt;/a&gt;&lt;/p&gt;
+</description>
+      </item>
+    </channel>
+</rss>

