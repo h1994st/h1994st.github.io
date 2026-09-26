@@ -265,12 +265,12 @@ CVE:
 
 In call-graph terms that is two conditions on one function's callees: something
 that takes a pointer into `T`, and `drop_glue::<T>`. Both already appear in the
-output, so the scan is a loop.
+output, so the scan is a loop over the FFI surface, which `ffi-exports` lists
+from the catalog:
 
 ```bash
-llvm-nm target/debug/libquiche.a 2>/dev/null \
-  | awk '$2=="T" && $3 ~ /^_quiche_/ { print substr($3, 2) }' \
-  | sort -u > surface.txt
+rllvm-query --catalog $CAT ffi-exports \
+  | awk 'NF && $1 != "note:" { print $NF }' > surface.txt
 wc -l < surface.txt        # 169 entry points
 
 for fn in $(cat surface.txt); do
@@ -282,15 +282,12 @@ for fn in $(cat surface.txt); do
 done
 ```
 
-Three details bite here. It has to be LLVM's `llvm-nm`, because rustc ships
-`std` and `core` into the archive with embedded bitcode and a system `nm` built
-on an older LLVM rejects it with `Unknown attribute kind`. Its stderr carries
-harmless "no symbols" notes for empty members. And the `substr` drops Mach-O's
-leading underscore, which the queries do not want; an ELF build matches
-`/^quiche_/` and keeps the whole name.
-Both quirks, and the fact that this step reaches outside the tool at all, are a
-gap: the catalog already knows which functions a Rust module exported to C, so
-`rllvm-query` should be able to list them itself
+`ffi-exports` lists the definitions that Rust modules export under an unmangled
+name, which is what `#[no_mangle]` produces. It tells a Rust module from a C
+one by its debug info, or by the compiler that `llvm.ident` names, and it says
+how many functions it could not attribute instead of guessing. The first
+version of this scan went through `llvm-nm`, a `quiche_` prefix and Mach-O's
+leading underscore, which was exactly the kind of step that belongs in the tool
 ([#243](https://github.com/h1994st/rllvm/issues/243)).
 
 169 entry points reduce to 7 candidates, and both functions the advisory names
@@ -352,7 +349,7 @@ Anything sequenced after the crossing is a candidate consumer of a pointer that
 Rust has already freed. The two `fprintf` calls are a three-line reading window.
 
 <figure class="ffi-fig ffi-funnel" aria-label="Each step narrows the search: 169 FFI entry points, 7 candidates, 1 caller, 3 lines of C to read">
-<div class="ffi-rung"><span class="ffi-count">169</span><span class="ffi-track"><span class="ffi-fill" style="--w:100%"></span></span><span class="ffi-label"><b>FFI entry points</b>, listed by nm</span></div>
+<div class="ffi-rung"><span class="ffi-count">169</span><span class="ffi-track"><span class="ffi-fill" style="--w:100%"></span></span><span class="ffi-label"><b>FFI entry points</b>, listed by ffi-exports</span></div>
 <div class="ffi-rung"><span class="ffi-count">7</span><span class="ffi-track"><span class="ffi-fill" style="--w:34%"></span></span><span class="ffi-label"><b>candidates</b>: callees take a pointer into T and drop T</span></div>
 <div class="ffi-rung"><span class="ffi-count">1</span><span class="ffi-track"><span class="ffi-fill" style="--w:16%"></span></span><span class="ffi-label"><b>caller</b>, with a file and a line</span></div>
 <div class="ffi-rung"><span class="ffi-count">3</span><span class="ffi-track"><span class="ffi-fill" style="--w:7%"></span></span><span class="ffi-label"><b>lines of C</b> left to read</span></div>
