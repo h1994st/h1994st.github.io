@@ -11,6 +11,8 @@ toc = true
 toc_sidebar = true
 +++
 
+![rllvm: extract, catalog, and query LLVM bitcode from real software](https://shengtuo.me/rllvm/assets/images/banner.png)
+
 ## TL;DR
 
 The first two posts in this series were about producing artifacts: extracting
