@@ -1,0 +1,311 @@
+/* Resume page (templates/resume.html). Mirrors the PDF resume's structure --
+   tabbed section headings on a rule, a timeline spine, date pills -- but in
+   the site's accent colour and a native serif/sans pairing. */
+
+.resume {
+	--rs-serif: var(--font-transitional);
+	--rs-sans: var(--font-system-ui);
+	--rs-rule: color-mix(in srgb, var(--accent-color) 55%, transparent);
+	--rs-tab-bg: color-mix(in oklab, var(--accent-color) 72%, black);
+	--rs-tab-fg: white;
+	--rs-pill: var(--fg-muted-1);
+	--rs-spine-x: 0.4rem;
+
+	font-family: var(--rs-serif);
+	font-size: 1.0625rem;
+	line-height: 1.55;
+}
+
+@media (prefers-color-scheme: dark) {
+	.resume {
+		--rs-tab-bg: var(--accent-color);
+		--rs-tab-fg: black;
+		--rs-pill: var(--fg-muted-2);
+	}
+}
+
+.resume p {
+	margin: 0;
+}
+
+.resume a {
+	text-decoration-thickness: 0.06em;
+	text-underline-offset: 0.15em;
+}
+
+/* Header ------------------------------------------------------------------ */
+
+.rs-header {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: flex-end;
+	gap: 1rem 2rem;
+	padding-bottom: 1rem;
+	border-bottom: 2px solid var(--rs-tab-bg);
+}
+
+.rs-header h1 {
+	margin: 0;
+	font-family: var(--rs-sans);
+	font-size: clamp(2rem, 6vw, 2.75rem);
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	line-height: 1.05;
+}
+
+.rs-headline {
+	margin-top: 0.35rem !important;
+	font-family: var(--rs-sans);
+	color: var(--fg-muted-5);
+}
+
+.rs-contact {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-family: var(--rs-sans);
+	font-size: var(--font-size-small);
+	line-height: 1.6;
+	text-align: right;
+}
+
+/* Section tabs on a rule -------------------------------------------------- */
+
+.rs-section {
+	margin-top: 2.25rem;
+}
+
+.resume h2.rs-tab {
+	display: flex;
+	align-items: center;
+	gap: 0;
+	margin: 0 0 1rem;
+	font-family: var(--rs-sans);
+	font-size: var(--font-size-small);
+	font-weight: 650;
+	letter-spacing: 0.01em;
+	line-height: 1;
+}
+
+.resume h2.rs-tab::before {
+	content: none;
+}
+
+.resume h2.rs-tab::after {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background: var(--rs-rule);
+}
+
+.rs-tab span {
+	padding: 0.35rem 0.7rem;
+	border-radius: 0.375rem;
+	background: var(--rs-tab-bg);
+	color: var(--rs-tab-fg);
+}
+
+/* Entries ----------------------------------------------------------------- */
+
+.rs-line {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 0.25rem 1rem;
+}
+
+.rs-what {
+	flex: 1;
+	min-width: 0;
+}
+
+.rs-what strong {
+	font-weight: 650;
+}
+
+.rs-date {
+	flex: none;
+	padding: 0.1rem 0.6rem;
+	border-radius: 999px;
+	background: var(--rs-pill);
+	color: var(--fg-muted-5);
+	font-family: var(--rs-sans);
+	font-size: var(--font-size-x-small);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.rs-note {
+	margin-top: 0.2rem !important;
+	color: var(--fg-muted-5);
+}
+
+.rs-link {
+	font-style: italic;
+	font-size: var(--font-size-small);
+}
+
+.rs-plain,
+.rs-spine {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.rs-plain > li + li,
+.rs-spine > li + li {
+	margin-top: 0.85rem;
+}
+
+.rs-plain > li.rs-line + li.rs-line {
+	margin-top: 0.4rem;
+}
+
+/* Timeline spine: a thin line with a ring at each entry. */
+.rs-spine {
+	position: relative;
+	padding-left: 1.6rem;
+}
+
+.rs-spine::before {
+	content: "";
+	position: absolute;
+	top: 0.6rem;
+	bottom: 0.6rem;
+	left: var(--rs-spine-x);
+	width: 2px;
+	background: var(--rs-rule);
+}
+
+.rs-spine > li {
+	position: relative;
+}
+
+.rs-spine > li::before {
+	content: "";
+	position: absolute;
+	top: 0.45em;
+	left: calc(-1.6rem + var(--rs-spine-x) + 1px - 0.35rem);
+	box-sizing: border-box;
+	width: 0.7rem;
+	height: 0.7rem;
+	border: 2px solid var(--rs-tab-bg);
+	border-radius: 50%;
+	background: var(--bg-color);
+}
+
+/* Summary skills ---------------------------------------------------------- */
+
+.rs-skills {
+	display: grid;
+	grid-template-columns: max-content 1fr;
+	gap: 0.3rem 1rem;
+	margin: 0.9rem 0 0;
+}
+
+.rs-skills dt {
+	font-family: var(--rs-sans);
+	font-size: var(--font-size-small);
+	font-weight: 650;
+	line-height: 1.9;
+}
+
+.rs-skills dd {
+	margin: 0;
+}
+
+/* Publications ------------------------------------------------------------ */
+
+.rs-cites {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	counter-reset: cite;
+}
+
+.rs-cites > li {
+	display: grid;
+	grid-template-columns: 2.25rem 1fr;
+	counter-increment: cite;
+}
+
+.rs-cites > li + li {
+	margin-top: 0.7rem;
+}
+
+.rs-cites > li::before {
+	content: "[" counter(cite) "]";
+	grid-row: span 2;
+	color: var(--fg-muted-4);
+	font-family: var(--rs-sans);
+	font-size: var(--font-size-small);
+	font-variant-numeric: tabular-nums;
+	line-height: 1.9;
+}
+
+.rs-cite-title {
+	font-weight: 600;
+}
+
+.rs-cite-meta {
+	color: var(--fg-muted-5);
+	font-size: var(--font-size-small);
+}
+
+.rs-cite-meta strong {
+	color: var(--fg-color);
+}
+
+.rs-award {
+	color: var(--fg-color);
+}
+
+.rs-more {
+	margin-top: 1rem !important;
+	color: var(--fg-muted-4);
+	font-size: var(--font-size-small);
+}
+
+/* Narrow screens: contact drops under the name, dates under their line. -- */
+
+@media (max-width: 600px) {
+	.rs-contact {
+		text-align: left;
+	}
+
+	.rs-line {
+		flex-wrap: wrap;
+	}
+
+	.rs-what {
+		flex-basis: 100%;
+	}
+
+	.rs-skills {
+		grid-template-columns: 1fr;
+		gap: 0;
+	}
+
+	.rs-skills dd + dt {
+		margin-top: 0.5rem;
+	}
+}
+
+/* Print: drop site chrome so the page doubles as a plain resume. ---------- */
+
+@media print {
+	body > nav,
+	#site-footer {
+		display: none !important;
+	}
+
+	.resume {
+		font-size: 10.5pt;
+	}
+
+	.rs-section,
+	.rs-entry {
+		break-inside: avoid;
+	}
+}

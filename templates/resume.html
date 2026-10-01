@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{#- Renders the structured resume in content/resume/index.md's [extra].
+    Experience entries deliberately take only role metadata plus a one-line
+    `summary`: no bullet lists of duties. -#}
+
+{% block content %}
+{%- set r = page.extra -%}
+<article class="resume">
+	<header class="rs-header">
+		<div class="rs-who">
+			<h1>{{ config.extra.copyright_name }}</h1>
+			{%- if r?.headline %}<p class="rs-headline">{{ r.headline }}</p>{% endif %}
+		</div>
+		{%- if r?.contact %}
+		<ul class="rs-contact">
+			{%- for c in r.contact %}
+			<li><a href="{{ c.url }}">{{ c.label }}</a></li>
+			{%- endfor %}
+		</ul>
+		{%- endif %}
+	</header>
+
+	{%- if r?.summary %}
+	<section class="rs-section" id="summary">
+		<h2 class="rs-tab"><span>Summary</span></h2>
+		<p class="rs-summary">{{ r.summary | markdown(inline=true) | safe }}</p>
+		{%- if r?.skills %}
+		<dl class="rs-skills">
+			{%- for s in r.skills %}
+			<dt>{{ s.label }}</dt>
+			<dd>{{ s.value }}</dd>
+			{%- endfor %}
+		</dl>
+		{%- endif %}
+	</section>
+	{%- endif %}
+
+	{%- if r?.experience %}
+	<section class="rs-section" id="experience">
+		<h2 class="rs-tab"><span>Experience</span></h2>
+		<ol class="rs-spine">
+			{%- for e in r.experience %}
+			<li class="rs-entry">
+				<div class="rs-line">
+					<p class="rs-what"><strong>{{ e.title }}</strong>, {% if e?.org_url %}<a href="{{ e.org_url }}">{{ e.org }}</a>{% else %}{{ e.org }}{% endif %}{% if e?.location %}, {{ e.location }}{% endif %}</p>
+					{% if e?.start %}<span class="rs-date">{{ e.start }}{% if e?.end %} &ndash; {{ e.end }}{% endif %}</span>{% elif e?.years %}<span class="rs-date">{{ e.years }}</span>{% endif %}
+				</div>
+				{%- if e?.summary %}<p class="rs-note">{{ e.summary | markdown(inline=true) | safe }}</p>{% endif %}
+			</li>
+			{%- endfor %}
+		</ol>
+	</section>
+	{%- endif %}
+
+	{%- if r?.projects %}
+	<section class="rs-section" id="projects">
+		<h2 class="rs-tab"><span>Projects</span></h2>
+		<ol class="rs-spine">
+			{%- for p in r.projects %}
+			<li class="rs-entry">
+				<div class="rs-line">
+					<p class="rs-what"><strong>{{ p.name }}</strong>{% if p?.org %}, {{ p.org }}{% endif %}</p>
+					{% if p?.start %}<span class="rs-date">{{ p.start }}{% if p?.end %} &ndash; {{ p.end }}{% endif %}</span>{% elif p?.years %}<span class="rs-date">{{ p.years }}</span>{% endif %}
+				</div>
+				{%- if p?.url %}<p class="rs-link"><a href="{{ p.url }}">{{ p.link_text | default(value=p.url) }}</a></p>{% endif %}
+				{%- if p?.summary %}<p class="rs-note">{{ p.summary | markdown(inline=true) | safe }}</p>{% endif %}
+			</li>
+			{%- endfor %}
+		</ol>
+	</section>
+	{%- endif %}
+
+	{%- if r?.education %}
+	<section class="rs-section" id="education">
+		<h2 class="rs-tab"><span>Education</span></h2>
+		<ul class="rs-plain">
+			{%- for e in r.education %}
+			<li class="rs-entry">
+				<div class="rs-line">
+					<p class="rs-what"><strong>{% if e?.org_url %}<a href="{{ e.org_url }}">{{ e.org }}</a>{% else %}{{ e.org }}{% endif %}</strong>{% if e?.location %}, {{ e.location }}{% endif %} &mdash; {{ e.degree }}</p>
+					{% if e?.start %}<span class="rs-date">{{ e.start }}{% if e?.end %} &ndash; {{ e.end }}{% endif %}</span>{% elif e?.years %}<span class="rs-date">{{ e.years }}</span>{% endif %}
+				</div>
+				{%- if e?.dissertation %}<p class="rs-link">Dissertation: {{ e.dissertation }}</p>{% endif %}
+			</li>
+			{%- endfor %}
+		</ul>
+	</section>
+	{%- endif %}
+
+	{%- if r?.publications %}
+	<section class="rs-section" id="publications">
+		<h2 class="rs-tab"><span>Publications</span></h2>
+		<ol class="rs-cites">
+			{%- for p in r.publications %}
+			<li>
+				<p class="rs-cite-title">{% if p?.url %}<a href="{{ p.url }}">{{ p.title }}</a>{% else %}{{ p.title }}{% endif %}</p>
+				<p class="rs-cite-meta">{{ p.authors | replace(from=config.extra.copyright_name, to="**" ~ config.extra.copyright_name ~ "**") | markdown(inline=true) | safe }}. {{ p.venue }}{% if p?.award %}. <em class="rs-award">{{ p.award }}</em>{% endif %}</p>
+			</li>
+			{%- endfor %}
+		</ol>
+		<p class="rs-more">Links to papers, code and slides are on the <a href="{{ get_url(path='@/publications/index.md') }}">publications</a> page.</p>
+	</section>
+	{%- endif %}
+
+	{%- for group in [["service", "Service"], ["honors", "Honors &amp; Awards"]] %}
+	{%- set items = r?[group[0]] %}
+	{%- if items %}
+	<section class="rs-section" id="{{ group[0] }}">
+		<h2 class="rs-tab"><span>{{ group[1] | safe }}</span></h2>
+		<ul class="rs-plain">
+			{%- for s in items %}
+			<li class="rs-line"><p class="rs-what">{{ s.text | markdown(inline=true) | safe }}</p>{% if s?.start %}<span class="rs-date">{{ s.start }}{% if s?.end %} &ndash; {{ s.end }}{% endif %}</span>{% elif s?.years %}<span class="rs-date">{{ s.years }}</span>{% endif %}</li>
+			{%- endfor %}
+		</ul>
+	</section>
+	{%- endif %}
+	{%- endfor %}
+
+</article>
+{% endblock content %}
