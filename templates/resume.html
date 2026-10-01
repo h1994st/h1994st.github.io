@@ -21,6 +21,24 @@
 		{%- endif %}
 	</header>
 
+	{#- In-page section nav: a bar under the header, plus (on wide screens) a
+	    sidebar copy that js/resume-nav.js reveals once the bar scrolls away. -#}
+	{%- set nav_sections = [["summary", "Summary"], ["experience", "Experience"], ["projects", "Projects"], ["education", "Education"], ["publications", "Publications"], ["service", "Service"], ["honors", "Honors"]] %}
+	<nav class="rs-nav" aria-label="Resume sections">
+		{%- for s in nav_sections %}
+		{%- if r?[s[0]] %}
+		<a href="#{{ s[0] }}">{{ s[1] }}</a>
+		{%- endif %}
+		{%- endfor %}
+	</nav>
+	<nav class="rs-side" aria-label="Resume sections (sidebar)">
+		{%- for s in nav_sections %}
+		{%- if r?[s[0]] %}
+		<a href="#{{ s[0] }}">{{ s[1] }}</a>
+		{%- endif %}
+		{%- endfor %}
+	</nav>
+
 	{%- if r?.summary %}
 	<section class="rs-section" id="summary">
 		<h2 class="rs-tab"><span>Summary</span></h2>
@@ -124,4 +142,5 @@
 	{%- endfor %}
 
 </article>
+<script src="{{ get_url(path='js/resume-nav.js') }}" defer></script>
 {% endblock content %}

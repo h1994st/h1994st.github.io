@@ -10,6 +10,10 @@
 	--rs-tab-fg: white;
 	--rs-pill: var(--fg-muted-1);
 	--rs-spine-x: 0.4rem;
+	/* Where the section nav sticks, and its height; js/resume-nav.js
+	   measures both, these are the fallbacks. */
+	--rs-stick: 4.75rem;
+	--rs-nav-h: 2.75rem;
 
 	font-family: var(--rs-serif);
 	font-size: 1.0625rem;
@@ -46,8 +50,7 @@
 	justify-content: space-between;
 	align-items: flex-end;
 	gap: 1rem 2rem;
-	padding-bottom: 1rem;
-	border-bottom: 2px solid var(--rs-tab-bg);
+	padding-bottom: 1.25rem;
 }
 
 .rs-header h1 {
@@ -73,6 +76,118 @@
 	font-size: var(--font-size-small);
 	line-height: 1.6;
 	text-align: right;
+}
+
+/* Section nav: sticks under the site nav; the section in view is marked
+   with aria-current by js/resume-nav.js. ---------------------------------- */
+
+.rs-nav {
+	display: flex;
+	gap: 1.5rem;
+	position: sticky;
+	top: var(--rs-stick);
+	z-index: 10;
+	border-bottom: 1px solid var(--rs-rule);
+	background: var(--bg-color);
+	/* Scroll sideways on narrow screens instead of widening the page. */
+	contain: inline-size;
+	overflow-x: auto;
+	scrollbar-width: none;
+	font-family: var(--rs-sans);
+	font-size: var(--font-size-small);
+	white-space: nowrap;
+}
+
+.rs-nav::-webkit-scrollbar {
+	display: none;
+}
+
+.rs-nav a {
+	margin-bottom: -1px;
+	border-bottom: 2px solid transparent;
+	padding: 0.7rem 0 0.55rem;
+	color: var(--fg-muted-5);
+	font-weight: 500;
+	text-decoration: none;
+}
+
+.rs-nav a:hover {
+	color: var(--fg-color);
+}
+
+.rs-nav a[aria-current] {
+	border-bottom-color: var(--rs-tab-bg);
+	color: var(--fg-color);
+}
+
+/* Wide screens: the bar stays put under the header, and a vertical copy
+   fades in left of the content once the bar has scrolled under the site
+   nav (js/resume-nav.js sets .rs-side-on). Narrower screens have no room
+   beside the column, so they keep the sticky bar and never show this. */
+
+.rs-side {
+	display: none;
+}
+
+@media (min-width: 1200px) {
+	.rs-nav {
+		position: static;
+	}
+
+	.rs-side {
+		display: flex;
+		flex-direction: column;
+		position: fixed;
+		top: calc(var(--rs-stick) + 1.5rem);
+		left: max(1rem, calc(50vw - var(--container-width) / 2 - 12rem));
+		visibility: hidden;
+		opacity: 0;
+		transform: translateX(-0.5rem);
+		transition:
+			opacity 0.2s ease,
+			transform 0.2s ease,
+			visibility 0s 0.2s;
+		border-left: 1px solid var(--rs-rule);
+		width: 9.5rem;
+		font-family: var(--rs-sans);
+		font-size: var(--font-size-small);
+	}
+
+	.resume.rs-side-on .rs-side {
+		visibility: visible;
+		opacity: 1;
+		transform: none;
+		transition:
+			opacity 0.2s ease,
+			transform 0.2s ease;
+	}
+
+	.rs-side a {
+		margin-left: -1px;
+		border-left: 2px solid transparent;
+		padding: 0.3rem 0 0.3rem 0.85rem;
+		color: var(--fg-muted-5);
+		font-weight: 500;
+		text-decoration: none;
+	}
+
+	.rs-side a:hover {
+		color: var(--fg-color);
+	}
+
+	.rs-side a[aria-current] {
+		border-left-color: var(--rs-tab-bg);
+		color: var(--fg-color);
+	}
+}
+
+/* Land section headings just below the stuck nav, and skip the theme's
+   accent flash on :target (it would colour a whole section). */
+.resume .rs-section:target:not(#main-content),
+.rs-section {
+	scroll-margin-block-start: calc(var(--rs-stick) + var(--rs-nav-h) + 1rem);
+	color: inherit;
+	text-shadow: none;
 }
 
 /* Section tabs on a rule -------------------------------------------------- */
@@ -321,7 +436,10 @@
 /* Print: drop site chrome so the page doubles as a plain resume. ---------- */
 
 @media print {
-	body > nav,
+	#handle,
+	#site-nav,
+	.rs-nav,
+	.rs-side,
 	#site-footer {
 		display: none !important;
 	}
