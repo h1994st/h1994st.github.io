@@ -94,12 +94,18 @@
 		<ol class="rs-cites">
 			{%- for p in r.publications %}
 			<li>
-				<p class="rs-cite-title">{% if p?.url %}<a href="{{ p.url }}">{{ p.title }}</a>{% else %}{{ p.title }}{% endif %}</p>
+				<p class="rs-cite-title">{{ p.title }}</p>
 				<p class="rs-cite-meta">{{ p.authors | replace(from=config.extra.copyright_name, to="**" ~ config.extra.copyright_name ~ "**") | markdown(inline=true) | safe }}. {{ p.venue }}{% if p?.award %}. <em class="rs-award">{{ p.award }}</em>{% endif %}</p>
+				{%- if p?.links %}
+				<ul class="rs-cite-links">
+					{%- for l in p.links %}
+					<li><a href="{{ l.url }}">{{ l.label }}</a></li>
+					{%- endfor %}
+				</ul>
+				{%- endif %}
 			</li>
 			{%- endfor %}
 		</ol>
-		<p class="rs-more">Links to papers, code and slides are on the <a href="{{ get_url(path='@/publications/index.md') }}">publications</a> page.</p>
 	</section>
 	{%- endif %}
 
