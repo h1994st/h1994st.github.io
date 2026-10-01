@@ -61,7 +61,7 @@ start = "May 2022"
 end = "Present"
 url = "https://github.com/h1994st/rllvm"
 link_text = "github.com/h1994st/rllvm"
-summary = "A drop-in Rust replacement for wllvm/gllvm that extracts whole-program LLVM bitcode from any build, with source-level queries for coding agents through an MCP server and a Claude Code plugin."
+summary = "A drop-in Rust replacement for wllvm/gllvm that extracts whole-program LLVM bitcode from any build, with source-level queries for static analysis, vulnerability triage, and coding agents, demonstrated on a use-after-free advisory in Cloudflare's quiche."
 
 [[extra.projects]]
 name = "A Flexible Grammar Mutator"
