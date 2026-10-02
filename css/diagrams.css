@@ -1,0 +1,177 @@
+/* Diagrams for the whole-program bitcode post.
+ *
+ * The vocabulary is borrowed from the rllvm and rules_rllvm project pages so
+ * the blog and the docs cannot disagree visually. Nothing here hardcodes a
+ * colour: the four semantic tokens below are derived from Duckquill's own
+ * --fg-color / --bg-color, so both themes follow the site automatically. */
+
+.bc-fig {
+	--d-ink: var(--fg-color);
+	--d-muted: color-mix(in srgb, var(--fg-color) 58%, transparent);
+	--d-rule: color-mix(in srgb, var(--fg-color) 22%, transparent);
+	--d-raised: color-mix(in srgb, var(--fg-color) 6%, transparent);
+
+	margin: 2rem 0;
+	font-family: var(--font-monospace-code);
+}
+
+.bc-fig figcaption {
+	/* Duckquill centres figcaptions; these read as notes on a left-aligned
+	   figure, so they are pulled back into line with it. */
+	text-align: left;
+	max-width: min(34rem, 100%);
+	margin-top: 0.9rem;
+	font-family: var(--font-monospace-code);
+	font-size: var(--font-size-x-small);
+	color: var(--d-muted);
+	line-height: 1.5;
+}
+
+.bc-fig figcaption b {
+	color: var(--d-ink);
+	font-weight: normal;
+}
+
+/* ---------- the ledger: one path per object, concatenated ---------- */
+
+.bc-ledger ol {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	position: relative;
+	max-width: min(27rem, 100%);
+}
+
+/* The rule down the right edge is the section the linker is filling in: every
+   row terminates against the same line. */
+.bc-ledger ol::after {
+	content: "";
+	position: absolute;
+	right: 0;
+	top: 0.85rem;
+	bottom: 0.85rem;
+	width: 1px;
+	background: linear-gradient(
+		to bottom,
+		transparent,
+		var(--d-rule) 14%,
+		var(--d-rule) 86%,
+		transparent
+	);
+}
+
+.bc-ledger li {
+	display: grid;
+	grid-template-columns: auto minmax(1.5rem, 1fr) auto;
+	align-items: center;
+	gap: 0.7rem;
+	padding: 0.4rem 1.15rem 0.4rem 0;
+	font-size: var(--font-size-small);
+	animation: bc-enter 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+	animation-delay: calc(var(--i) * 80ms);
+}
+
+.bc-ledger .tie {
+	height: 1px;
+	background: repeating-linear-gradient(
+		to right,
+		var(--d-rule) 0 3px,
+		transparent 3px 6px
+	);
+}
+
+.bc-ledger .src {
+	color: var(--d-ink);
+}
+
+.bc-ledger .bc {
+	color: var(--d-muted);
+}
+
+.bc-ledger .sec {
+	color: var(--d-ink);
+}
+
+/* ---------- the graph: a diamond, deduplicated ---------- */
+
+.bc-graph svg {
+	display: block;
+	width: 100%;
+	height: auto;
+	max-width: min(30rem, 100%);
+	overflow: visible;
+}
+
+/* Dashed on purpose: these edges are declared during analysis and carry
+   nothing until an output group asks for them. */
+.bc-graph .edges line {
+	/* Not --d-rule: a hairline that reads fine as a border disappears as a
+	   diagonal, and in dark it vanishes against the ground entirely. */
+	stroke: color-mix(in srgb, var(--fg-color) 40%, transparent);
+	stroke-width: 1.5;
+	stroke-dasharray: 3 3;
+	stroke-linecap: round;
+}
+
+.bc-graph .node rect {
+	fill: var(--d-raised);
+	stroke: var(--d-rule);
+	stroke-width: 1;
+}
+
+.bc-graph text {
+	font-family: var(--font-monospace-code);
+	text-anchor: middle;
+}
+
+.bc-graph .target {
+	fill: var(--d-ink);
+	font-size: 13px;
+}
+
+.bc-graph .bc {
+	fill: var(--d-muted);
+	font-size: 11px;
+}
+
+/* The shared node is the point of the picture, so it is the one thing allowed
+   to carry the accent colour. */
+.bc-graph .shared rect {
+	stroke: var(--accent-color);
+}
+
+.bc-graph .shared .target {
+	fill: var(--accent-color);
+}
+
+.bc-graph .node,
+.bc-graph .edges {
+	transform-box: fill-box;
+	transform-origin: center;
+	animation: bc-enter 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+	animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+.bc-graph .edges {
+	animation-duration: 0.7s;
+	animation-delay: 150ms;
+}
+
+@keyframes bc-enter {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.bc-ledger li,
+	.bc-graph .node,
+	.bc-graph .edges {
+		animation: none;
+	}
+}
