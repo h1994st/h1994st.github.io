@@ -44,13 +44,25 @@
 
 /* Header ------------------------------------------------------------------ */
 
+/* Two fixed columns rather than a wrapping row: the headline wraps inside
+   its column instead of pushing the contact links onto their own line, which
+   happens at different widths depending on the platform's UI font. */
 .rs-header {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: space-between;
-	align-items: flex-end;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: end;
 	gap: 1rem 2rem;
 	padding-bottom: 1.25rem;
+}
+
+@media (max-width: 640px) {
+	.rs-header {
+		grid-template-columns: 1fr;
+	}
+
+	.rs-header .rs-contact {
+		text-align: left;
+	}
 }
 
 .rs-header h1 {
@@ -411,10 +423,6 @@
 /* Narrow screens: contact drops under the name, dates under their line. -- */
 
 @media (max-width: 600px) {
-	.rs-contact {
-		text-align: left;
-	}
-
 	.rs-line {
 		flex-wrap: wrap;
 	}
