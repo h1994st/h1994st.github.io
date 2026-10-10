@@ -397,7 +397,8 @@
 	color: var(--fg-color);
 }
 
-.rs-cite-links {
+/* Link chips, shared by projects and publications. */
+.rs-chips {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.35rem;
@@ -408,7 +409,7 @@
 	font-size: var(--font-size-x-small);
 }
 
-.rs-cite-links a {
+.rs-chips a {
 	display: inline-block;
 	padding: 0.05rem 0.55rem;
 	border: 1px solid var(--rs-rule);
@@ -416,7 +417,7 @@
 	text-decoration: none;
 }
 
-.rs-cite-links a:hover {
+.rs-chips a:hover {
 	background: var(--rs-pill);
 }
 

@@ -81,8 +81,14 @@
 					<p class="rs-what"><strong>{{ p.name }}</strong>{% if p?.org %}, {{ p.org }}{% endif %}</p>
 					{% if p?.start %}<span class="rs-date">{{ p.start }}{% if p?.end %} &ndash; {{ p.end }}{% endif %}</span>{% elif p?.years %}<span class="rs-date">{{ p.years }}</span>{% endif %}
 				</div>
-				{%- if p?.url %}<p class="rs-link"><a href="{{ p.url }}">{{ p.link_text | default(value=p.url) }}</a></p>{% endif %}
 				{%- if p?.summary %}<p class="rs-note">{{ p.summary | markdown(inline=true) | safe }}</p>{% endif %}
+				{%- if p?.links %}
+				<ul class="rs-chips">
+					{%- for l in p.links %}
+					<li><a href="{{ l.url }}">{{ l.label }}</a></li>
+					{%- endfor %}
+				</ul>
+				{%- endif %}
 			</li>
 			{%- endfor %}
 		</ol>
@@ -115,7 +121,7 @@
 				<p class="rs-cite-title">{{ p.title }}</p>
 				<p class="rs-cite-meta">{{ p.authors | replace(from=config.extra.copyright_name, to="**" ~ config.extra.copyright_name ~ "**") | markdown(inline=true) | safe }}. {{ p.venue }}{% if p?.award %}. <em class="rs-award">{{ p.award }}</em>{% endif %}</p>
 				{%- if p?.links %}
-				<ul class="rs-cite-links">
+				<ul class="rs-chips">
 					{%- for l in p.links %}
 					<li><a href="{{ l.url }}">{{ l.label }}</a></li>
 					{%- endfor %}
