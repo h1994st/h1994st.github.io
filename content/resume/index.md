@@ -64,6 +64,15 @@ link_text = "github.com/h1994st/rllvm"
 summary = "A drop-in Rust replacement for wllvm/gllvm that extracts whole-program LLVM bitcode from any build, with source-level queries for static analysis, vulnerability triage, and coding agents, demonstrated on a use-after-free advisory in Cloudflare's quiche."
 
 [[extra.projects]]
+name = "Whole-Program LLVM Bitcode for Bazel"
+org = "rules_rllvm"
+start = "Dec 2024"
+end = "Present"
+url = "https://github.com/h1994st/rules_rllvm"
+link_text = "github.com/h1994st/rules_rllvm"
+summary = "Bazel rules that extract whole-program LLVM bitcode from C, C++, Objective-C, and Rust targets without a compiler wrapper, using an aspect that adds one lazy bitcode action per translation unit."
+
+[[extra.projects]]
 name = "A Flexible Grammar Mutator"
 org = "AFL++, Google Summer of Code 2020"
 start = "Jun 2020"
@@ -71,6 +80,15 @@ end = "Present"
 url = "https://github.com/AFLplusplus/Grammar-Mutator"
 link_text = "github.com/AFLplusplus/Grammar-Mutator"
 summary = "A grammar mutator for AFL++ with tree-based mutation and trimming for structured-input fuzzing."
+
+[[extra.projects]]
+name = "Chromatron Remake"
+org = "Reverse-engineered game port"
+start = "Oct 2026"
+end = "Present"
+url = "https://github.com/h1994st/chromatron-remake"
+link_text = "github.com/h1994st/chromatron-remake"
+summary = "Sean Barrett's Chromatron 1–4 laser puzzle games, rebuilt in Rust for Apple Silicon and the browser from a Ghidra decompilation of the original PowerPC binaries."
 
 [[extra.education]]
 org = "University of Michigan"
