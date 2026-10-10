@@ -18,7 +18,7 @@ contact = [
 ]
 summary = "Security-focused software engineer with a Ph.D. in Computer Science and 5+ years of experience building security tooling, program analysis infrastructure, and large-scale detection systems. Strong background in vulnerability discovery, fuzzing, and network protocol security."
 skills = [
-  { label = "Languages/Tools", value = "C/C++, Python, Rust, Go, Java, SQL (BigQuery, Postgres), Terraform, Bazel/Buck, Docker, LLVM, Google ADK" },
+  { label = "Languages/Tools", value = "C/C++, Python, Rust, Go, Java, SQL (ClickHouse, BigQuery, Postgres), Terraform, Bazel/Buck, Docker, LLVM, Google ADK" },
   { label = "Skills", value = "Fuzzing, Program Analysis, Secure SDLC, Vulnerability Discovery, Network and System Security, Access Control (RBAC), LLM Agents" },
 ]
 
