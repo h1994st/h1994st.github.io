@@ -1,0 +1,77 @@
+/* Figures for the Chromatron Remake post. The diagrams are self-contained
+   SVGs on their own dark panel (the game's brand look), so they need no
+   theme colours; this file only lays them out and drops the theme's image
+   chrome, which would double up with the panels' own rounded corners. */
+
+.cr-fig {
+	margin: 2rem 0;
+}
+
+.cr-fig img {
+	margin: 0;
+	box-shadow: none;
+	border-radius: 18px;
+	background: none;
+	width: 100%;
+	height: auto;
+}
+
+.cr-fig figcaption {
+	margin-top: 0.75rem;
+	text-align: left;
+}
+
+/* A caption-style note under the trailer embed. */
+.cr-note {
+	margin-top: 0.5rem;
+	color: var(--fg-muted-4);
+	font-size: var(--font-size-small);
+}
+
+/* The four games, two by two (one column on phones). */
+.cr-shots {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1rem;
+	margin: 2rem 0;
+	padding: 0;
+	list-style: none;
+}
+
+.cr-shots li {
+	margin: 0;
+	padding: 0;
+}
+
+.cr-shots img {
+	margin: 0;
+	width: 100%;
+	height: auto;
+}
+
+.cr-shots span {
+	display: block;
+	margin-top: 0.4rem;
+	color: var(--fg-muted-4);
+	font-size: var(--font-size-small);
+}
+
+@media (max-width: 600px) {
+	.cr-shots {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* Duckquill fades the banner out over its whole height, so a dark banner
+   turns muddy grey over the light page. Keep it solid for most of its height
+   and fade only the last stretch; on the light page, only the very bottom,
+   because any longer fade from navy to light passes through grey. */
+#banner-container {
+	--mask: linear-gradient(black 86%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+	#banner-container {
+		--mask: linear-gradient(black 62%, transparent);
+	}
+}
