@@ -13,10 +13,15 @@ banner = "banner.jpg"
 
 Around 2006, my dad and I played a little puzzle game called Chromatron. You get a
 few lasers, some mirrors and colour filters, and a board of targets that light up
-when the right colour of light reaches them. We only ever had the first one.
+when the right colour of light reaches them.
+
+The version we played was not Sean Barrett's original, though. It was a Flash
+port by Hawkpeng79, and it only covered the first Chromatron, split into two
+Flash games of 25 levels each. That is why, for twenty years, I never knew there
+were three more.
 
 Recently I wanted to play it again. Sean Barrett's site still has all four
-Chromatron games up for download, and three of them I had never seen. None of
+Chromatron games up for download, and three of them were new to me. None of
 them would open on my Mac. By the next evening I was playing all four, and the
 early levels of the first game came back as pure muscle memory: my hands knew
 where the mirrors went before I had really looked at the board.
@@ -144,6 +149,8 @@ known about otherwise:
 Chromatron is Sean Barrett's game. The design, the levels, the graphics and the
 text are all his, from Silver Spaceship Software, and you can still get the
 originals from [silverspaceship.com/chromatron](https://silverspaceship.com/chromatron/).
+Thanks also to Hawkpeng79, whose Flash port is how I found the game in the
+first place.
 
 > [!NOTE]
 > Chromatron Remake is an unofficial, independent port. It is not affiliated
