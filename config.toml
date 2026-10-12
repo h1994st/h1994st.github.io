@@ -40,10 +40,19 @@ show_copy_button = true
 show_reading_time = true
 show_share_button = true
 
+# Duckquill tints a post's card in the blog list with its banner, shrunk to
+# 4x2 px, and a dark banner averages to a flat grey card. Cards show the
+# banner as a strip instead (templates/partials/articles.html).
+blurnail = false
+
 # ga4-events.js holds the gtag bootstrap (dataLayer, gtag(), 'js', 'config')
 # and the click-event wiring. The gtag library itself is loaded straight from
 # Google by partials/head.html -- see google_analytics below.
 scripts = ["js/ga4-events.js"]
+
+# Site-wide styles on top of the theme. article-list.css styles the banner
+# strips that templates/partials/articles.html adds to blog-list cards.
+styles = ["css/article-list.css"]
 
 # Google Analytics 4 property. Loaded by partials/head.html from
 # https://www.googletagmanager.com/gtag/js?id=<this>

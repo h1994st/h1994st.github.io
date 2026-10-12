@@ -1,1 +1,3 @@
 public/
+# Zola caches resize_image() output here; CI regenerates it on every build.
+static/processed_images/
