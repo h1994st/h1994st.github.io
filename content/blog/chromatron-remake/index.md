@@ -60,14 +60,24 @@ own colour. A level is solved when every target is lit at the same time. Each
 sequel adds stranger pieces: twisters in Chromatron 2, quad-benders in 3, logic
 gates and teleporters in 4.
 
+<div class="cr-looks">
+<input type="radio" name="cr-look" id="cr-look-modern" checked>
+<label for="cr-look-modern">Modern</label>
+<input type="radio" name="cr-look" id="cr-look-classic">
+<label for="cr-look-classic">Classic</label>
 <ul class="cr-shots">
-<li><img src="chromatron1.png" alt="Chromatron, level 46 solved" width="640" height="480"><span>Chromatron</span></li>
-<li><img src="chromatron2.png" alt="Chromatron 2, level 22 solved" width="640" height="480"><span>Chromatron 2</span></li>
-<li><img src="chromatron3.png" alt="Chromatron 3, level 41 solved" width="640" height="480"><span>Chromatron 3</span></li>
-<li><img src="chromatron4.png" alt="Chromatron 4, level 21 solved" width="640" height="480"><span>Chromatron 4</span></li>
+<li><img class="cr-modern" src="chromatron1-modern.jpg" alt="Chromatron, level 46 solved, in the modern look" width="960" height="600"><img class="cr-classic" src="chromatron1.png" alt="Chromatron, level 46 solved, in the classic look" width="640" height="480"><span>Chromatron</span></li>
+<li><img class="cr-modern" src="chromatron2-modern.jpg" alt="Chromatron 2, level 22 solved, in the modern look" width="960" height="600"><img class="cr-classic" src="chromatron2.png" alt="Chromatron 2, level 22 solved, in the classic look" width="640" height="480"><span>Chromatron 2</span></li>
+<li><img class="cr-modern" src="chromatron3-modern.jpg" alt="Chromatron 3, level 41 solved, in the modern look" width="960" height="600"><img class="cr-classic" src="chromatron3.png" alt="Chromatron 3, level 41 solved, in the classic look" width="640" height="480"><span>Chromatron 3</span></li>
+<li><img class="cr-modern" src="chromatron4-modern.jpg" alt="Chromatron 4, level 21 solved, in the modern look" width="960" height="600"><img class="cr-classic" src="chromatron4.png" alt="Chromatron 4, level 21 solved, in the classic look" width="640" height="480"><span>Chromatron 4</span></li>
 </ul>
+</div>
 
-These are screenshots of the port, but they should look just like the originals.
+The web version got a new look a few days after the first release: beams sweep
+out from their lasers, targets flash as they light up, and pieces lift and turn
+as you move them. The classic look is still there, the way I remember it. Flip
+the switch above to compare, or use **Actions ▸ Classic look** in the game. The
+Mac apps keep the classic look.
 
 ## Claude Code did the engineering
 
