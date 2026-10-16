@@ -1,7 +1,65 @@
 {% extends "base.html" %}
-{#- Placeholder: Task 3 builds the home page. -#}
 {% block main %}
-<main id="main" class="f-page f-prose">
-{{ section.content | safe }}
+{%- set x = section.extra -%}
+<main id="main" class="f-wrap site-home">
+  <section class="site-hero">
+    <div>
+      <p class="f-kicker">{{ x.kicker }}</p>
+      <h1>{{ config.extra.author.name }}</h1>
+      <p class="site-intro">
+        <span class="f-visually-hidden">{{ x.intro | join(sep=" ") }}</span>
+        <span aria-hidden="true"><span class="site-prompt">$ </span><span data-f-type="{{ x.intro | json_encode }}">{{ x.intro | first }}</span></span>
+      </p>
+      <p class="site-lead">{{ x.lead }}</p>
+      <div class="f-cluster site-hero-actions">
+        <a class="f-btn f-btn--primary" href="{{ get_url(path='@/blog/_index.md') }}">Read the blog</a>
+        <a class="f-btn" href="{{ get_url(path='@/resume/index.md') }}">Resume</a>
+      </div>
+      <ul class="f-social" aria-label="Elsewhere">
+        {%- for p in config.extra.profiles %}{% if p?.show != false %}
+        <li><a class="f-social__link" href="{{ p.url }}" rel="me noopener"><span class="f-icon f-icon--{{ p.icon }}" aria-hidden="true"></span><span class="f-visually-hidden">{{ p.name }}</span></a></li>
+        {%- endif %}{% endfor %}
+      </ul>
+    </div>
+    <div class="site-crt" aria-hidden="true"><pre>{{ x.crt }}</pre></div>
+  </section>
+
+  <div class="site-home-below">
+    <section class="site-writing f-list">
+      <h2>Writing</h2>
+      {%- set blog = get_section(path="blog/_index.md") %}
+      {%- set rows = blog.pages[:5] %}
+      {%- include "partials/post_rows.html" %}
+      <p><a href="{{ blog.permalink }}">All posts →</a></p>
+    </section>
+    <section class="site-projects">
+      <h2>Projects</h2>
+      {%- set pj = get_page(path="projects/index.md") %}
+      <ul>
+        {%- for p in pj.extra.projects %}{% if p?.featured %}
+        <li><a href="{{ pj.permalink }}#{{ p.id }}"><b>{{ p.name }}</b><span>{{ p.summary | striptags | truncate(length=70) }}</span></a></li>
+        {%- endif %}{% endfor %}
+      </ul>
+      <p><a href="{{ pj.permalink }}">All projects →</a></p>
+    </section>
+  </div>
+
+  <section class="site-about f-prose">{{ section.content | safe }}</section>
 </main>
 {% endblock main %}
+{% block before_modules %}
+<script>
+  // Shuffle the typed intro before facet's typewriter starts (module scripts run after this).
+  (() => {
+    const el = document.querySelector(".site-intro [data-f-type]");
+    if (!el) return;
+    const list = JSON.parse(el.dataset.fType);
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+    el.dataset.fType = JSON.stringify(list);
+    el.textContent = list[0];
+  })();
+</script>
+{% endblock before_modules %}

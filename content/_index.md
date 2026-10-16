@@ -2,12 +2,24 @@
 insert_anchor_links = "left"
 title = "Home"
 description = "Shengtuo Hu (nu1lptr), security researcher at Palo Alto Networks and Michigan CSE Ph.D. Writing on program analysis, LLVM, fuzzing, and network security."
-+++
-
-{% <crt> %}
-
-```
-░  ░░░░  ░░        ░░  ░░░░░░░░░      ░░░░      ░░░  ░░░░  ░░        ░
+[extra]
+kicker = "Security researcher · nu1lptr"
+lead = "At Palo Alto Networks; Ph.D. from Michigan. Program analysis with LLVM, fuzzing, and network protocols."
+intro = [
+  "I read LLVM IR so you don't have to.",
+  "I feed protocols strange inputs and watch what breaks.",
+  "I find bugs before they find you.",
+  "I am a null pointer. Please don't dereference me.",
+  "Segmentation fault (core dumped). Just kidding.",
+  "I pop Hack The Box machines on weekends.",
+  "Still compiling. Ask me again in a minute.",
+  "My other debugger is a long bike ride.",
+  "I stay up late for the Milky Way.",
+  "I check the weather for clouds, not rain.",
+  "I chase golden hour on the weekends.",
+  "Some nights I'm fuzzing protocols, others I'm chasing the Milky Way.",
+]
+crt = '''░  ░░░░  ░░        ░░  ░░░░░░░░░      ░░░░      ░░░  ░░░░  ░░        ░
 ▒  ▒  ▒  ▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒  ▒▒  ▒▒▒▒  ▒▒   ▒▒   ▒▒  ▒▒▒▒▒▒▒
 ▓        ▓▓      ▓▓▓▓  ▓▓▓▓▓▓▓▓  ▓▓▓▓▓▓▓▓  ▓▓▓▓  ▓▓        ▓▓      ▓▓▓
 █   ██   ██  ████████  ████████  ████  ██  ████  ██  █  █  ██  ███████
@@ -20,12 +32,8 @@ description = "Shengtuo Hu (nu1lptr), security researcher at Palo Alto Networks 
     |\'/-..--.           \-' @@@@@@@@`-_______________
    / _ _   ,  ;           -@@@@@@@@@             /    \
   `~=`Y'~_<._./      _______/    /_       ______/      |__________-
-   <`-....__.'      /,__________/  `-.___/,_____________----------_)
-```
-
-{% </crt> %}
-
-# Shengtuo Hu
+   <`-....__.'      /,__________/  `-.___/,_____________----------_)'''
++++
 
 ## Who am I?
 
