@@ -26,10 +26,4 @@
     element.target = '_blank';
     element.rel = 'noopener noreferrer';
   });
-
-  gtag('event', 'page_view', {
-    event_category: 'Loaded',
-    user_agent: navigator.userAgent,
-    value: 'Datetime: ' + (new Date()).toString()
-  });
 })(window, document);
