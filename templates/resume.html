@@ -110,7 +110,7 @@
 					{%- for p in r.publications %}
 					<li>
 						<span class="f-pubs__title">{{ p.title }}</span>
-						<span class="f-pubs__authors">{{ p.authors | replace(from=name, to="**" ~ name ~ "**") | markdown(inline=true) | safe }}</span>
+						<span class="f-pubs__authors">{{ p.authors | escape | str | replace(from=name, to="<b>" ~ name ~ "</b>") | safe }}</span>
 						<span class="f-pubs__venue">{{ p.venue }}</span>
 						{%- if p?.award or p?.links %}
 						<div class="f-cluster">

@@ -59,7 +59,9 @@ CONTRAST = """([sel]) => {
                                        ("/resume/", "#experience .f-resume__loc"),
                                        ("/resume/", "#experience .f-timeline p"),
                                        ("/resume/", ".site-rs-dissertation"),
-                                       ("/resume/", ".f-pubs__venue")])
+                                       ("/resume/", ".f-pubs__venue"), ("/resume/", ".f-pubs__authors"),
+                                       ("/resume/", ".f-resume__skills dt"),
+                                       ("/resume/", "#service .f-lines li > span:first-child")])
 def test_text_contrast(site_url, page_factory, theme, path, sel):
     page = page_factory(theme=theme)
     page.goto(f"{site_url}{path}")

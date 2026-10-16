@@ -24,32 +24,81 @@ def test_resume_prints_one_column_without_the_nav(site_url, page_factory):
     assert page.evaluate("getComputedStyle(document.querySelector('.f-resume__body nav.f-toc')).display") == "none"
 
 
+def test_resume_prints_link_targets(site_url, page_factory):
+    """On paper, body links are underlined and publication and project links spell out their URL."""
+    page = page_factory()
+    page.goto(f"{site_url}/resume/")
+    page.emulate_media(media="print")
+    for sel in (".f-pubs a.f-chip", "#projects a.f-chip"):
+        href, after, line = page.eval_on_selector(
+            sel, "a => [a.href, getComputedStyle(a, '::after').content, getComputedStyle(a).textDecorationLine]")
+        assert after == f'" ({href})"' and line == "underline", (sel, after, line)
+    assert page.eval_on_selector(".f-resume__contact a", "a => getComputedStyle(a, '::after').content") == "none"
+
+
 def test_publications_alias_still_redirects(public_dir):
     assert 'http-equiv="refresh"' in (public_dir / "publications" / "index.html").read_text()
 
 
-def test_resume_shows_every_entry_and_no_duty_bullets(site_url, page_factory):
-    """Every generated entry is on the page; roles carry metadata and one summary line only."""
+HREFS = "el => [...el.querySelectorAll('a')].map(a => a.getAttribute('href'))"
+
+
+def entries(page, selector, items):
+    """Each generated item next to the text and link hrefs of its own rendered entry, so a field
+    can only be satisfied by its own entry, not by the same words elsewhere on the page."""
+    rows = page.locator(selector)
+    assert rows.count() == len(items), selector
+    return [(item, rows.nth(i).inner_text(), rows.nth(i).evaluate(HREFS)) for i, item in enumerate(items)]
+
+
+def test_resume_renders_every_generated_field(site_url, page_factory):
+    """Every field of the generated [extra] reaches the page, in the entry it belongs to."""
     r = resume_extra()
     page = page_factory()
     page.goto(f"{site_url}/resume/")
-    text = page.locator("main").inner_text()
-    for e in r["experience"]:
-        for field in ("title", "org", "location", "start", "end", "summary"):
-            assert e[field] in text, (field, e[field])
-    for p in r["projects"]:
-        assert p["name"] in text and p["summary"] in text, p["name"]
-    for e in r["education"]:
-        assert e["degree"] in text, e["degree"]
-    for p in r["publications"]:
-        assert p["title"] in text and p["venue"] in text, p["title"]
-    for s in r["service"] + r["honors"]:
-        assert s["text"] in text and s["years"] in text, s["text"]
-    for s in r["skills"]:
-        assert s["value"] in text, s["label"]
-    assert page.locator("#experience .f-timeline > li").count() == len(r["experience"])
+    head = page.locator(".f-resume__head")
+    assert r["headline"] in head.inner_text()
+    assert head.locator(".f-resume__contact").evaluate(HREFS) == [c["url"] for c in r["contact"]]
+    assert head.locator(".f-resume__contact").inner_text().split("\n")[: len(r["contact"])] == [
+        c["label"] for c in r["contact"]
+    ]
+    summary = page.locator("#summary").inner_text()
+    assert r["summary"] in summary
+    assert page.locator(".f-resume__skills dt").all_inner_texts() == [s["label"] for s in r["skills"]]
+    assert page.locator(".f-resume__skills dd").all_inner_texts() == [s["value"] for s in r["skills"]]
+
+    def check(selector, items, fields):
+        for item, text, hrefs in entries(page, selector, items):
+            for f in fields:
+                if f in item:
+                    assert item[f] in text, (selector, f, item[f])
+            if "award" in item:
+                assert item["award"] in text, (selector, item["award"])
+            expected = ([item["org_url"]] if "org_url" in item else []) + [l["url"] for l in item.get("links", [])]
+            assert hrefs == expected, (selector, hrefs)
+            for l in item.get("links", []):
+                assert l["label"] in text, (selector, l["label"])
+
+    check("#experience .f-timeline > li", r["experience"], ("title", "org", "location", "start", "end", "summary"))
+    check("#projects .f-timeline > li", r["projects"], ("name", "org", "start", "end", "summary"))
+    check("#education .f-timeline > li", r["education"],
+          ("degree", "org", "location", "start", "end", "dissertation"))
+    check(".f-pubs > li", r["publications"], ("title", "authors", "venue"))
+    check("#service .f-lines > li", r["service"], ("text", "years"))
+    check("#honors .f-lines > li", r["honors"], ("text", "years"))
+    # The site owner's name is bold in every author list that has it, the way facet styles it.
+    name = page.locator(".f-resume__head h1").inner_text()
+    for item, li in zip(r["publications"], page.locator(".f-pubs > li").all()):
+        if name in item["authors"]:
+            assert li.locator(".f-pubs__authors b").inner_text() == name, item["title"]
+
+
+def test_resume_roles_have_no_duty_bullets(site_url, page_factory):
+    """Roles carry metadata and one summary line only."""
+    page = page_factory()
+    page.goto(f"{site_url}/resume/")
     assert page.locator(".f-resume__bullets, #experience li ul").count() == 0
-    assert page.locator(".f-pubs > li").count() == len(r["publications"])
+    assert page.locator("#experience .f-timeline > li p").count() <= len(resume_extra()["experience"])
 
 
 def test_resume_marks_the_section_in_view(site_url, page_factory):
