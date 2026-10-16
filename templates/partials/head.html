@@ -15,7 +15,10 @@
 	<meta name="theme-color" content="#f5f7f9" media="(prefers-color-scheme: light)" />
 	<title>{% include "partials/title.html" %}</title>
 	<link rel="canonical" href="{{ current_url | default(value='/') | safe }}" />
+	{#- Drawn by tools/icon/render.py. -#}
+	<link rel="icon" href="{{ get_url(path='favicon.ico') }}" sizes="32x32" />
 	<link rel="icon" href="{{ get_url(path='favicon.svg') }}" type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="{{ get_url(path='apple-touch-icon.png') }}" />
 
 	{%- if config.generate_feeds and config.feed_filenames %}
 		{%- for feed in config.feed_filenames %}

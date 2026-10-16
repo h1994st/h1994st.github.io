@@ -60,3 +60,9 @@ def test_reduced_motion_is_still(site_url, page_factory):
 def test_only_facet_dist_is_published(public_dir):
     # ignored_static's "[!d]*" glob lets any new top-level facet entry starting with "d" through.
     assert sorted(p.name for p in (public_dir / "vendor/facet").iterdir()) == ["dist"]
+
+
+def test_site_icons_are_linked_and_published(public_dir):
+    head = (public_dir / "index.html").read_text()
+    for name in ("favicon.ico", "favicon.svg", "apple-touch-icon.png"):
+        assert f"/{name}" in head and (public_dir / name).is_file(), name
