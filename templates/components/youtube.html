@@ -1,0 +1,40 @@
+{#- Overrides the theme's youtube component (same iframe) to also emit
+    VideoObject JSON-LD when the embed is described:
+
+      {{<youtube id="..." name="..." upload_date="2026-10-13T23:08:02-07:00"
+                 description="..." duration="PT31S" />}}
+
+    `name` and `upload_date` are the fields Google requires (with the
+    thumbnail, which is derived from the id); `description` and `duration`
+    (ISO 8601) are recommended. Without `name` and `upload_date` this is just
+    the theme's embed. `name` also titles the iframe for screen readers. -#}
+{% component youtube(id, autoplay=false, start="", name="", upload_date="", description="", duration="") %}
+<iframe
+	class="youtube-embed"
+	{%- if name %}
+	title="{{ name }}"
+	{%- endif %}
+	src="https://www.youtube-nocookie.com/embed/{{ id }}{% if autoplay %}?autoplay=1{% endif %}{% if autoplay and start %}&start={{ start }}{% elif start %}?start={{ start }}{% endif %}"
+	allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+	referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+</iframe>
+{%- if name and upload_date %}
+<script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "VideoObject",
+	"name": {{ name | json_encode | safe }},
+	{%- if description %}
+	"description": {{ description | json_encode | safe }},
+	{%- endif %}
+	"thumbnailUrl": {{ ("https://i.ytimg.com/vi/" ~ id ~ "/maxresdefault.jpg") | json_encode | safe }},
+	"uploadDate": {{ upload_date | json_encode | safe }},
+	{%- if duration %}
+	"duration": {{ duration | json_encode | safe }},
+	{%- endif %}
+	"embedUrl": {{ ("https://www.youtube.com/embed/" ~ id) | json_encode | safe }},
+	"url": {{ ("https://www.youtube.com/watch?v=" ~ id) | json_encode | safe }}
+}
+</script>
+{%- endif %}
+{%- endcomponent youtube -%}

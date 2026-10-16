@@ -35,7 +35,7 @@ all four games, phones included. The code is on
 Silicon apps are on its
 [release page](https://github.com/h1994st/chromatron-remake/releases/tag/v1.0.0).
 
-{{<youtube id="CMuqV2ZrpB4" />}}
+{{<youtube id="CMuqV2ZrpB4" name="Chromatron Remake - Classic Laser Puzzles, Now in Your Browser" upload_date="2026-10-13T23:08:02-07:00" duration="PT31S" description="The Chromatron Remake trailer. Chromatron is a classic laser puzzle series from 2003-2004 by Sean Barrett: place mirrors, filters, prisms and splitters, mix coloured light, and light every target. Now playable in the browser and natively on Apple Silicon." />}}
 
 <p class="cr-note">The trailer. Its puzzles were made new for the video, not taken from the original levels.</p>
 
