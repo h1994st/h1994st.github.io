@@ -7,6 +7,6 @@ User-agent: *
 Disallow:
 Allow: /
 Sitemap: {{ get_url(path="sitemap.xml") }}
-{%- for project in ["rllvm", "rules_rllvm", "my-resume", "chromatron-remake"] %}
+{%- for project in ["rllvm", "rules_rllvm", "my-resume", "chromatron-remake", "facet"] %}
 Sitemap: {{ get_url(path=project ~ "/sitemap.xml") }}
 {%- endfor %}
