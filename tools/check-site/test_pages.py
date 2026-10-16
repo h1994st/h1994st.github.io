@@ -53,7 +53,13 @@ CONTRAST = """([sel]) => {
                                        ("/blog/shell-upgrade/", "article p"),
                                        ("/projects/", ".site-pj-star"), ("/projects/", ".site-pj-yr"),
                                        ("/projects/", ".site-pj-body p"),
-                                       ("/projects/#grammar-mutator", ".site-pj-sheet .site-pj-star")])
+                                       ("/projects/#grammar-mutator", ".site-pj-sheet .site-pj-star"),
+                                       ("/resume/", "#experience .f-resume__date"),
+                                       ("/resume/", "#experience .f-resume__org"),
+                                       ("/resume/", "#experience .f-resume__loc"),
+                                       ("/resume/", "#experience .f-timeline p"),
+                                       ("/resume/", ".site-rs-dissertation"),
+                                       ("/resume/", ".f-pubs__venue")])
 def test_text_contrast(site_url, page_factory, theme, path, sel):
     page = page_factory(theme=theme)
     page.goto(f"{site_url}{path}")

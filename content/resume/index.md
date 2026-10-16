@@ -9,7 +9,7 @@ aliases = ["/publications/"]
 # tables below. Experience entries take role metadata and at most a one-line
 # `summary` of the domain; there is no field for detailed duties on purpose.
 [extra]
-styles = ["css/resume.css"]
+styles = []
 headline = "Security-focused Software Engineer, Ph.D. in Computer Science"
 contact = [
   { label = "shengtuo.me", url = "https://shengtuo.me" },
