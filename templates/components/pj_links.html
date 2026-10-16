@@ -1,0 +1,14 @@
+{#- Link chips for templates/projects.html. A `url` starting with "@/" is an
+    internal content path; anything else is used as is. Primary external
+    links get a ↗. -#}
+{% component pj_links(links) %}
+<div class="pj-links">
+	{%- for l in links %}
+	{%- if l.url is matching(pat='^@/') %}
+	<a{% if l?.primary %} class="pj-primary"{% endif %} href="{{ get_url(path=l.url) }}">{{ l.label }}</a>
+	{%- else %}
+	<a{% if l?.primary %} class="pj-primary"{% endif %} href="{{ l.url }}">{{ l.label }}{% if l?.primary %} <span aria-hidden="true">↗</span>{% endif %}</a>
+	{%- endif %}
+	{%- endfor %}
+</div>
+{%- endcomponent pj_links -%}

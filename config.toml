@@ -103,14 +103,8 @@ show_theme_switcher = false
 
 links = [
   { url = "@/blog/_index.md", name = "Blog" },
+  { url = "@/projects/index.md", name = "Projects" },
   { url = "@/resume/index.md", name = "Resume" },
-  { name = "Others", menu = [
-    { url = "@/notebook/_index.md", name = "Notebook" },
-    { url = "/rllvm", name = "rllvm" },
-    { url = "/rules_rllvm", name = "rules_rllvm" },
-    { url = "https://github.com/h1994st/playground", name = "My Playground" },
-    { url = "@/misc/index.md", name = "Misc." },
-  ] },
 ]
 
 [extra.footer]
@@ -121,6 +115,7 @@ show_source = false
 links = [
   { url = "@/blog/_index.md", name = "Blog" },
   { url = "@/notebook/_index.md", name = "Notebook" },
+  { url = "@/misc/index.md", name = "Misc." },
 ]
 
 # Social media links, shown as icons in the footer
