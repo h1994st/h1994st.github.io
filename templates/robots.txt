@@ -1,0 +1,12 @@
+{#- Overrides Zola's built-in robots.txt (same rules) to also list the
+    sitemaps of the GitHub Pages project sites served under this domain
+    (/rllvm/, /rules_rllvm/, ...). Crawlers only read robots.txt at the domain
+    root, which is this file, so this is the one place to point them at those
+    sitemaps. Add a project here once its site publishes a sitemap.xml. -#}
+User-agent: *
+Disallow:
+Allow: /
+Sitemap: {{ get_url(path="sitemap.xml") }}
+{%- for project in ["rllvm", "rules_rllvm", "my-resume", "chromatron-remake"] %}
+Sitemap: {{ get_url(path=project ~ "/sitemap.xml") }}
+{%- endfor %}
