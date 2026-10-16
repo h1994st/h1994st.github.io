@@ -1,0 +1,8 @@
+<dialog class="f-sheet" id="site-search" aria-label="Search" data-index="{{ get_url(path='search_index.en.json') }}">
+  <div class="f-sheet__panel">
+    <input class="f-input f-search" type="search" placeholder="Search posts and notes" aria-label="Search" autocomplete="off" />
+    <p class="f-meta site-search-status" role="status"></p>
+    <ol class="site-search-results"></ol>
+  </div>
+</dialog>
+<script type="module" src="{{ get_url(path='js/site/search.js') }}"></script>

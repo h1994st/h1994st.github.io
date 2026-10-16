@@ -10,6 +10,9 @@
   {% include "partials/nav.html" %}
   {% block main %}{% endblock main %}
   {% include "partials/footer.html" %}
+  {%- if config.extra.features.search %}
+  {% include "partials/search.html" %}
+  {%- endif %}
   {% block before_modules %}{% endblock before_modules %}
   <script type="module" src="{{ get_url(path=facet ~ '/js/facet.js') }}"></script>
   {%- if config.extra.features.footer_cats %}
