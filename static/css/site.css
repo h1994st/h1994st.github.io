@@ -112,6 +112,9 @@
   stroke-width: 2;
   stroke-linecap: round;
 }
+/* facet's nav links have no radius, so the current-page highlight is square inside the pill.
+   Remove once facet rounds .f-nav a itself. */
+.f-nav a { border-radius: var(--f-r-pill); }
 @media (max-width: 640px) {
   .f-nav { gap: 2px; padding-left: 0.8rem; }
   .f-nav a { padding-inline: 0.45rem; }
