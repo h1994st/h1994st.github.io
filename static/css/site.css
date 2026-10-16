@@ -1,0 +1,59 @@
+/* Site-only styles on top of facet: unlayered, so they win without !important. */
+
+/* The CRT screen from the old theme, on facet tokens: a Moss glow, scanlines, phosphor text. */
+.site-crt {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--f-r-lg);
+  corner-shape: squircle;
+  background: radial-gradient(
+    color-mix(in oklch, var(--f-accent) 26%, black),
+    color-mix(in oklch, var(--f-accent) 9%, black) 80%
+  );
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06), var(--f-shadow);
+}
+.site-crt::before {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.22) 0 2px, transparent 2px 4px);
+  pointer-events: none;
+  content: "";
+}
+.site-crt pre {
+  margin: 0;
+  padding: var(--f-space-4) var(--f-space-5);
+  overflow: auto;
+  background: none;
+  color: var(--f-accent);
+  font: 0.62rem/1.15 var(--f-font-mono);
+  text-shadow:
+    0 0 0.25rem color-mix(in oklch, var(--f-accent) 55%, transparent),
+    0 0 0.75rem var(--f-accent);
+}
+
+/* Zola's GitHub alerts (blockquote.markdown-alert-<kind>) look like facet alerts. */
+.f-prose blockquote[class^="markdown-alert-"] {
+  margin: var(--f-space-5) 0;
+  padding: var(--f-space-3) var(--f-space-4);
+  border: 1px solid color-mix(in oklch, var(--site-alert) 40%, transparent);
+  border-radius: var(--f-r-md);
+  background: color-mix(in oklch, var(--site-alert) 14%, transparent);
+  color: var(--f-fg);
+}
+.f-prose blockquote[class^="markdown-alert-"]::before {
+  display: block;
+  margin-bottom: var(--f-space-1);
+  color: var(--f-fg);
+  font: 600 var(--f-text-sm) / 1.4 var(--f-font-sans);
+  content: var(--site-alert-label);
+}
+.f-prose .markdown-alert-note { --site-alert: var(--f-info); --site-alert-label: "Note"; }
+.f-prose .markdown-alert-tip { --site-alert: var(--f-success); --site-alert-label: "Tip"; }
+.f-prose .markdown-alert-important { --site-alert: var(--f-info); --site-alert-label: "Important"; }
+.f-prose .markdown-alert-warning { --site-alert: var(--f-warning); --site-alert-label: "Warning"; }
+.f-prose .markdown-alert-caution { --site-alert: var(--f-danger); --site-alert-label: "Caution"; }
+
+/* Long bare URLs in posts (HTB writeups) wrap instead of widening the page on phones. */
+.f-prose {
+  overflow-wrap: break-word;
+}

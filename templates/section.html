@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{#- Placeholder: Task 4 builds the post lists. -#}
+{% block main %}
+<main id="main" class="f-page f-prose">
+<h1>{{ section.title }}</h1>
+{{ section.content | safe }}
+{%- if paginator?.pages %}{% set pages = paginator.pages %}{% else %}{% set pages = section.pages %}{% endif %}
+<ul>
+  {%- for p in pages %}
+  <li><a href="{{ p.permalink | safe }}">{{ p.title }}</a></li>
+  {%- endfor %}
+</ul>
+{%- if paginator %}
+<p>
+  {%- if paginator.previous %}<a href="{{ paginator.previous | safe }}">Newer</a> {% endif %}
+  {%- if paginator.next %}<a href="{{ paginator.next | safe }}">Older</a>{% endif %}
+</p>
+{%- endif %}
+</main>
+{% endblock main %}

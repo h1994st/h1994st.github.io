@@ -1,0 +1,8 @@
+{% component alert(note=false, tip=false, important=false, warning=false, caution=false) %}
+{%- set kind = "warning" if warning else ("danger" if caution else ("success" if tip else "info")) -%}
+{%- set label = "Warning" if warning else ("Caution" if caution else ("Tip" if tip else ("Important" if important else "Note"))) -%}
+<div class="f-alert f-alert--{{ kind }}">
+  <p class="f-alert__title">{{ label }}</p>
+  {{ body | markdown | safe }}
+</div>
+{%- endcomponent alert -%}

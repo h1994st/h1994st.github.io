@@ -6,7 +6,8 @@
     with "@/" are content paths (another page's assets); others are relative
     to this page bundle. -#}
 
-{% block content %}
+{% block main %}
+<main id="main" class="f-page f-prose">
 {%- set x = page.extra -%}
 <article class="projects">
 	<header class="pj-intro">
@@ -101,4 +102,5 @@
 		<div class="pj-sheet"></div>
 	</dialog>
 </article>
-{% endblock content %}
+</main>
+{% endblock main %}

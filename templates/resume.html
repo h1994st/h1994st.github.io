@@ -4,12 +4,13 @@
     Experience entries deliberately take only role metadata plus a one-line
     `summary`: no bullet lists of duties. -#}
 
-{% block content %}
+{% block main %}
+<main id="main" class="f-page f-prose">
 {%- set r = page.extra -%}
 <article class="resume">
 	<header class="rs-header">
 		<div class="rs-who">
-			<h1>{{ config.extra.copyright_name }}</h1>
+			<h1>{{ config.extra.author.name }}</h1>
 			{%- if r?.headline %}<p class="rs-headline">{{ r.headline }}</p>{% endif %}
 		</div>
 		{%- if r?.contact %}
@@ -119,7 +120,7 @@
 			{%- for p in r.publications %}
 			<li>
 				<p class="rs-cite-title">{{ p.title }}</p>
-				<p class="rs-cite-meta">{{ p.authors | replace(from=config.extra.copyright_name, to="**" ~ config.extra.copyright_name ~ "**") | markdown(inline=true) | safe }}. {{ p.venue }}{% if p?.award %}. <em class="rs-award">{{ p.award }}</em>{% endif %}</p>
+				<p class="rs-cite-meta">{{ p.authors | replace(from=config.extra.author.name, to="**" ~ config.extra.author.name ~ "**") | markdown(inline=true) | safe }}. {{ p.venue }}{% if p?.award %}. <em class="rs-award">{{ p.award }}</em>{% endif %}</p>
 				{%- if p?.links %}
 				<ul class="rs-chips">
 					{%- for l in p.links %}
@@ -149,4 +150,5 @@
 
 </article>
 <script src="{{ get_url(path='js/resume-nav.js') }}" defer></script>
-{% endblock content %}
+</main>
+{% endblock main %}

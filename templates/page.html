@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{#- Placeholder: Task 3 builds the post layout. -#}
+{% block main %}
+<main id="main" class="f-page f-prose">
+<article>
+<h1>{{ page.title }}</h1>
+{%- if page.date %}<p class="f-meta"><time datetime="{{ page.date | date(format='%Y-%m-%d') }}">{{ page.date | date(format='%B %-d, %Y') }}</time></p>{% endif %}
+{{ page.content | safe }}
+</article>
+</main>
+{% endblock main %}

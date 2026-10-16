@@ -4,7 +4,7 @@
     post is tied to the same entity as the external profiles in `sameAs`.
     `image` is the page's share card, resolved the same way as og:image. -#}
 
-{%- set person = config.extra.person -%}
+{%- set author = config.extra.author -%}
 {%- set site_url = (get_url(path="/") | trim_end(pat="/")) ~ "/" -%}
 {%- set published = page.date | date(format='%Y-%m-%dT%H:%M:%S%:z') -%}
 <script type="application/ld+json">
@@ -24,9 +24,7 @@
 	{%- else %}
 	"dateModified": {{ published | json_encode | safe }},
 	{%- endif %}
-	{%- if config.extra?.card is not defined or config.extra?.card != false %}
 	"image": "{% include 'partials/card.html' %}",
-	{%- endif %}
 	{%- if page.taxonomies?.tags %}
 	"keywords": {{ page.taxonomies.tags | json_encode | safe }},
 	{%- endif %}
@@ -34,7 +32,7 @@
 	"author": {
 		"@type": "Person",
 		"@id": {{ (site_url ~ "#person") | json_encode | safe }},
-		"name": {{ person.name | json_encode | safe }},
+		"name": {{ author.name | json_encode | safe }},
 		"url": {{ site_url | json_encode | safe }}
 	},
 	"publisher": { "@id": {{ (site_url ~ "#person") | json_encode | safe }} }

@@ -4,6 +4,8 @@ import functools
 import http.server
 import subprocess
 import threading
+import tomllib
+import urllib.parse
 from pathlib import Path
 
 import pytest
@@ -11,6 +13,23 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[2]
 PUBLIC = ROOT / "public"
+BASE_URL = tomllib.loads((ROOT / "config.toml").read_text())["base_url"].rstrip("/")
+
+
+def serve_from_public(route):
+    """Answer a live-site URL from public/. A first path segment this build does not have
+    belongs to a project site on the same domain (/rllvm/, ...), so that goes to the network."""
+    rel = urllib.parse.unquote(urllib.parse.urlsplit(route.request.url).path).lstrip("/")
+    if rel and not (PUBLIC / rel.split("/")[0]).exists():
+        route.continue_()
+        return
+    target = PUBLIC / rel
+    if target.is_dir():
+        target = target / "index.html"
+    if target.is_file() and PUBLIC in target.resolve().parents:
+        route.fulfill(path=str(target))
+    else:
+        route.fulfill(status=404, body="")
 
 
 def site_paths():
@@ -60,6 +79,10 @@ def page_factory(browser):
         ctx.add_init_script(f"try{{localStorage.setItem('facet-theme','{theme}')}}catch{{}}")
         # Never reach Google from tests.
         ctx.route("**googletagmanager.com/**", lambda r: r.fulfill(body="", content_type="text/javascript"))
+        # YouTube embeds log their own errors into the page's console; stub the iframe.
+        ctx.route("**youtube-nocookie.com/**", lambda r: r.fulfill(body="", content_type="text/html"))
+        # get_url() makes absolute links to the live site; serve those from this build.
+        ctx.route(f"{BASE_URL}/**", serve_from_public)
         page = ctx.new_page()
         page.errors = []
         page.on("pageerror", lambda e: page.errors.append(str(e)))

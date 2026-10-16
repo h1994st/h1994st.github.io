@@ -1,0 +1,11 @@
+<nav class="f-nav f-nav--fixed" aria-label="Site">
+  <a class="f-nav__brand" href="{{ get_url(path='/') }}">{{ config.extra.author.handle }}</a>
+  {%- for link in config.extra.nav.links %}
+  {%- set url = get_url(path=link.url) %}
+  <a href="{{ url }}"{% if current_url and current_url is starting_with(pat=url) %} aria-current="page"{% endif %}>{{ link.name }}</a>
+  {%- endfor %}
+  {%- if config.extra.features.search %}
+  <button class="f-btn f-btn--quiet site-search-open" type="button" aria-label="Search" hidden>Search</button>
+  {%- endif %}
+  <button class="f-theme-toggle" type="button" data-f-theme-toggle>Auto</button>
+</nav>
