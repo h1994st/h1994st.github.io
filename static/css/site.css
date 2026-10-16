@@ -100,3 +100,24 @@
 .site-search-results li { padding: var(--f-space-2) 0; border-bottom: 1px solid var(--f-line); }
 .site-search-results p { margin: 0; color: var(--f-fg-2); font-size: var(--f-text-sm); }
 .site-search-results a, .site-search-results p { overflow-wrap: anywhere; }
+
+/* Nav: the search button is a word on wide screens and a magnifier on phones, where the tighter
+   padding lets the whole pill (theme toggle included) fit at 360px without scrolling. */
+.site-search-icon {
+  display: none;
+  width: 1.05em;
+  height: 1.05em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+@media (max-width: 640px) {
+  .f-nav { gap: 2px; padding-left: 0.8rem; }
+  .f-nav a { padding-inline: 0.45rem; }
+  .f-nav .f-nav__brand { margin-right: var(--f-space-1); padding-inline: 0; }
+  .f-nav .site-search-open { padding-inline: 0.5rem; }
+  .site-search-icon { display: block; }
+  .site-search-label { display: none; }
+  .f-nav .f-theme-toggle { padding-inline: 0.55rem; }
+}

@@ -79,3 +79,20 @@ def test_site_icons_are_linked_and_published(public_dir):
     head = (public_dir / "index.html").read_text()
     for name in ("favicon.ico", "favicon.svg", "apple-touch-icon.png"):
         assert f"/{name}" in head and (public_dir / name).is_file(), name
+
+
+@pytest.mark.parametrize("width", [390, 360])
+@pytest.mark.parametrize("path", ["/", "/blog/shell-upgrade/", "/projects/"])
+def test_nav_fits_on_phones(site_url, page_factory, width, path):
+    """The fixed nav pill holds every item, theme toggle included, without scrolling sideways."""
+    page = page_factory(width=width, theme="light")  # "Light" is the toggle's widest label
+    page.goto(f"{site_url}{path}")
+    page.evaluate("document.fonts.ready.then(() => 1)")
+    sw, cw = page.evaluate("(n => [n.scrollWidth, n.clientWidth])(document.querySelector('nav.f-nav'))")
+    assert sw <= cw, (path, width, sw, cw)
+    box = page.locator("[data-f-theme-toggle]").bounding_box()
+    assert box["x"] >= 0 and box["x"] + box["width"] <= width, (path, width, box)
+    btn = page.locator(".site-search-open")
+    assert btn.get_attribute("aria-label") == "Search"
+    btn.click()  # the magnifier still opens search
+    page.wait_for_selector("#site-search[open]")
