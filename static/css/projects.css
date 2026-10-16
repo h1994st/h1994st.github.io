@@ -214,17 +214,23 @@
 	white-space: nowrap;
 }
 
-/* GitHub stars, in facet's Ochre. */
+/* GitHub stars, in facet's Ochre: the ★ in the status color itself, the number mixed toward the
+   text color, since plain Ochre on its soft tint is under 4.5:1 in the light theme. */
 .site-pj-star {
 	display: inline-flex;
 	align-items: center;
+	gap: 0.2em;
 	padding: 0.1rem 0.45rem;
 	border-radius: var(--f-r-pill);
 	background: var(--f-warning-soft);
-	color: var(--f-warning);
+	color: color-mix(in oklch, var(--f-warning) 50%, var(--f-fg));
 	font: 650 0.74rem/1.4 var(--f-font-sans);
 	letter-spacing: normal;
 	white-space: nowrap;
+}
+
+.site-pj-star-icon {
+	color: var(--f-warning);
 }
 
 .site-pj-page .site-pj-body p {
@@ -597,7 +603,8 @@
 
 /* ---------- detail sheet ---------- */
 
-/* Wider than facet's default sheet, for the screenshots; a bottom sheet on phones (facet). */
+/* Wider than facet's default 32rem: the 3:1 banner and the parts rows (a name, a line of text
+   and two links side by side) need the room. A bottom sheet on phones (facet). */
 @media (min-width: 641px) {
 	.site-pj-sheet {
 		width: min(40rem, 100% - 2rem);

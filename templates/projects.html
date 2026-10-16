@@ -52,7 +52,7 @@
 			<div class="f-card__body site-pj-body">
 				<div class="site-pj-head">
 					<h2 id="{{ p.id }}-name">{{ p.name }}</h2>
-					<span class="site-pj-meta">{% if p?.stars %}<span class="site-pj-star" title="GitHub stars">★ {{ p.stars }}</span>{% endif %}<span class="site-pj-yr">{{ p.years }}</span></span>
+					<span class="site-pj-meta">{% if p?.stars %}<span class="site-pj-star" title="GitHub stars"><span class="site-pj-star-icon">★</span> {{ p.stars }}</span>{% endif %}<span class="site-pj-yr">{{ p.years }}</span></span>
 				</div>
 				<p>{{ p.summary | markdown(inline=true) | safe }}</p>
 				{{<pj_links links={p.links} />}}
@@ -60,7 +60,7 @@
 			{%- if p?.detail %}
 			{%- set d = p.detail %}
 			<template class="site-pj-detail">
-				<h2 class="site-pj-d-title">{{ p.name }}{% if p?.stars %} <span class="site-pj-star" title="GitHub stars">★ {{ p.stars }}</span>{% endif %}</h2>
+				<h2 class="site-pj-d-title">{{ p.name }}{% if p?.stars %} <span class="site-pj-star" title="GitHub stars"><span class="site-pj-star-icon">★</span> {{ p.stars }}</span>{% endif %}</h2>
 				{%- if d?.kicker %}<p class="f-meta site-pj-kicker">{{ d.kicker }}</p>{% endif %}
 				{%- if d?.image %}
 				{%- if d.image is matching(pat='^@/') %}

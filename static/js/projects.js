@@ -6,8 +6,10 @@
 	const root = document.querySelector(".site-pj-page");
 	if (!root) return;
 
-	const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-	const fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
+	// Read at the moment of use, so a change mid-session (reduced motion switched on, a tablet
+	// docked to a mouse) takes effect at once.
+	const reduceQ = matchMedia("(prefers-reduced-motion: reduce)");
+	const fineQ = matchMedia("(hover: hover) and (pointer: fine)");
 	const cards = [...root.querySelectorAll(".site-pj-card")];
 
 	// Hover (mouse only): play the card's animation and tilt it a little toward the cursor.
@@ -16,7 +18,7 @@
 			if (e.pointerType === "mouse") card.classList.add("site-pj-play");
 		});
 		card.addEventListener("pointermove", (e) => {
-			if (e.pointerType !== "mouse" || reduce) return;
+			if (e.pointerType !== "mouse" || reduceQ.matches) return;
 			const r = card.getBoundingClientRect();
 			card.style.setProperty("--site-pj-ry", (((e.clientX - r.left) / r.width - 0.5) * 5).toFixed(2) + "deg");
 			card.style.setProperty("--site-pj-rx", ((0.5 - (e.clientY - r.top) / r.height) * 5).toFixed(2) + "deg");
@@ -29,9 +31,12 @@
 	}
 
 	// Touch screens have no hover: play each animation while its card is in view.
-	if (!fine && "IntersectionObserver" in window) {
+	if ("IntersectionObserver" in window) {
 		const io = new IntersectionObserver(
-			(entries) => entries.forEach((e) => e.target.classList.toggle("site-pj-play", e.isIntersecting)),
+			(entries) => {
+				if (fineQ.matches) return;
+				entries.forEach((e) => e.target.classList.toggle("site-pj-play", e.isIntersecting));
+			},
 			{ threshold: 0.7 },
 		);
 		cards.forEach((c) => io.observe(c));
@@ -51,7 +56,7 @@
 			chips.forEach((x) => x.setAttribute("aria-pressed", x === b));
 			const before = new Map(cards.filter((c) => !c.hidden).map((c) => [c, c.getBoundingClientRect()]));
 			cards.forEach((c) => (c.hidden = !matches(c, b.dataset.filter)));
-			if (reduce) return;
+			if (reduceQ.matches) return;
 			for (const c of cards) {
 				if (c.hidden) continue;
 				const was = before.get(c);

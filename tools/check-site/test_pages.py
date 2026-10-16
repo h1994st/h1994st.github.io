@@ -28,25 +28,38 @@ def test_pages(public_dir, site_url, page_factory):
 
 
 CONTRAST = """([sel]) => {
-  const rgb = (c) => { const x = document.createElement('canvas').getContext('2d');
-    x.fillStyle = getComputedStyle(document.body).backgroundColor; x.fillRect(0, 0, 1, 1);
-    x.fillStyle = c; x.fillRect(0, 0, 1, 1); return [...x.getImageData(0, 0, 1, 1).data].slice(0, 3); };
+  // Paints every background from <html> down to the element, alpha included, so text on a
+  // card or a tinted badge is measured against what is really behind it, then the text on top.
+  const el = document.querySelector(sel);
+  const x = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+  const paint = (c) => { x.fillStyle = 'rgb(0 0 0 / 0)'; x.fillStyle = c; x.fillRect(0, 0, 1, 1); };
+  const read = () => [...x.getImageData(0, 0, 1, 1).data].slice(0, 3);
+  const chain = [];
+  for (let n = el; n; n = n.parentElement) chain.unshift(n);
+  paint('#fff');
+  for (const n of chain) paint(getComputedStyle(n).backgroundColor);
+  const bg = read();
+  paint(getComputedStyle(el).color);
+  const fg = read();
   const lum = (c) => { const [r, g, b] = c.map(v => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; });
     return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
-  const fg = lum(rgb(getComputedStyle(document.querySelector(sel)).color));
-  const bg = lum(rgb(getComputedStyle(document.body).backgroundColor));
-  return (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05);
+  const [a, b] = [lum(fg), lum(bg)];
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 }"""
 
 
 @pytest.mark.parametrize("theme", ["dark", "light"])
 @pytest.mark.parametrize("path, sel", [("/", ".site-lead"), ("/blog/shell-upgrade/", ".f-meta"),
-                                       ("/blog/shell-upgrade/", "article p")])
+                                       ("/blog/shell-upgrade/", "article p"),
+                                       ("/projects/", ".site-pj-star"), ("/projects/", ".site-pj-yr"),
+                                       ("/projects/", ".site-pj-body p"),
+                                       ("/projects/#grammar-mutator", ".site-pj-sheet .site-pj-star")])
 def test_text_contrast(site_url, page_factory, theme, path, sel):
     page = page_factory(theme=theme)
     page.goto(f"{site_url}{path}")
-    if page.locator(sel).count():
-        assert page.evaluate(CONTRAST, [sel]) >= 4.5, (path, sel, theme)
+    page.wait_for_selector(sel, state="attached")
+    ratio = page.evaluate(CONTRAST, [sel])
+    assert ratio >= 4.5, (path, sel, theme, round(ratio, 2))
 
 
 def test_reduced_motion_is_still(site_url, page_factory):

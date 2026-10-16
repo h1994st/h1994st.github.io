@@ -20,6 +20,28 @@ def test_filter_chips_filter(site_url, page_factory):
     assert 0 < visible < page.locator(".site-pj-card").count()
 
 
+TAGS = "[...document.querySelectorAll('.site-pj-card:not(.site-pj-more)')].map(c => c.dataset.tags.split(' '))"
+
+
+def test_filter_chips_state_and_counts(site_url, page_factory):
+    page = page_factory()
+    page.goto(f"{site_url}/projects/")
+    chips = page.locator(".site-pj-filter button")
+    tags = page.evaluate(TAGS)
+    total = page.locator(".site-pj-card").count()
+    for i in range(chips.count()):
+        f = chips.nth(i).get_attribute("data-filter")
+        expected = len(tags) if f == "all" else sum(f in t for t in tags)
+        assert chips.nth(i).locator("span").inner_text() == str(expected), f
+        chips.nth(i).click()
+        pressed = [chips.nth(j).get_attribute("aria-pressed") for j in range(chips.count())]
+        assert pressed == ["true" if j == i else "false" for j in range(chips.count())], f
+        # The matching projects plus the "More on GitHub" card, which every filter keeps.
+        assert page.locator(".site-pj-card:visible").count() == expected + 1, f
+    chips.nth(0).click()
+    assert page.locator(".site-pj-card:visible").count() == total
+
+
 def test_home_anchors_reach_their_cards(site_url, page_factory):
     """The home page links featured projects as /projects/#<id>; the hash opens that card's sheet."""
     page = page_factory()
@@ -54,6 +76,19 @@ def test_hover_animations_are_still_under_reduced_motion(site_url, page_factory)
         assert running == 0, pid
         if pid == "rllvm":  # the typed command is shown whole, not left at zero width
             assert page.locator("#rllvm .site-pj-cmd").bounding_box()["width"] > 50
+
+
+def test_filter_is_still_under_reduced_motion(site_url, page_factory):
+    page = page_factory(reduced_motion=True)
+    page.add_init_script("""{ const animate = Element.prototype.animate; window.__animateCalls = 0;
+        Element.prototype.animate = function (...a) { window.__animateCalls++; return animate.apply(this, a); }; }""")
+    page.goto(f"{site_url}/projects/")
+    page.mouse.move(0, 0)
+    page.locator(".site-pj-filter button").nth(2).click()
+    assert page.evaluate("window.__animateCalls") == 0
+    page.wait_for_timeout(100)  # facet cuts the chips' color transitions to 0.01ms; let them end
+    running = page.evaluate("document.getAnimations().filter(a => a.playState === 'running').length")
+    assert running == 0
 
 
 def test_touch_screens_see_the_details_hint(browser, site_url):
