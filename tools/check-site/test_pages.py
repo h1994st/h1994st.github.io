@@ -55,3 +55,8 @@ def test_reduced_motion_is_still(site_url, page_factory):
     page.wait_for_timeout(300)
     running = page.evaluate("document.getAnimations().filter(a => a.playState === 'running').length")
     assert running == 0
+
+
+def test_only_facet_dist_is_published(public_dir):
+    # ignored_static's "[!d]*" glob lets any new top-level facet entry starting with "d" through.
+    assert sorted(p.name for p in (public_dir / "vendor/facet").iterdir()) == ["dist"]

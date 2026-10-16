@@ -1,7 +1,9 @@
 """Smoke tests for the built site. Run: uv run --with pytest --with playwright pytest tools/check-site -q"""
 
+import base64
 import functools
 import http.server
+import re
 import subprocess
 import threading
 import tomllib
@@ -14,14 +16,20 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[2]
 PUBLIC = ROOT / "public"
 BASE_URL = tomllib.loads((ROOT / "config.toml").read_text())["base_url"].rstrip("/")
+# The GitHub Pages project sites served under this domain (/rllvm/, ...), from the one list
+# templates/robots.txt keeps. Their files are not in this build, so tests stub them.
+PROJECT_SITES = set(
+    re.findall(r'"([^"]+)"', re.search(r"for project in \[(.*?)\]", (ROOT / "templates/robots.txt").read_text())[1])
+)
+PIXEL = base64.b64decode("R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==")
 
 
 def serve_from_public(route):
-    """Answer a live-site URL from public/. A first path segment this build does not have
-    belongs to a project site on the same domain (/rllvm/, ...), so that goes to the network."""
+    """Answer a live-site URL from public/, or 404. Never the network: a file only the live
+    site still has must not pass. Project-site URLs get a 1x1 GIF instead."""
     rel = urllib.parse.unquote(urllib.parse.urlsplit(route.request.url).path).lstrip("/")
-    if rel and not (PUBLIC / rel.split("/")[0]).exists():
-        route.continue_()
+    if rel.split("/")[0] in PROJECT_SITES:
+        route.fulfill(body=PIXEL, content_type="image/gif")
         return
     target = PUBLIC / rel
     if target.is_dir():
