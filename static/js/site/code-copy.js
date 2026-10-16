@@ -7,14 +7,21 @@ for (const pre of document.querySelectorAll(".f-prose pre")) {
   btn.textContent = "Copy";
   btn.setAttribute("aria-label", "Copy code");
   btn.addEventListener("click", async () => {
-    const code = pre.querySelector("code") || pre;
+    // Clone without Giallo's line-number spans; lines are separated by text-node newlines.
+    const clone = (pre.querySelector("code") || pre).cloneNode(true);
+    for (const ln of clone.querySelectorAll(".giallo-ln, .f-code-copy")) ln.remove();
+    let label = "Copied";
     try {
-      await navigator.clipboard.writeText(code.innerText);
-      btn.textContent = "Copied";
+      await navigator.clipboard.writeText(clone.textContent);
     } catch {
-      btn.textContent = "Press ⌘C";
+      label = "Copy failed";
     }
-    setTimeout(() => (btn.textContent = "Copy"), 1500);
+    btn.textContent = label;
+    btn.setAttribute("aria-label", label);
+    setTimeout(() => {
+      btn.textContent = "Copy";
+      btn.setAttribute("aria-label", "Copy code");
+    }, 1500);
   });
   pre.style.position = "relative";
   pre.append(btn);
