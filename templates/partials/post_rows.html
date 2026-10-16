@@ -1,0 +1,25 @@
+{#- Rows of posts grouped by year: `rows` is a list of pages, newest first. -#}
+{%- set_global last_year = 0 %}
+{%- for p in rows %}
+{%- if p.year != last_year %}
+{%- if last_year != 0 %}
+  </ul>
+</section>
+{%- endif %}
+<section class="f-list__year">
+  <h2>{{ p.year }}</h2>
+  <ul>
+{%- set_global last_year = p.year %}
+{%- endif %}
+    <li>
+      <a class="f-list__row" href="{{ p.permalink }}">
+        <span><span class="f-list__title">{{ p.title }}</span>
+        {%- for t in p.taxonomies?.tags | default(value=[]) %}<span class="f-list__tag">{{ t }}</span>{% endfor %}</span>
+        <time datetime="{{ p.date | date(format='%Y-%m-%d') }}">{{ p.date | date(format="%b %-d") }}</time>
+      </a>
+    </li>
+{%- endfor %}
+{%- if last_year != 0 %}
+  </ul>
+</section>
+{%- endif %}

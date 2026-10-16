@@ -1,12 +1,11 @@
 {% extends "base.html" %}
-{#- Placeholder: Task 5 builds the tag index. -#}
 {% block main %}
-<main id="main" class="f-page f-prose">
-<h1>{{ taxonomy.name | capitalize }}</h1>
-<ul>
-  {%- for t in terms %}
-  <li><a href="{{ t.permalink | safe }}">{{ t.name }}</a> ({{ t.pages | length }})</li>
-  {%- endfor %}
-</ul>
+<main id="main" class="f-list f-prose">
+  <header><h1>{{ taxonomy.name | capitalize }}</h1></header>
+  <p>
+    {%- for t in terms %}
+    <a class="f-chip" href="{{ t.permalink }}">{{ t.name }} ({{ t.pages | length }})</a>
+    {%- endfor %}
+  </p>
 </main>
 {% endblock main %}

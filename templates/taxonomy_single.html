@@ -1,12 +1,8 @@
 {% extends "base.html" %}
-{#- Placeholder: Task 5 builds the tag page. -#}
 {% block main %}
-<main id="main" class="f-page f-prose">
-<h1>{{ term.name }}</h1>
-<ul>
-  {%- for p in term.pages %}
-  <li><a href="{{ p.permalink | safe }}">{{ p.title }}</a></li>
-  {%- endfor %}
-</ul>
+<main id="main" class="f-list f-prose">
+  <header><h1>{{ term.name }}</h1></header>
+  {%- set rows = term.pages %}
+  {%- include "partials/post_rows.html" %}
 </main>
 {% endblock main %}

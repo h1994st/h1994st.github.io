@@ -69,3 +69,5 @@
 .f-prose .zola-anchor { margin-right: 0.3em; color: var(--f-fg-3); text-decoration: none; }
 .f-prose :is(h2, h3):hover .zola-anchor { color: var(--f-accent); }
 .site-video iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: var(--f-r-md); }
+.site-featured { display: block; margin: var(--f-space-5) 0 var(--f-space-6); color: inherit; text-decoration: none; }
+.site-featured .f-card__media { aspect-ratio: 3 / 1; }
