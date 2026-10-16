@@ -5,9 +5,6 @@ description = "Hack The Box - LinkVortex"
 date = 2025-08-15T22:09:08-07:00
 [taxonomies]
 tags = ["HackTheBox"]
-[extra]
-toc = true
-toc_sidebar = true
 +++
 
 - LinkVortex (Easy): <https://www.hackthebox.com/machines/linkvortex>

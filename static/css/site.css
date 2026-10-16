@@ -57,3 +57,15 @@
 .f-prose {
   overflow-wrap: break-word;
 }
+
+/* Posts. */
+.site-post-meta { display: flex; flex-wrap: wrap; gap: 0 var(--f-space-2); align-items: center; }
+.site-post-meta .site-share { padding: 0.1rem 0.6rem; font-size: inherit; }
+.site-toc-sub { padding-left: var(--f-space-4); font-size: var(--f-text-sm); }
+.site-backlinks, .site-prev-next { margin-top: var(--f-space-7); padding-top: var(--f-space-4); border-top: 1px solid var(--f-line-2); }
+.site-backlinks h2 { font-size: var(--f-text-lg); }
+.site-prev-next { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--f-space-3); }
+/* Heading anchors from insert_anchor_links: quiet until hovered. */
+.f-prose .zola-anchor { margin-right: 0.3em; color: var(--f-fg-3); text-decoration: none; }
+.f-prose :is(h2, h3):hover .zola-anchor { color: var(--f-accent); }
+.site-video iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: var(--f-r-md); }

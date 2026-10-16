@@ -7,8 +7,6 @@ date = 2026-09-07T18:00:00-07:00
 tags = ["rllvm", "LLVM", "Bazel", "Rust"]
 [extra]
 styles = ["css/diagrams.css"]
-toc = true
-toc_sidebar = true
 +++
 
 A compiler sees one source file at a time. That is the whole design: hand it a file,

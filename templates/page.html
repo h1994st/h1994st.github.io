@@ -1,11 +1,28 @@
 {% extends "base.html" %}
-{#- Placeholder: Task 3 builds the post layout. -#}
+{#- Posts and plain pages. A page with headings uses the Docs layout (sticky TOC) unless its
+    [extra] toc says otherwise; the default comes from [extra.features].toc. -#}
 {% block main %}
-<main id="main" class="f-page f-prose">
-<article>
-<h1>{{ page.title }}</h1>
-{%- if page.date %}<p class="f-meta"><time datetime="{{ page.date | date(format='%Y-%m-%d') }}">{{ page.date | date(format='%B %-d, %Y') }}</time></p>{% endif %}
-{{ page.content | safe }}
-</article>
+{%- set toc_mode = page.extra?.toc | default(value=config.extra.features.toc) -%}
+{%- set has_toc = toc_mode == "sidebar" and page.toc | length > 0 -%}
+{%- if has_toc %}
+<div id="main" class="f-docs f-prose">
+  {% include "partials/toc.html" %}
+  <article class="site-post">
+    {% include "partials/post_header.html" %}
+    {{ page.content | safe }}
+    {% include "partials/post_footer.html" %}
+  </article>
+</div>
+{%- else %}
+<main id="main" class="f-reading f-page f-prose site-post">
+  {% include "partials/post_header.html" %}
+  {%- if toc_mode == "inline" and page.toc | length > 0 %}{% include "partials/toc.html" %}{% endif %}
+  {{ page.content | safe }}
+  {% include "partials/post_footer.html" %}
 </main>
+{%- endif %}
 {% endblock main %}
+{% block body_extra %}
+{%- if config.extra.features.code_copy %}<script type="module" src="{{ get_url(path='js/site/code-copy.js') }}"></script>{% endif %}
+{%- if config.extra.features.share %}<script type="module" src="{{ get_url(path='js/site/share.js') }}"></script>{% endif %}
+{% endblock body_extra %}

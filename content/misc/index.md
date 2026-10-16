@@ -1,6 +1,8 @@
 +++
 title = "Misc."
 description = "A curated list of security and systems research resources, blogs, developer tools and photography links collected by Shengtuo Hu."
+[extra]
+toc = false
 +++
 
 ## Research Resources

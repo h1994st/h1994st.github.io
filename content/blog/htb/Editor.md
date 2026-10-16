@@ -5,9 +5,6 @@ description = "Hack The Box - Editor"
 date = 2026-04-06T17:00:00-07:00
 [taxonomies]
 tags = ["HackTheBox"]
-[extra]
-toc = true
-toc_sidebar = true
 +++
 
 - Editor (Easy): <https://www.hackthebox.com/machines/Editor>

@@ -5,9 +5,6 @@ description = "Hack The Box - TwoMillion"
 date = 2025-06-08T10:00:00-07:00
 [taxonomies]
 tags = ["HackTheBox"]
-[extra]
-toc = true
-toc_sidebar = true
 +++
 
 - TwoMillion (Easy): <https://www.hackthebox.com/machines/twomillion>

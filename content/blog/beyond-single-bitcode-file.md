@@ -7,8 +7,6 @@ date = 2026-09-13T18:00:00-07:00
 tags = ["rllvm", "LLVM", "Rust", "Static Analysis"]
 [extra]
 styles = ["css/rllvm-substrate.css"]
-toc = true
-toc_sidebar = true
 +++
 
 ## TL;DR
