@@ -1,8 +1,26 @@
 {% extends "base.html" %}
-{#- Placeholder: Task 6 builds the 404 page. -#}
+{#- facet's empty layout: Dudu, the code, one line, and two ways on. -#}
 {% block main %}
-<main id="main" class="f-page f-prose">
-<h1>Page not found</h1>
-<p><a href="{{ get_url(path='/') }}">Go home</a></p>
+<main id="main" class="f-empty-page">
+  <div class="f-empty">
+    <div>
+      <div class="f-empty__cat" aria-hidden="true"></div>
+      <p class="f-empty__code">404</p>
+      <h1>This page fell off the table.</h1>
+      <p>Dudu knocked it off. It may have moved, or never existed.</p>
+      <div class="f-cluster">
+        <a class="f-btn f-btn--primary" href="{{ get_url(path='/') }}">Back to home</a>
+        {%- if config.extra.features.search %}
+        <button class="f-btn site-search-open" type="button" hidden>Search</button>
+        {%- endif %}
+      </div>
+    </div>
+  </div>
 </main>
 {% endblock main %}
+{% block body_extra %}
+<script type="module">
+  import { createCat } from "{{ config.extra.site.facet }}/cast/cast.js";
+  document.querySelector(".f-empty__cat")?.append(createCat("dudu", { pose: "jump", label: "" }));
+</script>
+{% endblock body_extra %}

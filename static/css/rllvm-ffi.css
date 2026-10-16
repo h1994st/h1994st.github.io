@@ -1,45 +1,17 @@
 /* Diagrams for the cross-language query post.
  *
- * Same contract as diagrams.css and rllvm-substrate.css: nothing here hardcodes
- * a colour. The semantic tokens below are derived from Duckquill's own
- * --fg-color, so both themes follow the site automatically. The one exception
- * is --fx-warn, which still mixes against --fg-color rather than naming a red,
- * so a dark theme dims it the same way it dims everything else. */
+ * Same contract as diagrams.css and rllvm-substrate.css: the figure frame
+ * (margin, kicker, caption) is facet's .f-figure, and this file draws only the
+ * diagrams, on facet's tokens, so both themes follow the site automatically.
+ * The one semantic color is the faulting read, in facet's muted --f-danger. */
 
-.ffi-fig {
-	--fx-ink: var(--fg-color);
-	--fx-muted: color-mix(in srgb, var(--fg-color) 58%, transparent);
-	--fx-rule: color-mix(in srgb, var(--fg-color) 22%, transparent);
-	--fx-raised: color-mix(in srgb, var(--fg-color) 6%, transparent);
-	--fx-warn: color-mix(in srgb, var(--fg-color) 80%, transparent);
-
-	margin: 2rem 0;
-	max-width: 42rem;
-	font-family: var(--font-monospace-code);
+.ffi-fig > :not(figcaption, .f-figure__kicker) {
+	font-family: var(--f-font-mono);
 }
 
-.ffi-fig figcaption {
-	max-width: 36rem;
-	margin-top: 0.9rem;
-	color: var(--fx-muted);
-	font-family: var(--font-monospace-code);
-	font-size: var(--font-size-x-small);
-	line-height: 1.5;
-	text-align: left;
-}
-
-.ffi-fig figcaption b {
-	color: var(--fx-ink);
-	font-weight: normal;
-}
-
-.ffi-fig .ffi-kicker {
-	display: block;
-	margin-bottom: 0.45rem;
-	color: var(--fx-muted);
-	font-size: var(--font-size-x-small);
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
+/* A group label inside a figure (Rust-led, C-led) sits right above its rows. */
+.ffi-fig .f-figure__kicker {
+	margin: 0;
 }
 
 /* A language tag. Three languages, distinguished by weight and border rather
@@ -48,17 +20,17 @@
 	display: inline-block;
 	min-width: 3.4em;
 	padding: 0.05rem 0.4rem;
-	border: 1px solid var(--fx-rule);
+	border: 1px solid var(--f-line-2);
 	border-radius: 4px;
-	font-size: var(--font-size-x-small);
+	font-size: var(--f-text-xs);
 	text-align: center;
-	color: var(--fx-muted);
+	color: var(--f-fg-2);
 }
 
 .ffi-lang.is-rust {
 	border-style: solid;
-	background: var(--fx-raised);
-	color: var(--fx-ink);
+	background: var(--f-bg-2);
+	color: var(--f-fg);
 }
 
 .ffi-lang.is-c {
@@ -95,23 +67,23 @@
 	align-items: center;
 	gap: 0.4rem;
 	padding: 0.5rem 0.7rem;
-	border: 1px solid var(--fx-rule);
+	border: 1px solid var(--f-line-2);
 	border-radius: 8px;
-	background: var(--fx-raised);
-	font-size: var(--font-size-x-small);
+	background: var(--f-bg-2);
+	font-size: var(--f-text-xs);
 }
 
 .ffi-crossings .ffi-fn {
-	color: var(--fx-ink);
+	color: var(--f-fg);
 }
 
 .ffi-crossings .ffi-arrow {
-	color: var(--fx-muted);
+	color: var(--f-fg-2);
 }
 
 .ffi-crossings .ffi-where {
 	margin-left: auto;
-	color: var(--fx-muted);
+	color: var(--f-fg-2);
 }
 
 /* ---------- lifetime: two lanes, one value, one dangling read ---------- */
@@ -119,7 +91,7 @@
 .ffi-life {
 	display: grid;
 	gap: 0;
-	border: 1px solid var(--fx-rule);
+	border: 1px solid var(--f-line-2);
 	border-radius: 8px;
 	overflow: hidden;
 }
@@ -130,8 +102,8 @@
 	align-items: center;
 	gap: 0.7rem;
 	padding: 0.6rem 0.8rem;
-	border-bottom: 1px solid var(--fx-rule);
-	font-size: var(--font-size-x-small);
+	border-bottom: 1px solid var(--f-line-2);
+	font-size: var(--f-text-xs);
 }
 
 .ffi-life .ffi-step:last-child {
@@ -139,19 +111,19 @@
 }
 
 .ffi-life .ffi-side {
-	color: var(--fx-muted);
+	color: var(--f-fg-2);
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
 }
 
 .ffi-life .ffi-what {
-	color: var(--fx-ink);
+	color: var(--f-fg);
 }
 
 .ffi-life .ffi-at {
 	display: block;
 	margin-top: 0.15rem;
-	color: var(--fx-muted);
+	color: var(--f-fg-2);
 }
 
 /* The bar in the right-hand gutter is the value's lifetime. It is drawn only
@@ -163,17 +135,17 @@
 	height: 100%;
 	min-height: 2.1rem;
 	border-radius: 2px;
-	background: var(--fx-rule);
+	background: var(--f-line-2);
 }
 
 .ffi-life .ffi-step.is-alive .ffi-bar {
-	background: var(--fx-ink);
+	background: var(--f-fg);
 }
 
 .ffi-life .ffi-step.is-dead .ffi-bar {
 	background: repeating-linear-gradient(
 		to bottom,
-		var(--fx-rule) 0 2px,
+		var(--f-line-2) 0 2px,
 		transparent 2px 5px
 	);
 }
@@ -185,21 +157,21 @@
 	align-items: center;
 	gap: 0.7rem;
 	padding: 0.45rem 0.8rem;
-	border-bottom: 1px solid var(--fx-rule);
-	background: var(--fx-raised);
-	color: var(--fx-muted);
-	font-size: var(--font-size-x-small);
+	border-bottom: 1px solid var(--f-line-2);
+	background: var(--f-bg-2);
+	color: var(--f-fg-2);
+	font-size: var(--f-text-xs);
 	text-transform: uppercase;
 	letter-spacing: 0.08em;
 }
 
 .ffi-life .ffi-step.is-fault .ffi-what {
-	color: var(--fx-warn);
+	color: var(--f-danger);
 }
 
 .ffi-life .ffi-step.is-fault .ffi-what::after {
 	content: " \2190 reads freed memory";
-	color: var(--fx-muted);
+	color: var(--f-fg-2);
 	text-transform: none;
 	letter-spacing: 0;
 }
@@ -218,19 +190,19 @@
 	grid-template-columns: 3rem 8rem 1fr;
 	align-items: center;
 	gap: 0.8rem;
-	font-size: var(--font-size-x-small);
+	font-size: var(--f-text-xs);
 }
 
 .ffi-funnel .ffi-count {
 	text-align: right;
-	color: var(--fx-ink);
+	color: var(--f-fg);
 }
 
 .ffi-funnel .ffi-track {
 	height: 0.85rem;
-	border: 1px solid var(--fx-rule);
+	border: 1px solid var(--f-line-2);
 	border-radius: 3px;
-	background: var(--fx-raised);
+	background: var(--f-bg-2);
 	overflow: hidden;
 }
 
@@ -238,15 +210,15 @@
 	display: block;
 	width: var(--w);
 	height: 100%;
-	background: color-mix(in srgb, var(--fg-color) 30%, transparent);
+	background: color-mix(in srgb, var(--f-fg) 30%, transparent);
 }
 
 .ffi-funnel .ffi-label {
-	color: var(--fx-muted);
+	color: var(--f-fg-2);
 }
 
 .ffi-funnel .ffi-label b {
-	color: var(--fx-ink);
+	color: var(--f-fg);
 	font-weight: normal;
 }
 

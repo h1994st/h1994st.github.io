@@ -6,7 +6,6 @@ date = 2026-10-11T18:00:00-07:00
 [taxonomies]
 tags = ["Chromatron", "Claude Code", "Reverse Engineering", "Rust", "Games"]
 [extra]
-styles = ["css/chromatron-post.css"]
 card = "card.png"
 banner = "banner.jpg"
 +++
@@ -37,7 +36,7 @@ Silicon apps are on its
 
 {{<youtube id="CMuqV2ZrpB4" name="Chromatron Remake - Classic Laser Puzzles, Now in Your Browser" upload_date="2026-10-13T23:08:02-07:00" duration="PT31S" description="The Chromatron Remake trailer. Chromatron is a classic laser puzzle series from 2003-2004 by Sean Barrett: place mirrors, filters, prisms and splitters, mix coloured light, and light every target. Now playable in the browser and natively on Apple Silicon." />}}
 
-<p class="cr-note">The trailer. Its puzzles were made new for the video, not taken from the original levels.</p>
+<p class="f-meta">The trailer. Its puzzles were made new for the video, not taken from the original levels.</p>
 
 ## Why the old games stopped working
 
@@ -48,7 +47,7 @@ today, the original apps are icons that refuse to launch.
 
 ## The game in one picture
 
-<figure class="cr-fig">
+<figure class="f-figure f-figure--bare">
 <img src="concept.svg" alt="Diagram: a white laser passes a red filter and turns red, a mirror bounces it onto a target, and a green laser hits the same target, which lights up yellow because red and green light add up to yellow." width="720" height="420">
 <figcaption>Steer coloured lasers with mirrors and filters, and mix the light so every target gets exactly its colour.</figcaption>
 </figure>
@@ -60,16 +59,16 @@ own colour. A level is solved when every target is lit at the same time. Each
 sequel adds stranger pieces: twisters in Chromatron 2, quad-benders in 3, logic
 gates and teleporters in 4.
 
-<div class="cr-looks">
-<input type="radio" name="cr-look" id="cr-look-modern" checked>
-<label for="cr-look-modern">Modern</label>
-<input type="radio" name="cr-look" id="cr-look-classic">
-<label for="cr-look-classic">Classic</label>
-<ul class="cr-shots">
-<li><img class="cr-modern" src="chromatron1-modern.jpg" alt="Chromatron, level 46 solved, in the modern look" width="960" height="600"><img class="cr-classic" src="chromatron1.png" alt="Chromatron, level 46 solved, in the classic look" width="640" height="480"><span>Chromatron</span></li>
-<li><img class="cr-modern" src="chromatron2-modern.jpg" alt="Chromatron 2, level 22 solved, in the modern look" width="960" height="600"><img class="cr-classic" src="chromatron2.png" alt="Chromatron 2, level 22 solved, in the classic look" width="640" height="480"><span>Chromatron 2</span></li>
-<li><img class="cr-modern" src="chromatron3-modern.jpg" alt="Chromatron 3, level 41 solved, in the modern look" width="960" height="600"><img class="cr-classic" src="chromatron3.png" alt="Chromatron 3, level 41 solved, in the classic look" width="640" height="480"><span>Chromatron 3</span></li>
-<li><img class="cr-modern" src="chromatron4-modern.jpg" alt="Chromatron 4, level 21 solved, in the modern look" width="960" height="600"><img class="cr-classic" src="chromatron4.png" alt="Chromatron 4, level 21 solved, in the classic look" width="640" height="480"><span>Chromatron 4</span></li>
+<div>
+<div class="f-segmented" role="group" aria-label="Look" data-f-variants="look" hidden>
+<button type="button" data-variant="modern" aria-pressed="true">Modern</button>
+<button type="button" data-variant="classic" aria-pressed="false">Classic</button>
+</div>
+<ul class="f-gallery">
+<li><img data-f-variant="look:modern" src="chromatron1-modern.jpg" alt="Chromatron, level 46 solved, in the modern look" width="960" height="600"><img data-f-variant="look:classic" hidden src="chromatron1.png" alt="Chromatron, level 46 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron</span></li>
+<li><img data-f-variant="look:modern" src="chromatron2-modern.jpg" alt="Chromatron 2, level 22 solved, in the modern look" width="960" height="600"><img data-f-variant="look:classic" hidden src="chromatron2.png" alt="Chromatron 2, level 22 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 2</span></li>
+<li><img data-f-variant="look:modern" src="chromatron3-modern.jpg" alt="Chromatron 3, level 41 solved, in the modern look" width="960" height="600"><img data-f-variant="look:classic" hidden src="chromatron3.png" alt="Chromatron 3, level 41 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 3</span></li>
+<li><img data-f-variant="look:modern" src="chromatron4-modern.jpg" alt="Chromatron 4, level 21 solved, in the modern look" width="960" height="600"><img data-f-variant="look:classic" hidden src="chromatron4.png" alt="Chromatron 4, level 21 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 4</span></li>
 </ul>
 </div>
 
@@ -108,7 +107,7 @@ you can no longer run does not have to be the end of it.
 
 ## How it fits together
 
-<figure class="cr-fig">
+<figure class="f-figure f-figure--bare">
 <picture>
 <source media="(max-width: 600px)" srcset="how-tall.svg" width="360" height="700">
 <img src="how-wide.svg" alt="Diagram drawn as a Chromatron board: white light from the original PowerPC app passes through Ghidra and Claude Code into the Rust engine, a prism that splits it into a red beam lighting the four Mac apps and a blue beam lighting the browser version. A green beam runs from the browser to me and from me back to Claude Code." width="760" height="400">

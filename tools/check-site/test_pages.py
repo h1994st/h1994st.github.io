@@ -61,7 +61,20 @@ CONTRAST = """([sel]) => {
                                        ("/resume/", ".site-rs-dissertation"),
                                        ("/resume/", ".f-pubs__venue"), ("/resume/", ".f-pubs__authors"),
                                        ("/resume/", ".f-resume__skills dt"),
-                                       ("/resume/", "#service .f-lines li > span:first-child")])
+                                       ("/resume/", "#service .f-lines li > span:first-child"),
+                                       ("/blog/from-capture-to-query/", ".ffi-crossings .ffi-fn"),
+                                       ("/blog/from-capture-to-query/", ".ffi-crossings .ffi-where"),
+                                       ("/blog/from-capture-to-query/", ".ffi-life .ffi-side"),
+                                       ("/blog/from-capture-to-query/", ".ffi-life .is-fault .ffi-what"),
+                                       ("/blog/from-capture-to-query/", ".ffi-return"),
+                                       ("/blog/from-capture-to-query/", ".ffi-funnel .ffi-label"),
+                                       ("/blog/from-capture-to-query/", ".ffi-fig figcaption"),
+                                       ("/blog/whole-program-bitcode/", ".bc-ledger .bc"),
+                                       ("/blog/beyond-single-bitcode-file/", ".substrate-card small"),
+                                       ("/blog/beyond-single-bitcode-file/", ".substrate-outputs span"),
+                                       ("/blog/chromatron-remake/", ".f-gallery__label"),
+                                       ("/blog/chromatron-remake/", ".site-video ~ .f-meta"),
+                                       ("/notebook/", ".site-notebook-toc a")])
 def test_text_contrast(site_url, page_factory, theme, path, sel):
     page = page_factory(theme=theme)
     page.goto(f"{site_url}{path}")

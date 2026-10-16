@@ -1,14 +1,10 @@
-/* Diagrams for the rllvm analysis-substrate post. */
+/* Diagrams for the rllvm analysis-substrate post.
+ *
+ * The figure frame (margin, kicker, caption) is facet's .f-figure; this file
+ * draws only the diagrams, on facet's tokens, so both themes follow the site. */
 
-.substrate-fig {
-	--s-ink: var(--fg-color);
-	--s-muted: color-mix(in srgb, var(--fg-color) 58%, transparent);
-	--s-rule: color-mix(in srgb, var(--fg-color) 22%, transparent);
-	--s-raised: color-mix(in srgb, var(--fg-color) 6%, transparent);
-
-	margin: 2rem 0;
-	max-width: 42rem;
-	font-family: var(--font-monospace-code);
+.substrate-fig > :not(figcaption, .f-figure__kicker) {
+	font-family: var(--f-font-mono);
 }
 
 .substrate-fig strong,
@@ -16,27 +12,15 @@
 	font-weight: 500;
 }
 
-.substrate-fig small,
-.substrate-fig .substrate-kicker {
+.substrate-fig small {
 	display: block;
-	color: var(--s-muted);
-	font-size: var(--font-size-x-small);
+	color: var(--f-fg-2);
+	font-size: var(--f-text-xs);
 }
 
-.substrate-fig .substrate-kicker {
+/* A card's label sits tight above its title, as the old kicker did. */
+.substrate-fig .f-figure__kicker {
 	margin-bottom: 0.35rem;
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
-}
-
-.substrate-fig figcaption {
-	max-width: 36rem;
-	margin-top: 0.9rem;
-	color: var(--s-muted);
-	font-family: var(--font-monospace-code);
-	font-size: var(--font-size-x-small);
-	line-height: 1.5;
-	text-align: left;
 }
 
 /* Two evidence sources converging on one catalog. */
@@ -52,16 +36,16 @@
 .substrate-filter,
 .substrate-outputs span {
 	padding: 0.85rem 1rem;
-	border: 1px solid var(--s-rule);
+	border: 1px solid var(--f-line-2);
 	border-radius: 8px;
-	background: var(--s-raised);
+	background: var(--f-bg-2);
 }
 
 .substrate-card strong,
 .substrate-catalog strong {
 	display: block;
 	margin-bottom: 0.25rem;
-	font-size: var(--font-size-small);
+	font-size: var(--f-text-sm);
 }
 
 .substrate-down {
@@ -80,29 +64,29 @@
 	top: 0;
 	bottom: 0;
 	width: 50%;
-	border-bottom: 1px solid var(--s-rule);
+	border-bottom: 1px solid var(--f-line-2);
 	content: "";
 }
 
 .substrate-down span:first-child::before {
 	right: 0;
-	border-right: 1px solid var(--s-rule);
+	border-right: 1px solid var(--f-line-2);
 }
 
 .substrate-down span:last-child::before {
 	left: 0;
-	border-left: 1px solid var(--s-rule);
+	border-left: 1px solid var(--f-line-2);
 }
 
 .substrate-catalog {
 	width: min(22rem, 80%);
 	margin: 0 auto;
-	border-color: var(--accent-color);
+	border-color: var(--f-accent);
 	text-align: center;
 }
 
 .substrate-catalog strong {
-	color: var(--accent-color);
+	color: var(--f-accent);
 }
 
 /* Catalog rows flowing through selection to several output forms. */
@@ -121,7 +105,7 @@
 	grid-row: span 2;
 	display: grid;
 	align-content: center;
-	border-block: 1px solid var(--s-rule);
+	border-block: 1px solid var(--f-line-2);
 }
 
 .substrate-modules span {
@@ -129,8 +113,8 @@
 	grid-template-columns: 2rem 1fr auto;
 	gap: 0.45rem;
 	padding: 0.45rem 0.65rem;
-	border-bottom: 1px solid var(--s-rule);
-	font-size: var(--font-size-small);
+	border-bottom: 1px solid var(--f-line-2);
+	font-size: var(--f-text-sm);
 }
 
 .substrate-modules span:last-child {
@@ -139,8 +123,8 @@
 
 .substrate-modules b,
 .substrate-modules i {
-	color: var(--s-muted);
-	font-size: var(--font-size-x-small);
+	color: var(--f-fg-2);
+	font-size: var(--f-text-xs);
 	font-style: normal;
 }
 
@@ -151,8 +135,8 @@
 .substrate-filter {
 	position: relative;
 	align-self: end;
-	border-color: var(--accent-color);
-	font-size: var(--font-size-small);
+	border-color: var(--f-accent);
+	font-size: var(--f-text-sm);
 }
 
 .substrate-filter::before,
@@ -161,7 +145,7 @@
 	left: -0.85rem;
 	width: 0.85rem;
 	height: 1px;
-	background: var(--s-rule);
+	background: var(--f-line-2);
 	content: "";
 }
 
@@ -178,7 +162,7 @@
 }
 
 .substrate-filter strong {
-	color: var(--accent-color);
+	color: var(--f-accent);
 }
 
 .substrate-outputs {
@@ -189,14 +173,14 @@
 
 .substrate-outputs span {
 	padding: 0.6rem 0.35rem;
-	color: var(--s-muted);
-	font-size: var(--font-size-x-small);
+	color: var(--f-fg-2);
+	font-size: var(--f-text-xs);
 	line-height: 1.35;
 	text-align: center;
 }
 
 .substrate-outputs b {
-	color: var(--s-ink);
+	color: var(--f-fg);
 }
 
 @media (max-width: 34rem) {
@@ -209,7 +193,7 @@
 		display: block;
 		height: 1rem;
 		margin: 0;
-		border-left: 1px solid var(--s-rule);
+		border-left: 1px solid var(--f-line-2);
 	}
 
 	.substrate-down span {

@@ -1,14 +1,20 @@
 {% extends "base.html" %}
 
 {% block main %}
-<main id="main" class="f-page f-prose">
+<main id="main" class="f-reading f-page f-prose">
 
-<h1>{{ section.title }}</h1>
+<header class="f-reading__title">
+  {%- if section.ancestors | length > 1 %}
+  {%- set parent = get_section(path=section.ancestors | last) %}
+  <p class="f-kicker"><a href="{{ parent.permalink }}">{{ parent.title }}</a></p>
+  {%- endif %}
+  <h1>{{ section.title }}</h1>
+</header>
 
 {{ section.content | safe }}
 
 {%- if section.subsections -%}
-<div class="notebook-toc">
+<nav class="site-notebook-toc" aria-label="Contents">
     <ul>
         {%- for s in section.subsections %}
         {% set subsection = get_section(path=s) %}
@@ -27,9 +33,9 @@
         </li>
         {%- endfor %}
     </ul>
-</div>
+</nav>
 {%- elif section.pages -%}
-<div class="notebook-toc">
+<nav class="site-notebook-toc" aria-label="Contents">
     <ul>
         {%- for page in section.pages %}
         <li>
@@ -37,7 +43,7 @@
         </li>
         {%- endfor %}
     </ul>
-</div>
+</nav>
 {%- endif -%}
 
 </main>

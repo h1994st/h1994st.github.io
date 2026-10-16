@@ -4,9 +4,6 @@ description = "Chapter notes on Designing Data-Intensive Applications: data mode
 weight = 2
 sort_by = "weight"
 template = "notebook.html"
-
-[extra]
-styles = ["css/notebook.css"]
 +++
 
 Notes on DDIA book
