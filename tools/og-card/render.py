@@ -14,6 +14,8 @@ accent_color_dark changes there, change SAGE here.
 Geometry below mirrors the CSS box model this was first prototyped in: each text
 row is a line box of `font-size * line-height`, positioned by its vertical centre.
 """
+from pathlib import Path
+
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 W, H = 1200, 630
@@ -77,6 +79,45 @@ def tracked(draw, xy, text, fnt, fill, tracking=0.0):
         x += adv
 
 
+def finish(img, glow_layer, sharp, right):
+    """CRT glow from the glow layer, the sharp text over it, scanlines, and
+    the tmux status line with `right` at its right end."""
+    # .crt pre text-shadow: 0 0 .25rem, 0 0 .75rem (CSS blur radius ~= 2*sigma)
+    for sigma, colour, strength in ((1.5, GLOW_NEAR, 0.50), (5.0, GLOW_FAR, 1.00)):
+        mask = glow_layer.filter(ImageFilter.GaussianBlur(sigma)).point(
+            lambda v, s=strength: int(v * s))
+        img.paste(Image.new("RGB", (W, H), colour), (0, 0), mask)
+    img.paste(sharp, (0, 0), sharp)
+
+    # .scanlines::before -- 2px on, 2px off, black at .16
+    lines = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    ld = ImageDraw.Draw(lines)
+    for y in range(0, H, 4):
+        ld.rectangle([0, y, W, y + 1], fill=(0, 0, 0, 41))
+    img.paste(lines, (0, 0), lines)
+
+    # tmux status line, not macOS traffic lights.
+    foot_h = 52
+    fd = ImageDraw.Draw(img)
+    fd.rectangle([0, H - foot_h, W, H], fill=FOOT_BG)
+    y = H - foot_h / 2
+    fd.text((PAD_L, y), "[nu1lptr]", font=font(22, bold=True), fill=FOOT_FG, anchor="lm")
+    fd.text((PAD_L + font(22, bold=True).getlength("[nu1lptr]  "), y), "1:zsh*",
+            font=font(22), fill=FOOT_FG, anchor="lm")
+    fd.text((W - PAD_L, y), right, font=font(22), fill=FOOT_FG, anchor="rm")
+
+
+def save(img, path, quantize=True):
+    """Write `path`, relative to the repo root. By default the image is first
+    quantised to a 256-colour palette: the art is mostly a narrow band of
+    greens, so that is lossless to the eye and roughly halves the file."""
+    out = Path(__file__).resolve().parents[2] / path
+    if quantize:
+        img = img.quantize(colors=256, method=Image.MEDIANCUT, dither=Image.FLOYDSTEINBERG)
+    img.save(out, optimize=True)
+    print(f"wrote {out.relative_to(Path(__file__).resolve().parents[2])} ({out.stat().st_size // 1024} KB)")
+
+
 def main():
     img = background()
 
@@ -85,7 +126,7 @@ def main():
     sharp = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     gd, sd = ImageDraw.Draw(glow_layer), ImageDraw.Draw(sharp)
 
-    f30, f104, f22 = font(30), font(104, bold=True), font(22)
+    f30, f104 = font(30), font(104, bold=True)
 
     # Line boxes: y is the centre, matching `font-size * line-height` flow.
     rows = [
@@ -118,36 +159,8 @@ def main():
     sd.rectangle([cx, 487.9 - 17, cx + 17, 487.9 + 17], fill=SAGE + (255,))
     gd.rectangle([cx, 487.9 - 17, cx + 17, 487.9 + 17], fill=255)
 
-    # .crt pre text-shadow: 0 0 .25rem, 0 0 .75rem (CSS blur radius ~= 2*sigma)
-    for sigma, colour, strength in ((1.5, GLOW_NEAR, 0.50), (5.0, GLOW_FAR, 1.00)):
-        mask = glow_layer.filter(ImageFilter.GaussianBlur(sigma)).point(
-            lambda v, s=strength: int(v * s))
-        img.paste(Image.new("RGB", (W, H), colour), (0, 0), mask)
-    img.paste(sharp, (0, 0), sharp)
-
-    # .scanlines::before -- 2px on, 2px off, black at .16
-    lines = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    ld = ImageDraw.Draw(lines)
-    for y in range(0, H, 4):
-        ld.rectangle([0, y, W, y + 1], fill=(0, 0, 0, 41))
-    img.paste(lines, (0, 0), lines)
-
-    # tmux status line, not macOS traffic lights.
-    foot_h = 52
-    fd = ImageDraw.Draw(img)
-    fd.rectangle([0, H - foot_h, W, H], fill=FOOT_BG)
-    y = H - foot_h / 2
-    fd.text((PAD_L, y), "[nu1lptr]", font=font(22, bold=True), fill=FOOT_FG, anchor="lm")
-    fd.text((PAD_L + font(22, bold=True).getlength("[nu1lptr]  "), y), "1:zsh*",
-            font=f22, fill=FOOT_FG, anchor="lm")
-    fd.text((W - PAD_L, y), "shengtuo.me", font=f22, fill=FOOT_FG, anchor="rm")
-
-    # The art is a narrow band of greens, so a 256-colour palette is lossless
-    # to the eye and roughly halves the file.
-    out = __import__("pathlib").Path(__file__).resolve().parents[2] / "static" / "card.png"
-    img.quantize(colors=256, method=Image.MEDIANCUT,
-                 dither=Image.FLOYDSTEINBERG).save(out, optimize=True)
-    print(f"wrote {out.relative_to(out.parents[1])} ({out.stat().st_size // 1024} KB)")
+    finish(img, glow_layer, sharp, "shengtuo.me")
+    save(img, "static/card.png")
 
 
 if __name__ == "__main__":

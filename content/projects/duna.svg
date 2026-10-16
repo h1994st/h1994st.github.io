@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 190" aria-hidden="true">
   <!-- Duna, the my-resume mascot, from site/cast.js in github.com/h1994st/my-resume.
-       Coloured by the --coat/--stripe/--light/--iris/--nose variables in css/projects.css. -->
+       Coloured by CSS variables (coat, stripe, light, iris, nose) set in css/projects.css. -->
   <defs><clipPath id="pj-duna-tail"><path d="M90 157 C 110 161, 128 155, 135 138 l 4 -1 l -3 -3 C 139 122, 138 108, 131 98 l 3 -3 l -5 0 C 124 88, 116 84, 110 86 C 103 88, 102 96, 108 100 C 116 106, 121 116, 120 127 C 119 137, 110 143, 92 144 Z"/></clipPath></defs>
   <ellipse class="cat-ground" cx="70" cy="186" rx="48" ry="4.5"/>
    <g class="cat-tail">
