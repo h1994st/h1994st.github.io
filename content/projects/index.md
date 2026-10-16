@@ -12,8 +12,6 @@ template = "projects.html"
 [extra]
 # Share card, from `uv run --with pillow --with resvg-py tools/og-card/projects.py`.
 card = "card.png"
-styles = ["css/projects.css"]
-scripts = ["js/projects.js"]
 intro = "Things I build on the side: compiler tooling, fuzzing, a game I loved as a kid, and notes from breaking things on purpose."
 filters = [
   { id = "tools", label = "Tools" },

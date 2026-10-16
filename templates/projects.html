@@ -1,83 +1,85 @@
 {% extends "base.html" %}
 
-{#- Renders content/projects/index.md's [extra] as a grid of project cards.
-    js/projects.js adds the filter, the hover effects and the detail sheet;
-    without it the cards are still a plain grid of links. Image paths starting
-    with "@/" are content paths (another page's assets); others are relative
-    to this page bundle. -#}
+{#- Renders content/projects/index.md's [extra] as a grid of facet cards.
+    js/projects.js adds the filter chips, the hover effects and the detail
+    sheet (a facet .f-sheet); without it the cards are still a plain grid of
+    links. Image paths starting with "@/" are content paths (another page's
+    assets); others are relative to this page bundle. -#}
+
+{% block head_extra %}<link rel="stylesheet" href="{{ get_url(path='css/projects.css') }}" />{% endblock head_extra %}
 
 {% block main %}
-<main id="main" class="f-page f-prose">
-{%- set x = page.extra -%}
-<article class="projects">
-	<header class="pj-intro">
+<main id="main" class="f-wrap f-prose site-pj-page">
+{%- set x = page.extra %}
+	<header>
 		<h1>{{ page.title }}</h1>
 		{%- if x?.intro %}<p>{{ x.intro }}</p>{% endif %}
 	</header>
 
-	<div class="pj-filter" role="group" aria-label="Filter projects" hidden>
-		<span class="pj-pill" aria-hidden="true"></span>
-		<button type="button" aria-pressed="true" data-f="all">All<span></span></button>
+	<div class="site-pj-filter" role="group" aria-label="Filter projects" hidden>
+		<button class="f-chip" type="button" aria-pressed="true" data-filter="all">All<span></span></button>
 		{%- for f in x.filters %}
-		<button type="button" aria-pressed="false" data-f="{{ f.id }}">{{ f.label }}<span></span></button>
+		<button class="f-chip" type="button" aria-pressed="false" data-filter="{{ f.id }}">{{ f.label }}<span></span></button>
 		{%- endfor %}
 	</div>
 
-	<div class="pj-grid">
+	<div class="site-pj-grid" data-f-liquid>
 		{%- for p in x.projects %}
-		<article class="pj-card{% if p?.wide %} pj-wide{% endif %}" id="{{ p.id }}" data-tags="{{ p.tags | join(sep=' ') }}" style="--brand: {{ p.brand }}" aria-labelledby="{{ p.id }}-name">
+		<article class="f-card site-pj-card{% if p?.wide %} site-pj-wide{% endif %}" id="{{ p.id }}" data-tags="{{ p.tags | join(sep=' ') }}"{% if p?.detail %} data-has-detail{% endif %} style="--brand: {{ p.brand }}" aria-labelledby="{{ p.id }}-name">
 			{%- if p?.banner %}
 			{%- if p.banner is matching(pat='^@/') %}
 			{%- set banner = resize_image(path=p.banner | replace(from="@/", to=""), width=1400, op="fit_width", format="webp", quality=80) %}
 			{%- else %}
 			{%- set banner = resize_image(path=page.colocated_path ~ p.banner, width=1200, op="fit_width", format="webp", quality=90) %}
 			{%- endif %}
-			<div class="pj-top pj-has-banner{% if p?.banner_fit == 'contain' %} pj-contain{% endif %}">
-				<img class="pj-banner no-hover" src="{{ banner.url }}" width="{{ banner.width }}" height="{{ banner.height }}" alt="" loading="lazy" decoding="async">
+			<div class="f-card__media site-pj-top site-pj-has-banner{% if p?.banner_fit == 'contain' %} site-pj-contain{% endif %}">
+				<img class="site-pj-banner" src="{{ banner.url }}" width="{{ banner.width }}" height="{{ banner.height }}" alt="" loading="lazy" decoding="async">
 				{%- if p?.term %}
-				<span class="pj-term" aria-hidden="true"><span class="pj-cmd" style="--n: {{ p.term.cmd | length }}">{{ p.term.cmd }}</span> <span class="pj-out">{{ p.term.out }}</span></span>
+				<span class="site-pj-term" aria-hidden="true"><span class="site-pj-cmd" style="--n: {{ p.term.cmd | length }}">{{ p.term.cmd }}</span> <span class="site-pj-out">{{ p.term.out }}</span></span>
 				{%- endif %}
-				{%- if p?.sweep %}<span class="pj-sweep" aria-hidden="true"></span>{% endif %}
+				{%- if p?.sweep %}<span class="site-pj-sweep" aria-hidden="true"></span>{% endif %}
 			</div>
 			{%- else %}
-			<div class="pj-top pj-dots">
-				<span class="pj-app">{{ load_data(path=page.colocated_path ~ p.icon, format="plain") | safe }}</span>
+			<div class="f-card__media site-pj-top site-pj-dots">
+				<span class="site-pj-app">{{ load_data(path=page.colocated_path ~ p.icon, format="plain") | safe }}</span>
 				{%- if p?.mascot %}
-				<span class="pj-mascot">{{ load_data(path=page.colocated_path ~ p.mascot, format="plain") | safe }}</span>
+				{#- facet's cast stylesheet colors and animates the drawing: .cat + data-cat gives
+				    the palette, .is-idle the wag, breath and blink. -#}
+				<span class="site-pj-mascot cat is-idle" data-cat="duna">{{ load_data(path=page.colocated_path ~ p.mascot, format="plain") | safe }}</span>
 				{%- endif %}
 			</div>
 			{%- endif %}
-			<div class="pj-body">
-				<div class="pj-head">
+			<div class="f-card__body site-pj-body">
+				<div class="site-pj-head">
 					<h2 id="{{ p.id }}-name">{{ p.name }}</h2>
-					<span class="pj-meta">{% if p?.stars %}<span class="pj-star" title="GitHub stars">★ {{ p.stars }}</span>{% endif %}<span class="pj-yr">{{ p.years }}</span></span>
+					<span class="site-pj-meta">{% if p?.stars %}<span class="site-pj-star" title="GitHub stars">★ {{ p.stars }}</span>{% endif %}<span class="site-pj-yr">{{ p.years }}</span></span>
 				</div>
 				<p>{{ p.summary | markdown(inline=true) | safe }}</p>
 				{{<pj_links links={p.links} />}}
 			</div>
 			{%- if p?.detail %}
 			{%- set d = p.detail %}
-			<template class="pj-detail">
-				<h2 class="pj-d-title">{{ p.name }}{% if p?.stars %} <span class="pj-star" title="GitHub stars">★ {{ p.stars }}</span>{% endif %}</h2>
-				{%- if d?.kicker %}<p class="pj-kicker">{{ d.kicker }}</p>{% endif %}
+			<template class="site-pj-detail">
+				<h2 class="site-pj-d-title">{{ p.name }}{% if p?.stars %} <span class="site-pj-star" title="GitHub stars">★ {{ p.stars }}</span>{% endif %}</h2>
+				{%- if d?.kicker %}<p class="f-meta site-pj-kicker">{{ d.kicker }}</p>{% endif %}
 				{%- if d?.image %}
 				{%- if d.image is matching(pat='^@/') %}
 				{%- set shot = resize_image(path=d.image | replace(from="@/", to=""), width=1200, op="fit_width", format="webp", quality=80) %}
 				{%- else %}
 				{%- set shot = resize_image(path=page.colocated_path ~ d.image, width=1200, op="fit_width", format="webp", quality=80) %}
 				{%- endif %}
-				<img class="pj-shot no-hover" src="{{ shot.url }}" width="{{ shot.width }}" height="{{ shot.height }}" alt="{{ d?.image_alt }}">
+				<img class="site-pj-shot" src="{{ shot.url }}" width="{{ shot.width }}" height="{{ shot.height }}" alt="{{ d?.image_alt }}">
 				{%- endif %}
 				<p>{{ d.body | markdown(inline=true) | safe }}</p>
 				{%- if d?.facts %}
-				<ul class="pj-facts">
+				<ul class="site-pj-facts">
 					{%- for f in d.facts %}
 					<li>{{ f | markdown(inline=true) | safe }}</li>
 					{%- endfor %}
 				</ul>
 				{%- endif %}
 				{%- if d?.parts %}
-				<div class="pj-parts">
+				<div class="site-pj-parts">
 					{%- for part in d.parts %}
 					<div><div><b>{{ part.name }}</b><span>{{ part.text | markdown(inline=true) | safe }}</span></div>{{<pj_links links={part.links} />}}</div>
 					{%- endfor %}
@@ -90,7 +92,7 @@
 		</article>
 		{%- endfor %}
 		{%- if x?.more %}
-		<a class="pj-card pj-more" href="{{ x.more.url }}" data-tags="all">
+		<a class="f-card site-pj-card site-pj-more" href="{{ x.more.url }}" data-tags="all">
 			<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 0-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.3-3.1-.2-.4-.6-1.6 0-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.6 18.3 5 18.3 5c.7 1.6.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.1 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.1.9 2.2v3.3c0 .3.1.7.8.6A12 12 0 0 0 12 .3"/></svg>
 			<b>{{ x.more.title }} <span aria-hidden="true">→</span></b>
 			<small>{{ x.more.text }}</small>
@@ -98,9 +100,10 @@
 		{%- endif %}
 	</div>
 
-	<dialog class="pj-dialog" aria-labelledby="pj-sheet-title">
-		<div class="pj-sheet"></div>
+	<dialog class="f-sheet site-pj-sheet" aria-labelledby="site-pj-sheet-title">
+		<div class="f-sheet__panel site-pj-sheet-body"></div>
 	</dialog>
-</article>
 </main>
 {% endblock main %}
+
+{% block body_extra %}<script src="{{ get_url(path='js/projects.js') }}" defer></script>{% endblock body_extra %}
