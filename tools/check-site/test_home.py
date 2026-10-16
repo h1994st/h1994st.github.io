@@ -39,3 +39,13 @@ def test_hero_still_without_motion(site_url, page_factory):
     text = page.locator(".site-intro [data-f-type]").inner_text()
     page.wait_for_timeout(3000)
     assert page.locator(".site-intro [data-f-type]").inner_text() == text
+
+
+def test_crt_art_fits_without_scrolling(site_url, page_factory):
+    for width in (390, 1280):
+        page = page_factory(width=width)
+        page.goto(f"{site_url}/")
+        sw, cw = page.evaluate(
+            "(() => { const e = document.querySelector('.site-hero .site-crt pre'); return [e.scrollWidth, e.clientWidth]; })()"
+        )
+        assert sw <= cw + 1, (width, sw, cw)

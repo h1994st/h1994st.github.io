@@ -1,5 +1,5 @@
 +++
-insert_anchor_links = "left"
+insert_anchor_links = "none"
 title = "Home"
 description = "Shengtuo Hu (nu1lptr), security researcher at Palo Alto Networks and Michigan CSE Ph.D. Writing on program analysis, LLVM, fuzzing, and network security."
 [extra]

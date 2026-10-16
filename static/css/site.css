@@ -7,7 +7,7 @@
   border-radius: var(--f-r-lg);
   corner-shape: squircle;
   background: radial-gradient(
-    color-mix(in oklch, var(--f-accent) 26%, black),
+    color-mix(in oklch, var(--f-accent) 34%, black),
     color-mix(in oklch, var(--f-accent) 9%, black) 80%
   );
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06), var(--f-shadow);
@@ -87,4 +87,10 @@
 .site-about { max-width: var(--f-measure); margin: var(--f-space-8) auto 0; }
 @media (max-width: 720px) {
   .site-hero, .site-home-below { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Hero art: size the font so the 70-column banner fills the screen at any width. */
+.site-hero .site-crt { container-type: inline-size; }
+.site-hero .site-crt pre {
+  font-size: calc((100cqi - 2 * var(--f-space-5)) / (70 * 0.605));
 }
