@@ -24,6 +24,7 @@ ignored_static = [
 
 [search]
 index_format = "fuse_json"
+include_description = true
 
 [markdown]
 github_alerts = true

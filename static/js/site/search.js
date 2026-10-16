@@ -9,7 +9,15 @@ let index = null;
 
 // One shared promise, so open() and the first keystroke never fetch twice.
 function load() {
-  index ??= fetch(dialog.dataset.index).then((r) => r.json());
+  index ??= fetch(dialog.dataset.index)
+    .then((r) => {
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    })
+    .catch((err) => {
+      index = null; // let a later keystroke retry
+      throw err;
+    });
   return index;
 }
 
@@ -19,10 +27,12 @@ function escape(s) {
 
 function score(doc, words) {
   const title = doc.title.toLowerCase();
+  const desc = (doc.description ?? "").toLowerCase();
   const body = doc.body.toLowerCase();
   let s = 0;
   for (const w of words) {
     if (title.includes(w)) s += 10;
+    else if (desc.includes(w)) s += 5;
     else if (body.includes(w)) s += 1;
     else return 0;
   }
@@ -41,7 +51,14 @@ async function run() {
   list.textContent = "";
   if (!q) return (status.textContent = "");
   const words = q.split(/\s+/);
-  const docs = (await load())
+  let all;
+  try {
+    all = await load();
+  } catch {
+    if (input.value.trim().toLowerCase() === q) status.textContent = "Search unavailable";
+    return;
+  }
+  const docs = all
     .map((d) => [score(d, words), d])
     .filter(([s]) => s > 0)
     .sort((a, b) => b[0] - a[0])
@@ -57,7 +74,7 @@ async function run() {
 function open() {
   dialog.showModal();
   input.focus();
-  load();
+  load().catch(() => {}); // run() reports the failure when someone types
 }
 
 if (dialog) {

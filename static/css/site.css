@@ -99,3 +99,4 @@
 .site-search-results { margin: var(--f-space-3) 0 0; padding: 0; list-style: none; max-height: 60vh; overflow: auto; }
 .site-search-results li { padding: var(--f-space-2) 0; border-bottom: 1px solid var(--f-line); }
 .site-search-results p { margin: 0; color: var(--f-fg-2); font-size: var(--f-text-sm); }
+.site-search-results a, .site-search-results p { overflow-wrap: anywhere; }
