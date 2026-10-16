@@ -176,4 +176,9 @@
 	{%- if config.extra?.person and current_path and current_path == base_path %}
 		{%- include "partials/person_schema.html" %}
 	{%- endif %}
+
+	{#- BlogPosting JSON-LD, dated pages only ------------------------------ -#}
+	{%- if config.extra?.person and page?.date %}
+		{%- include "partials/article_schema.html" %}
+	{%- endif %}
 </head>

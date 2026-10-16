@@ -1,6 +1,6 @@
 author = "Shengtuo Hu"
 base_url = "https://shengtuo.me"
-description = "Learner // Cybersecurity Ph.D.@UMich CSE // Photographer"
+description = "Shengtuo Hu (nu1lptr), security researcher. Writing on program analysis, LLVM, fuzzing and network security."
 title = "nu1lptr"
 
 theme = "duckquill"
