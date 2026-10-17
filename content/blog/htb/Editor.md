@@ -5,9 +5,6 @@ description = "Hack The Box - Editor"
 date = 2026-04-06T17:00:00-07:00
 [taxonomies]
 tags = ["HackTheBox"]
-[extra]
-toc = true
-toc_sidebar = true
 +++
 
 - Editor (Easy): <https://www.hackthebox.com/machines/Editor>
@@ -230,7 +227,7 @@ async with asyncssh.connect(TARGET_HOST, username=USERNAME, password=PASSWORD) a
 
 Output:
 
-```txt
+```txt,wrap=false
 [+] Current user: uid=1000(oliver) gid=1000(oliver) groups=1000(oliver),999(netdata)
 [+] User flag: 92da...1da7
 /tmp/bash

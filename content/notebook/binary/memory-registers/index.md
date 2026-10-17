@@ -2,9 +2,6 @@
 title = "Registers and Memory Layout"
 description = "How x86-64 general-purpose registers map onto the process memory layout, and how stack frames are built and torn down across calls."
 weight = 1
-[extra]
-toc = true
-toc_sidebar = true
 +++
 
 ## Registers (x64)
@@ -43,7 +40,7 @@ A stack is allocated at a high address and grows towards lower addresses.
 
 The memory addresses are not fully randomized, particularly the lower 3 bits of the base address, even when PIE is enabled.
 
-```txt,linenos,hl_lines=6-10
+```txt,linenos,hl_lines=6-10,wrap=false
 pwndbg> info proc mappings
 process 67443
 Mapped address spaces:

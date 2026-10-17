@@ -9,8 +9,8 @@
     (ISO 8601) are recommended. Without `name` and `upload_date` this is just
     the theme's embed. `name` also titles the iframe for screen readers. -#}
 {% component youtube(id, autoplay=false, start="", name="", upload_date="", description="", duration="") %}
+<figure class="f-wide site-video">
 <iframe
-	class="youtube-embed"
 	{%- if name %}
 	title="{{ name }}"
 	{%- endif %}
@@ -18,6 +18,7 @@
 	allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
 	referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
 </iframe>
+</figure>
 {%- if name and upload_date %}
 <script type="application/ld+json">
 {

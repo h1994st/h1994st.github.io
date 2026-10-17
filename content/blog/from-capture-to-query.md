@@ -9,8 +9,6 @@ tags = ["rllvm", "LLVM", "Rust", "Security", "Static Analysis"]
 styles = ["css/rllvm-ffi.css"]
 # Served by the rllvm project site (h1994st/rllvm), not this repo.
 card = "rllvm/assets/images/social-card.png"
-toc = true
-toc_sidebar = true
 +++
 
 ![rllvm: extract, catalog, and query LLVM bitcode from real software](https://shengtuo.me/rllvm/assets/images/banner.png)
@@ -68,16 +66,16 @@ directory holds the smallest version of this I could write: two programs whose
 call graphs cross the boundary, one led from each language, because the gap in
 the tooling runs both ways.
 
-<figure class="ffi-fig ffi-crossings" aria-label="Two small programs whose call graphs cross the FFI boundary, one led from Rust and one led from C">
+<figure class="f-figure ffi-fig ffi-crossings" aria-label="Two small programs whose call graphs cross the FFI boundary, one led from Rust and one led from C">
 <div class="ffi-group">
-<span class="ffi-kicker">Rust-led</span>
+<p class="f-figure__kicker">Rust-led</p>
 <ol>
 <li><span class="ffi-lang is-rust">Rust</span><span class="ffi-fn">main::main</span><span class="ffi-arrow">&#9656;</span><span class="ffi-lang is-c">C</span><span class="ffi-fn">c_double</span><span class="ffi-arrow">&#9656;</span><span class="ffi-lang is-rust">Rust</span><span class="ffi-fn">rust_add</span><span class="ffi-where">main.rs:12</span></li>
 <li><span class="ffi-lang is-rust">Rust</span><span class="ffi-fn">main::main</span><span class="ffi-arrow">&#9656;</span><span class="ffi-lang is-cxx">C++</span><span class="ffi-fn">cxx_triple</span><span class="ffi-where">main.rs:13</span></li>
 </ol>
 </div>
 <div class="ffi-group">
-<span class="ffi-kicker">C-led</span>
+<p class="f-figure__kicker">C-led</p>
 <ol>
 <li><span class="ffi-lang is-c">C</span><span class="ffi-fn">main</span><span class="ffi-arrow">&#9656;</span><span class="ffi-lang is-rust">Rust</span><span class="ffi-fn">rust_scale</span><span class="ffi-arrow">&#9656;</span><span class="ffi-lang is-c">C</span><span class="ffi-fn">c_offset</span><span class="ffi-where">c_main.c:8</span></li>
 </ol>
@@ -154,7 +152,7 @@ static void log_source_ids(quiche_conn *conn) {
 }
 ```
 
-<figure class="ffi-fig" aria-label="A timeline showing the ConnectionId being cloned, its pointer escaping to C, the value being dropped, and C reading the freed memory">
+<figure class="f-figure ffi-fig" aria-label="A timeline showing the ConnectionId being cloned, its pointer escaping to C, the value being dropped, and C reading the freed memory">
 <div class="ffi-life">
 <div class="ffi-step is-alive"><span class="ffi-side">Rust</span><span class="ffi-what">clone a <b>ConnectionId</b> out of the iterator<span class="ffi-at">ffi.rs:1157</span></span><span class="ffi-bar"></span></div>
 <div class="ffi-step is-alive"><span class="ffi-side">Rust</span><span class="ffi-what">*out = id.as_ptr(), the pointer escapes<span class="ffi-at">ffi.rs:1158</span></span><span class="ffi-bar"></span></div>
@@ -205,7 +203,7 @@ rllvm-query --catalog $CAT defs $FN
 rllvm-query --catalog $CAT callers $FN
 ```
 
-```txt
+```txt,wrap=false
 quiche/src/ffi.rs:1154  quiche_connection_id_iter_next
 log_source_ids
     cid_logger.c:20  direct    quiche_connection_id_iter_next
@@ -220,7 +218,7 @@ panic-handling edges that every Rust function carries:
 rllvm-query --catalog $CAT callees $FN | grep -v panic
 ```
 
-```txt
+```txt,wrap=false
 quiche/src/ffi.rs:1157  direct    <quiche::ffi::ConnectionIdIter as core::iter::traits::iterator::Iterator>::next
 quiche/src/ffi.rs:1157  intrinsic llvm.memcpy.p0.p0.i64
 quiche/src/ffi.rs:1158  direct    <quiche::packet::ConnectionId as core::convert::AsRef<[u8]>>::as_ref
@@ -231,7 +229,7 @@ quiche/src/ffi.rs:1162  direct    core::ptr::drop_glue::<quiche::packet::Connect
 Clone, take a pointer, free. Run the same query against 0.29.2 and the
 `drop_glue` lines are gone, because the fix stopped owning anything:
 
-```txt
+```txt,wrap=false
 quiche/src/ffi.rs:1146  direct    <alloc::vec::Vec<quiche::packet::ConnectionId> as core::ops::deref::Deref>::deref
 quiche/src/ffi.rs:1146  direct    <[quiche::packet::ConnectionId]>::get::<usize>
 quiche/src/ffi.rs:1147  direct    <quiche::packet::ConnectionId as core::convert::AsRef<[u8]>>::as_ref
@@ -339,7 +337,7 @@ For a caller that does exist, `callees log_source_ids` lists its calls in
 program order, so you can see what happens after the crossing (the arrows are
 mine):
 
-```txt
+```txt,wrap=false
 cid_logger.c:15  direct    quiche_conn_source_ids
 cid_logger.c:20  direct    quiche_connection_id_iter_next   <- the crossing
 cid_logger.c:22  direct    fprintf                          <- after it
@@ -350,7 +348,7 @@ cid_logger.c:27  direct    quiche_connection_id_iter_free
 Anything sequenced after the crossing is a candidate consumer of a pointer that
 Rust has already freed. The two `fprintf` calls are a three-line reading window.
 
-<figure class="ffi-fig ffi-funnel" aria-label="Each step narrows the search: 169 FFI entry points, 7 candidates, 1 caller, 3 lines of C to read">
+<figure class="f-figure ffi-fig ffi-funnel" aria-label="Each step narrows the search: 169 FFI entry points, 7 candidates, 1 caller, 3 lines of C to read">
 <div class="ffi-rung"><span class="ffi-count">169</span><span class="ffi-track"><span class="ffi-fill" style="--w:100%"></span></span><span class="ffi-label"><b>FFI entry points</b>, listed by ffi-exports</span></div>
 <div class="ffi-rung"><span class="ffi-count">7</span><span class="ffi-track"><span class="ffi-fill" style="--w:34%"></span></span><span class="ffi-label"><b>candidates</b>: callees take a pointer into T and drop T</span></div>
 <div class="ffi-rung"><span class="ffi-count">1</span><span class="ffi-track"><span class="ffi-fill" style="--w:16%"></span></span><span class="ffi-label"><b>caller</b>, with a file and a line</span></div>

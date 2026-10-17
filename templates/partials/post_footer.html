@@ -1,0 +1,12 @@
+{%- if config.extra.features.backlinks and page.backlinks | length > 0 %}
+<aside class="site-backlinks">
+  <h2>Pages linking here</h2>
+  <ul>{% for b in page.backlinks %}<li><a href="{{ b.permalink }}">{{ b.title }}</a></li>{% endfor %}</ul>
+</aside>
+{%- endif %}
+{%- if page.lower or page.higher %}
+<nav class="site-prev-next" aria-label="More posts">
+  {%- if page.higher %}<a href="{{ page.higher.permalink }}">← Older: {{ page.higher.title }}</a>{% endif %}
+  {%- if page.lower %}<a href="{{ page.lower.permalink }}">Newer: {{ page.lower.title }} →</a>{% endif %}
+</nav>
+{%- endif %}

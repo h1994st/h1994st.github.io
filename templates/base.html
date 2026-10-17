@@ -1,0 +1,23 @@
+{%- set facet = config.extra.site.facet -%}
+<!doctype html>
+<html lang="{{ lang }}" data-accent="{{ config.extra.site.accent }}" data-f-ga4="{{ config.extra.site.ga4 }}">
+<head>
+{% include "partials/head.html" %}
+{% block head_extra %}{% endblock head_extra %}
+</head>
+<body>
+  <a class="f-visually-hidden" href="#main">Skip to content</a>
+  {% include "partials/nav.html" %}
+  {% block main %}{% endblock main %}
+  {% include "partials/footer.html" %}
+  {%- if config.extra.features.search %}
+  {% include "partials/search.html" %}
+  {%- endif %}
+  {% block before_modules %}{% endblock before_modules %}
+  <script type="module" src="{{ get_url(path=facet ~ '/js/facet.js') }}"></script>
+  {%- if config.extra.features.footer_cats %}
+  <script type="module" src="{{ get_url(path='js/site/cats.js') }}"></script>
+  {%- endif %}
+  {% block body_extra %}{% endblock body_extra %}
+</body>
+</html>

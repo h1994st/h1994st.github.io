@@ -1,35 +1,12 @@
 /* Diagrams for the whole-program bitcode post.
  *
  * The vocabulary is borrowed from the rllvm and rules_rllvm project pages so
- * the blog and the docs cannot disagree visually. Nothing here hardcodes a
- * colour: the four semantic tokens below are derived from Duckquill's own
- * --fg-color / --bg-color, so both themes follow the site automatically. */
+ * the blog and the docs cannot disagree visually. The figure frame (margin,
+ * caption) is facet's .f-figure; this file draws only the diagrams, on facet's
+ * tokens, so both themes follow the site automatically. */
 
-.bc-fig {
-	--d-ink: var(--fg-color);
-	--d-muted: color-mix(in srgb, var(--fg-color) 58%, transparent);
-	--d-rule: color-mix(in srgb, var(--fg-color) 22%, transparent);
-	--d-raised: color-mix(in srgb, var(--fg-color) 6%, transparent);
-
-	margin: 2rem 0;
-	font-family: var(--font-monospace-code);
-}
-
-.bc-fig figcaption {
-	/* Duckquill centres figcaptions; these read as notes on a left-aligned
-	   figure, so they are pulled back into line with it. */
-	text-align: left;
-	max-width: min(34rem, 100%);
-	margin-top: 0.9rem;
-	font-family: var(--font-monospace-code);
-	font-size: var(--font-size-x-small);
-	color: var(--d-muted);
-	line-height: 1.5;
-}
-
-.bc-fig figcaption b {
-	color: var(--d-ink);
-	font-weight: normal;
+.bc-fig > :not(figcaption, .f-figure__kicker) {
+	font-family: var(--f-font-mono);
 }
 
 /* ---------- the ledger: one path per object, concatenated ---------- */
@@ -54,8 +31,8 @@
 	background: linear-gradient(
 		to bottom,
 		transparent,
-		var(--d-rule) 14%,
-		var(--d-rule) 86%,
+		var(--f-line-2) 14%,
+		var(--f-line-2) 86%,
 		transparent
 	);
 }
@@ -66,7 +43,7 @@
 	align-items: center;
 	gap: 0.7rem;
 	padding: 0.4rem 1.15rem 0.4rem 0;
-	font-size: var(--font-size-small);
+	font-size: var(--f-text-sm);
 	animation: bc-enter 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 	animation-delay: calc(var(--i) * 80ms);
 }
@@ -75,21 +52,21 @@
 	height: 1px;
 	background: repeating-linear-gradient(
 		to right,
-		var(--d-rule) 0 3px,
+		var(--f-line-2) 0 3px,
 		transparent 3px 6px
 	);
 }
 
 .bc-ledger .src {
-	color: var(--d-ink);
+	color: var(--f-fg);
 }
 
 .bc-ledger .bc {
-	color: var(--d-muted);
+	color: var(--f-fg-2);
 }
 
 .bc-ledger .sec {
-	color: var(--d-ink);
+	color: var(--f-fg);
 }
 
 /* ---------- the graph: a diamond, deduplicated ---------- */
@@ -105,43 +82,43 @@
 /* Dashed on purpose: these edges are declared during analysis and carry
    nothing until an output group asks for them. */
 .bc-graph .edges line {
-	/* Not --d-rule: a hairline that reads fine as a border disappears as a
+	/* Not --f-line-2: a hairline that reads fine as a border disappears as a
 	   diagonal, and in dark it vanishes against the ground entirely. */
-	stroke: color-mix(in srgb, var(--fg-color) 40%, transparent);
+	stroke: color-mix(in srgb, var(--f-fg) 40%, transparent);
 	stroke-width: 1.5;
 	stroke-dasharray: 3 3;
 	stroke-linecap: round;
 }
 
 .bc-graph .node rect {
-	fill: var(--d-raised);
-	stroke: var(--d-rule);
+	fill: var(--f-bg-2);
+	stroke: var(--f-line-2);
 	stroke-width: 1;
 }
 
 .bc-graph text {
-	font-family: var(--font-monospace-code);
+	font-family: var(--f-font-mono);
 	text-anchor: middle;
 }
 
 .bc-graph .target {
-	fill: var(--d-ink);
+	fill: var(--f-fg);
 	font-size: 13px;
 }
 
 .bc-graph .bc {
-	fill: var(--d-muted);
+	fill: var(--f-fg-2);
 	font-size: 11px;
 }
 
 /* The shared node is the point of the picture, so it is the one thing allowed
-   to carry the accent colour. */
+   to carry the accent color. */
 .bc-graph .shared rect {
-	stroke: var(--accent-color);
+	stroke: var(--f-accent);
 }
 
 .bc-graph .shared .target {
-	fill: var(--accent-color);
+	fill: var(--f-accent);
 }
 
 .bc-graph .node,

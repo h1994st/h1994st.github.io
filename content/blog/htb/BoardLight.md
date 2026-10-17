@@ -5,9 +5,6 @@ description = "Hack The Box - BoardLight"
 date = 2025-11-29T15:34:00-08:00
 [taxonomies]
 tags = ["HackTheBox"]
-[extra]
-toc = true
-toc_sidebar = true
 +++
 
 - BoardLight (Easy): <https://www.hackthebox.com/machines/boardlight>

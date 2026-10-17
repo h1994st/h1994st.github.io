@@ -10,10 +10,8 @@ template = "projects.html"
 # `mascot` SVG sitting beside it. `tags` drive the filter.
 # `url`s starting with "@/" are internal and resolved with get_url.
 [extra]
-# Share card, from `uv run --with pillow --with resvg-py tools/og-card/projects.py`.
+# Share card, from `uv run --with pillow --with fonttools --with brotli --with resvg-py tools/og-card/projects.py`.
 card = "card.png"
-styles = ["css/projects.css"]
-scripts = ["js/projects.js"]
 intro = "Things I build on the side: compiler tooling, fuzzing, a game I loved as a kid, and notes from breaking things on purpose."
 filters = [
   { id = "tools", label = "Tools" },
@@ -24,6 +22,7 @@ more = { url = "https://github.com/h1994st", title = "More on GitHub", text = "M
 
 [[extra.projects]]
 id = "rllvm"
+featured = true
 name = "rllvm & rules_rllvm"
 years = "2022 – now"
 brand = "#2a7bff"
@@ -53,6 +52,7 @@ parts = [
 
 [[extra.projects]]
 id = "grammar-mutator"
+featured = true
 name = "Grammar-Mutator"
 years = "2020 – now"
 brand = "#5b45d6"
@@ -93,6 +93,7 @@ body = "One canonical LaTeX resume, tailored variants per job, facts defined onc
 
 [[extra.projects]]
 id = "chromatron"
+featured = true
 name = "Chromatron Remake"
 years = "2026"
 brand = "#ff2a55"

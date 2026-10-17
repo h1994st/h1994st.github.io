@@ -9,6 +9,11 @@ jobs:
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v7
+      - name: "Check out submodules"
+        run: git submodule update --init --recursive
+      - uses: astral-sh/setup-uv@v10.3.0
+      - name: "Generate share images"
+        run: uv run --with pillow --with fonttools --with brotli tools/og-card/posts.py --out static/cards
       - name: "Build and Deploy"
         uses: shalzz/zola-deploy-action@v0.23.6
         env:

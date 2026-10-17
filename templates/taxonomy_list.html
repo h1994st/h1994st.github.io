@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block main %}
+<main id="main" class="f-list f-prose">
+  <header><h1>{{ taxonomy.name | capitalize }}</h1></header>
+  <p>
+    {%- for t in terms %}
+    <a class="f-chip" href="{{ t.permalink }}">{{ t.name }} ({{ t.pages | length }})</a>
+    {%- endfor %}
+  </p>
+</main>
+{% endblock main %}

@@ -1,0 +1,33 @@
+name: Check
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: zola@0.23.6
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          enable-cache: true
+      - name: "Generate share images"
+        run: uv run --with pillow --with fonttools --with brotli tools/og-card/posts.py --out static/cards
+      - name: "Build and check links"
+        run: zola build && zola check --skip-external-links
+      - name: "Resolve the Playwright version"
+        id: playwright
+        run: echo "version=$(uv run --with playwright python -c 'import importlib.metadata as m; print(m.version("playwright"))')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - run: uv run --with playwright playwright install --with-deps chromium
+      - run: uv run --with pytest --with playwright pytest tools/check-site -q
+      - run: uv run --with pytest --with pillow --with fonttools --with brotli pytest tools/og-card -q

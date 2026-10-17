@@ -1,167 +1,32 @@
 #!/usr/bin/env python3
-"""Regenerate static/card.png, the site-wide Open Graph / Twitter share image.
+"""Regenerate static/card.png, the site-wide share image (og:image) for every page that is not a
+post: the home page, lists, the resume, the notebook.
 
-    uv run --with pillow tools/og-card/render.py
+    uv run --with pillow --with fonttools --with brotli tools/og-card/render.py
 
-static/card.png overrides themes/duckquill/static/card.png -- the theme's own
-"Duckquill" artwork. Without it, every share of every page shows someone else's
-branding.
-
-The design reuses the CRT treatment from themes/duckquill/sass/_crt.scss and the
-accent colours from config.toml, so the card reads as part of the site. If
-accent_color_dark changes there, change SAGE here.
-
-Geometry below mirrors the CSS box model this was first prototyped in: each text
-row is a line box of `font-size * line-height`, positioned by its vertical centre.
+A text card in the post cards' style (posts.py draws both): role, name and a one-line lead on the
+left of the deep Moss card, the home page's gem on the right. Edit this script, not the PNG; the
+output is deterministic.
 """
-from pathlib import Path
+import hashlib
+import tomllib
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image
 
-W, H = 1200, 630
-PAD_L, PAD_T = 88, 74
+from posts import H, ROOT, W, background, draw_text
 
-# --- palette (all derived from the site, none invented) ---------------------
-SAGE = (146, 179, 165)        # accent_color_dark, #92b3a5
-BODY = (179, 160, 143)        # lifted taupe; plain #918072 loses contrast here
-GLOW_NEAR = (146, 179, 165)   # .crt pre --text-shadow-1
-GLOW_FAR = (129, 195, 167)    # --text-shadow-2, hsl(154.5 35.7% 63.7%)
-FOOT_BG, FOOT_FG = SAGE, (16, 33, 27)
-GRAD = ((0.00, (0x35, 0x42, 0x3b)), (0.62, (0x17, 0x21, 0x1d)), (1.00, (0x0b, 0x10, 0x0e)))
-
-FONTS = ["/System/Library/Fonts/Menlo.ttc", "/Library/Fonts/Menlo.ttc",
-         "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
-         "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf"]
+_CONFIG = tomllib.loads((ROOT / "config.toml").read_text())
+KICKER = f"{_CONFIG['extra']['author']['role'].upper()} · NU1LPTR"
+LEAD = "Program analysis, LLVM, fuzzing, and network security. Palo Alto Networks; Ph.D. from Michigan."
 
 
-def font(size, bold=False):
-    for path in FONTS:
-        try:
-            return ImageFont.truetype(path, size, index=1 if bold else 0)
-        except OSError:
-            continue
-    raise SystemExit("No monospace font found; add one to FONTS in this script.")
-
-
-def background():
-    """CSS: radial-gradient(ellipse 120% 140% at 30% 34%, ...) -- per-pixel."""
-    cx, cy, rx, ry = 0.30 * W, 0.34 * H, 1.20 * W, 1.40 * H
-    px = bytearray(W * H * 3)
-    for y in range(H):
-        dy = ((y - cy) / ry) ** 2
-        row = y * W * 3
-        for x in range(W):
-            t = (((x - cx) / rx) ** 2 + dy) ** 0.5
-            t = 1.0 if t > 1.0 else t
-            for i in range(len(GRAD) - 1):       # locate the stop pair
-                t0, c0 = GRAD[i]
-                t1, c1 = GRAD[i + 1]
-                if t <= t1 or i == len(GRAD) - 2:
-                    k = 0.0 if t1 == t0 else (t - t0) / (t1 - t0)
-                    k = 0.0 if k < 0 else (1.0 if k > 1 else k)
-                    o = row + x * 3
-                    px[o] = int(c0[0] + (c1[0] - c0[0]) * k)
-                    px[o + 1] = int(c0[1] + (c1[1] - c0[1]) * k)
-                    px[o + 2] = int(c0[2] + (c1[2] - c0[2]) * k)
-                    break
-    return Image.frombytes("RGB", (W, H), bytes(px))
-
-
-def tracked(draw, xy, text, fnt, fill, tracking=0.0):
-    """Pillow has no letter-spacing; monospace makes it a fixed advance."""
-    x, y = xy
-    if not tracking:
-        draw.text((x, y), text, font=fnt, fill=fill, anchor="lm")
-        return
-    adv = fnt.getlength("M") + tracking
-    for ch in text:
-        draw.text((x, y), ch, font=fnt, fill=fill, anchor="lm")
-        x += adv
-
-
-def finish(img, glow_layer, sharp, right):
-    """CRT glow from the glow layer, the sharp text over it, scanlines, and
-    the tmux status line with `right` at its right end."""
-    # .crt pre text-shadow: 0 0 .25rem, 0 0 .75rem (CSS blur radius ~= 2*sigma)
-    for sigma, colour, strength in ((1.5, GLOW_NEAR, 0.50), (5.0, GLOW_FAR, 1.00)):
-        mask = glow_layer.filter(ImageFilter.GaussianBlur(sigma)).point(
-            lambda v, s=strength: int(v * s))
-        img.paste(Image.new("RGB", (W, H), colour), (0, 0), mask)
-    img.paste(sharp, (0, 0), sharp)
-
-    # .scanlines::before -- 2px on, 2px off, black at .16
-    lines = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    ld = ImageDraw.Draw(lines)
-    for y in range(0, H, 4):
-        ld.rectangle([0, y, W, y + 1], fill=(0, 0, 0, 41))
-    img.paste(lines, (0, 0), lines)
-
-    # tmux status line, not macOS traffic lights.
-    foot_h = 52
-    fd = ImageDraw.Draw(img)
-    fd.rectangle([0, H - foot_h, W, H], fill=FOOT_BG)
-    y = H - foot_h / 2
-    fd.text((PAD_L, y), "[nu1lptr]", font=font(22, bold=True), fill=FOOT_FG, anchor="lm")
-    fd.text((PAD_L + font(22, bold=True).getlength("[nu1lptr]  "), y), "1:zsh*",
-            font=font(22), fill=FOOT_FG, anchor="lm")
-    fd.text((W - PAD_L, y), right, font=font(22), fill=FOOT_FG, anchor="rm")
-
-
-def save(img, path, quantize=True):
-    """Write `path`, relative to the repo root. By default the image is first
-    quantised to a 256-colour palette: the art is mostly a narrow band of
-    greens, so that is lossless to the eye and roughly halves the file."""
-    out = Path(__file__).resolve().parents[2] / path
-    if quantize:
-        img = img.quantize(colors=256, method=Image.MEDIANCUT, dither=Image.FLOYDSTEINBERG)
-    img.save(out, optimize=True)
-    print(f"wrote {out.relative_to(Path(__file__).resolve().parents[2])} ({out.stat().st_size // 1024} KB)")
-
-
-def main():
-    img = background()
-
-    # Text goes on its own layer so the CRT glow can be blurred from its alpha.
-    glow_layer = Image.new("L", (W, H), 0)
-    sharp = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    gd, sd = ImageDraw.Draw(glow_layer), ImageDraw.Draw(sharp)
-
-    f30, f104 = font(30), font(104, bold=True)
-
-    # Line boxes: y is the centre, matching `font-size * line-height` flow.
-    rows = [
-        # (y_centre, prompt, command, font, tracking, glows)
-        (74 + 22.5, "~ $ ", "whoami", f30, 0.0, True),
-        (289.4 + 22.5, "~ $ ", "whatis nu1lptr", f30, 0.0, True),
-    ]
-    for y, prompt, cmd, fnt, tr, glow in rows:
-        px_ = PAD_L
-        for text, alpha in ((prompt, 140), (cmd, 255)):      # .prompt is opacity .55
-            col = SAGE + (alpha,)
-            sd.text((px_, y), text, font=fnt, fill=col, anchor="lm")
-            if glow:
-                gd.text((px_, y), text, font=fnt, fill=alpha, anchor="lm")
-            px_ += fnt.getlength(text)
-
-    # The one bold element; everything else stays quiet.
-    tracked(sd, (PAD_L, 186.2), "Shengtuo Hu", f104, SAGE + (255,), -0.03 * 104)
-    tracked(gd, (PAD_L, 186.2), "Shengtuo Hu", f104, 255, -0.03 * 104)
-
-    # p { text-shadow: none } -- deliberately not added to the glow layer.
-    for i, line in enumerate(("Security researcher. Program analysis, LLVM,",
-                              "fuzzing, and network security.")):
-        sd.text((PAD_L, 357.65 + i * 46.5), line, font=f30, fill=BODY + (255,), anchor="lm")
-
-    # Prompt + block cursor.
-    sd.text((PAD_L, 487.9), "~ $", font=f30, fill=SAGE + (140,), anchor="lm")
-    gd.text((PAD_L, 487.9), "~ $", font=f30, fill=140, anchor="lm")
-    cx = PAD_L + f30.getlength("~ $ ")
-    sd.rectangle([cx, 487.9 - 17, cx + 17, 487.9 + 17], fill=SAGE + (255,))
-    gd.rectangle([cx, 487.9 - 17, cx + 17, 487.9 + 17], fill=255)
-
-    finish(img, glow_layer, sharp, "shengtuo.me")
-    save(img, "static/card.png")
+def card():
+    im = background(hashlib.sha256(b"/").digest())
+    draw_text(im, KICKER, "Shengtuo Hu", LEAD, byline="Blog  ·  Projects  ·  Resume")
+    return im.resize((W, H), Image.Resampling.LANCZOS)
 
 
 if __name__ == "__main__":
-    main()
+    out = ROOT / "static" / "card.png"
+    card().save(out, optimize=True)
+    print(f"wrote {out.relative_to(ROOT)} ({out.stat().st_size // 1024} KB)")

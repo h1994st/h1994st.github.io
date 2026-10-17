@@ -5,9 +5,6 @@ description = "Hack The Box - LinkVortex"
 date = 2025-08-15T22:09:08-07:00
 [taxonomies]
 tags = ["HackTheBox"]
-[extra]
-toc = true
-toc_sidebar = true
 +++
 
 - LinkVortex (Easy): <https://www.hackthebox.com/machines/linkvortex>
@@ -24,7 +21,7 @@ Note that, we may need to add a reference to `/etc/hosts` so that we can access 
 
 Results for `linkvortex.htb`:
 
-```txt
+```txt,wrap=false
 ...
 PORT   STATE SERVICE REASON         VERSION
 22/tcp open  ssh     syn-ack ttl 63 OpenSSH 8.9p1 Ubuntu 3ubuntu0.10 (Ubuntu Linux; protocol 2.0)
@@ -62,7 +59,7 @@ OS:%CD=S)
 
 Results for `dev.linkvortex.htb`:
 
-```txt
+```txt,wrap=false
 PORT   STATE SERVICE REASON         VERSION
 22/tcp open  ssh     syn-ack ttl 63 OpenSSH 8.9p1 Ubuntu 3ubuntu0.10 (Ubuntu Linux; protocol 2.0)
 | ssh-hostkey:

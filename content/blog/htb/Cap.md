@@ -5,9 +5,6 @@ description = "Hack The Box - Cap"
 date = 2025-06-06T10:00:00-07:00
 [taxonomies]
 tags = ["HackTheBox"]
-[extra]
-toc = true
-toc_sidebar = true
 +++
 
 - Cap (Easy): <https://www.hackthebox.com/machines/cap>
@@ -24,7 +21,7 @@ Actually, no need to specify a large number like 6000. Using the default 1000 sh
 
 Results:
 
-```txt
+```txt,wrap=false
 ...
 PORT   STATE SERVICE REASON  VERSION
 21/tcp open  ftp     syn-ack vsftpd 3.0.3

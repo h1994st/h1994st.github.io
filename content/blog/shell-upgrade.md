@@ -5,9 +5,6 @@ description = "Upgrade a reverse shell"
 date = 2025-08-15T15:24:53-07:00
 [taxonomies]
 tags = ["Tutorial", "Reverse Shell", "Shell Upgrade"]
-[extra]
-toc = true
-toc_sidebar = true
 +++
 
 ## Reverse Shell

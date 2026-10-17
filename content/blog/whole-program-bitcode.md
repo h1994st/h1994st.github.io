@@ -7,8 +7,6 @@ date = 2026-09-07T18:00:00-07:00
 tags = ["rllvm", "LLVM", "Bazel", "Rust"]
 [extra]
 styles = ["css/diagrams.css"]
-toc = true
-toc_sidebar = true
 +++
 
 A compiler sees one source file at a time. That is the whole design: hand it a file,
@@ -54,7 +52,7 @@ recognize: it concatenates them. The finished binary ends up carrying a complete
 of the bitcode files that make it up, assembled by a tool that does not know it is
 helping.
 
-<figure class="bc-fig bc-ledger" aria-label="Five source files each record one bitcode path, and the linker concatenates them into a single section naming the whole program">
+<figure class="f-figure bc-fig bc-ledger" aria-label="Five source files each record one bitcode path, and the linker concatenates them into a single section naming the whole program">
 <ol>
 <li style="--i:0"><span class="src">parse.c</span><span class="tie" aria-hidden="true"></span><span class="bc">parse.bc</span></li>
 <li style="--i:1"><span class="src">lexer.c</span><span class="tie" aria-hidden="true"></span><span class="bc">lexer.bc</span></li>
@@ -188,7 +186,7 @@ then fails on the duplicate definitions. Instead the bitcode travels in a set th
 treats the same file as the same file, so when two libraries both depend on a third,
 the shared one contributes exactly one copy.
 
-<figure class="bc-fig bc-graph" aria-label="A diamond dependency graph in which two libraries both depend on a third, which contributes one copy of its bitcode">
+<figure class="f-figure bc-fig bc-graph" aria-label="A diamond dependency graph in which two libraries both depend on a third, which contributes one copy of its bitcode">
 <svg viewBox="0 0 420 300" role="img">
 <g class="edges">
 <line x1="172" y1="66" x2="112" y2="128"/>

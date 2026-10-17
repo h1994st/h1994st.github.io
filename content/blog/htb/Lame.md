@@ -5,9 +5,6 @@ description = "Hack The Box - Lame"
 date = 2025-06-06T08:00:00-07:00
 [taxonomies]
 tags = ["HackTheBox"]
-[extra]
-toc = true
-toc_sidebar = true
 +++
 
 - Lame (Easy): <https://www.hackthebox.com/machines/lame>

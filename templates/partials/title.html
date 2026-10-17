@@ -16,11 +16,11 @@
 	{%- set base_path = "/" %}
 {%- endif %}
 
-{#- Homepage: use config.extra.home_title so the name (not just the handle)
-    carries the <title>. Falls back to the theme's behaviour if unset. -#}
+{#- Homepage: use config.extra.site.home_title so the name (not just the handle)
+    carries the <title>. Falls back to config.title if unset. -#}
 {%- if current_path and current_path == base_path -%}
-	{%- if config.extra?.home_title -%}
-		{%- set suffix = config.extra.home_title | safe -%}
+	{%- if config.extra.site?.home_title -%}
+		{%- set suffix = config.extra.site.home_title | safe -%}
 	{%- endif -%}
 	{%- set prefix = "" -%}
 	{%- set separator = "" -%}
@@ -35,7 +35,7 @@
 	{%- set prefix = term.name -%}
 {% elif taxonomy?.name %}
 	{#- List of tags -#}
-	{%- set prefix = <translate key={taxonomy.name} language_strings /> | capitalize -%}
+	{%- set prefix = taxonomy.name | capitalize -%}
 {% else %}
 	{%- set prefix = "404" %}
 {%- endif -%}

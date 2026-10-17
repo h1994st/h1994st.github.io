@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block main %}
+<main id="main" class="f-list f-prose">
+  <header>
+    <h1>{{ section.title }}</h1>
+    {%- if section.description %}<p class="f-meta">{{ section.description }}</p>{% endif %}
+  </header>
+  {%- if section.content %}
+  {{ section.content | safe }}
+  {%- endif %}
+  {%- if paginator %}{% set rows = paginator.pages %}{% else %}{% set rows = section.pages %}{% endif %}
+  {%- if not paginator or paginator.current_index == 1 %}
+  {%- set top = rows | first %}
+  <a class="f-card site-featured" href="{{ top.permalink }}">
+    {%- if top.extra?.banner %}
+    {%- set b = resize_image(path=top.colocated_path ~ top.extra.banner, width=1200, height=400, op="fill", format="webp") %}
+    <div class="f-card__media" style="background-image: url({{ b.url }})"></div>
+    {%- endif %}
+    <div class="f-card__body">
+      <p class="f-kicker">Latest · {{ top.date | date(format="%b %-d, %Y") }}</p>
+      <h2>{{ top.title }}</h2>
+      {%- if top.description %}<p>{{ top.description }}</p>{% endif %}
+    </div>
+  </a>
+  {%- set rows = rows[1:] %}
+  {%- endif %}
+  {%- include "partials/post_rows.html" %}
+  {%- if paginator and paginator.number_pagers > 1 %}
+  <nav class="site-prev-next" aria-label="Pages">
+    {%- if paginator.previous %}<a href="{{ paginator.previous }}">← Newer</a>{% endif %}
+    {%- if paginator.next %}<a href="{{ paginator.next }}">Older →</a>{% endif %}
+  </nav>
+  {%- endif %}
+  {%- set subs = section.subsections %}
+  {%- if subs | length > 0 %}
+  <p class="f-meta">Also: {% for s in subs %}{% set ss = get_section(path=s) %}<a href="{{ ss.permalink }}">{{ ss.title }}</a>{% endfor %}</p>
+  {%- endif %}
+</main>
+{% endblock main %}

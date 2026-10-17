@@ -7,8 +7,6 @@ date = 2026-09-13T18:00:00-07:00
 tags = ["rllvm", "LLVM", "Rust", "Static Analysis"]
 [extra]
 styles = ["css/rllvm-substrate.css"]
-toc = true
-toc_sidebar = true
 +++
 
 ## TL;DR
@@ -62,22 +60,22 @@ source filename in debug information does not prove which compiler produced it.
 Finding several modules in an archive does not prove that they form a complete
 program. Those fields stay empty, and whole-program completeness stays unknown.
 
-<figure class="substrate-fig substrate-acquire" aria-label="Two acquisition paths feed a module catalog: a wrapped build provides link membership, while a compilation database provides compilation configurations from the current source tree">
+<figure class="f-figure substrate-fig substrate-acquire" aria-label="Two acquisition paths feed a module catalog: a wrapped build provides link membership, while a compilation database provides compilation configurations from the current source tree">
 <div class="substrate-sources">
 <div class="substrate-card">
-<span class="substrate-kicker">live build</span>
+<p class="f-figure__kicker">live build</p>
 <strong>object · archive · binary</strong>
 <small>which modules reached the link</small>
 </div>
 <div class="substrate-card">
-<span class="substrate-kicker">recorded build</span>
+<p class="f-figure__kicker">recorded build</p>
 <strong>compile_commands.json</strong>
 <small>how each source was compiled</small>
 </div>
 </div>
 <div class="substrate-down" aria-hidden="true"><span></span><span></span></div>
 <div class="substrate-catalog">
-<span class="substrate-kicker">shared representation</span>
+<p class="f-figure__kicker">shared representation</p>
 <strong>module catalog</strong>
 <small>identity · integrity · provenance · uncertainty</small>
 </div>
@@ -127,7 +125,7 @@ writes the catalog last. Its module paths are relative, so the directory can mov
 as a unit. The second command chooses to merge that collection. Archive and partial
 merge strategies remain available when one large link is the wrong shape.
 
-<figure class="substrate-fig substrate-materialize" aria-label="A module catalog is filtered before three possible outputs: a relocatable collection, a bitcode archive, or merged whole-program bitcode">
+<figure class="f-figure substrate-fig substrate-materialize" aria-label="A module catalog is filtered before three possible outputs: a relocatable collection, a bitcode archive, or merged whole-program bitcode">
 <div class="substrate-modules" aria-label="catalog modules">
 <span><b>01</b> parse.c <i>debug</i></span>
 <span><b>02</b> parse.c <i>release</i></span>
@@ -135,7 +133,7 @@ merge strategies remain available when one large link is the wrong shape.
 <span class="substrate-dim"><b>04</b> plugin.c <i>missing</i></span>
 </div>
 <div class="substrate-filter">
-<span class="substrate-kicker">selection</span>
+<p class="f-figure__kicker">selection</p>
 <strong>source + configuration</strong>
 </div>
 <div class="substrate-outputs">

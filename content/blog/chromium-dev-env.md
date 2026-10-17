@@ -6,9 +6,6 @@ date = 2025-10-05T21:48:00-07:00
 draft = true
 [taxonomies]
 tags = ["Tutorial", "Chromium"]
-[extra]
-toc = true
-toc_sidebar = true
 +++
 
 ## Prerequisites

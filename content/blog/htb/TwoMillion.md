@@ -5,9 +5,6 @@ description = "Hack The Box - TwoMillion"
 date = 2025-06-08T10:00:00-07:00
 [taxonomies]
 tags = ["HackTheBox"]
-[extra]
-toc = true
-toc_sidebar = true
 +++
 
 - TwoMillion (Easy): <https://www.hackthebox.com/machines/twomillion>
@@ -25,7 +22,7 @@ Note that, we may need to add a reference to `/etc/hosts` so that we can access 
 
 Results:
 
-```txt
+```txt,wrap=false
 ...
 PORT   STATE SERVICE REASON         VERSION
 22/tcp open  ssh     syn-ack ttl 63 OpenSSH 8.9p1 Ubuntu 3ubuntu0.1 (Ubuntu Linux; protocol 2.0)

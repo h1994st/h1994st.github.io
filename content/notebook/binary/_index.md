@@ -4,10 +4,6 @@ description = "Notes on binary analysis and exploitation: x86-64 registers, proc
 weight = 1
 sort_by = "weight"
 template = "notebook.html"
-page_template = "article.html"
-
-[extra]
-styles = ["css/notebook.css"]
 +++
 
 Always learning, but always forget 🙂

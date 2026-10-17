@@ -1,145 +1,132 @@
-// The /projects/ page: a filter over the cards, a cursor spotlight and tilt on
-// hover, each card's micro-animation (.pj-play), and a detail sheet that opens
-// from a card and morphs out of it where view transitions are supported.
+// The /projects/ page: filter chips over the cards, a tilt toward the cursor on hover, each
+// card's micro-animation (.site-pj-play), and a detail sheet (facet's .f-sheet) that opens from a
+// card. facet's liquid module (data-f-liquid on the grid) adds the hover light and .is-hot.
 // Opening a card puts its id in the URL hash, so /projects/#cairn opens it.
 (function () {
-	const root = document.querySelector(".projects");
+	const root = document.querySelector(".site-pj-page");
 	if (!root) return;
-	root.classList.add("pj-js");
 
-	const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-	const fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
-	const transition = (update) =>
-		document.startViewTransition && !reduce ? document.startViewTransition(update) : (update(), null);
-	const cards = [...root.querySelectorAll(".pj-card")];
+	// Read at the moment of use, so a change mid-session (reduced motion switched on, a tablet
+	// docked to a mouse) takes effect at once.
+	const reduceQ = matchMedia("(prefers-reduced-motion: reduce)");
+	const fineQ = matchMedia("(hover: hover) and (pointer: fine)");
+	const cards = [...root.querySelectorAll(".site-pj-card")];
 
-	// Hover: spotlight follows the cursor, the card tilts a little toward it.
+	// Hover (mouse only): play the card's animation and tilt it a little toward the cursor.
 	for (const card of cards) {
-		card.addEventListener("pointermove", (e) => {
-			if (e.pointerType !== "mouse") return;
-			const r = card.getBoundingClientRect();
-			const x = e.clientX - r.left;
-			const y = e.clientY - r.top;
-			card.style.setProperty("--mx", x + "px");
-			card.style.setProperty("--my", y + "px");
-			if (!reduce) {
-				card.style.setProperty("--ry", ((x / r.width - 0.5) * 5).toFixed(2) + "deg");
-				card.style.setProperty("--rx", ((0.5 - y / r.height) * 5).toFixed(2) + "deg");
-			}
-		});
 		card.addEventListener("pointerenter", (e) => {
-			if (e.pointerType === "mouse") card.classList.add("pj-hot", "pj-play");
+			if (e.pointerType === "mouse") card.classList.add("site-pj-play");
+		});
+		card.addEventListener("pointermove", (e) => {
+			if (e.pointerType !== "mouse" || reduceQ.matches) return;
+			const r = card.getBoundingClientRect();
+			card.style.setProperty("--site-pj-ry", (((e.clientX - r.left) / r.width - 0.5) * 5).toFixed(2) + "deg");
+			card.style.setProperty("--site-pj-rx", ((0.5 - (e.clientY - r.top) / r.height) * 5).toFixed(2) + "deg");
 		});
 		card.addEventListener("pointerleave", () => {
-			card.classList.remove("pj-hot", "pj-play");
-			card.style.setProperty("--rx", "0deg");
-			card.style.setProperty("--ry", "0deg");
+			card.classList.remove("site-pj-play");
+			card.style.removeProperty("--site-pj-rx");
+			card.style.removeProperty("--site-pj-ry");
 		});
 	}
 
 	// Touch screens have no hover: play each animation while its card is in view.
-	if (!fine && "IntersectionObserver" in window) {
+	if ("IntersectionObserver" in window) {
 		const io = new IntersectionObserver(
-			(entries) => entries.forEach((e) => e.target.classList.toggle("pj-play", e.isIntersecting)),
+			(entries) => {
+				if (fineQ.matches) return;
+				entries.forEach((e) => e.target.classList.toggle("site-pj-play", e.isIntersecting));
+			},
 			{ threshold: 0.7 },
 		);
 		cards.forEach((c) => io.observe(c));
 	}
 
-	// Filter: counts, a sliding pill, and an animated reflow.
-	const filter = root.querySelector(".pj-filter");
-	const buttons = [...filter.querySelectorAll("button")];
-	const pill = filter.querySelector(".pj-pill");
+	// Filter chips, with counts. The cards change at once and then glide from their old places
+	// (FLIP), so the filter's result is never late.
+	const filter = root.querySelector(".site-pj-filter");
+	const chips = [...filter.querySelectorAll("button")];
 	const projects = cards.filter((c) => c.dataset.tags !== "all");
 	const matches = (card, f) => f === "all" || card.dataset.tags.split(" ").some((t) => t === f || t === "all");
-	for (const b of buttons) {
-		b.querySelector("span").textContent = projects.filter((c) => matches(c, b.dataset.f)).length;
+	for (const b of chips) {
+		b.querySelector("span").textContent = projects.filter((c) => matches(c, b.dataset.filter)).length;
 	}
-	const movePill = () => {
-		const b = filter.querySelector("[aria-pressed=true]");
-		pill.style.width = b.offsetWidth + "px";
-		pill.style.transform = `translateX(${b.offsetLeft}px)`;
-	};
-	for (const b of buttons) {
+	for (const b of chips) {
 		b.addEventListener("click", () => {
-			buttons.forEach((x) => x.setAttribute("aria-pressed", x === b));
-			movePill();
-			cards.forEach((c, i) => (c.style.viewTransitionName = "pj-c" + i));
-			const t = transition(() => cards.forEach((c) => (c.hidden = !matches(c, b.dataset.f))));
-			t?.finished.then(() => cards.forEach((c) => (c.style.viewTransitionName = "")));
+			chips.forEach((x) => x.setAttribute("aria-pressed", x === b));
+			const before = new Map(cards.filter((c) => !c.hidden).map((c) => [c, c.getBoundingClientRect()]));
+			cards.forEach((c) => (c.hidden = !matches(c, b.dataset.filter)));
+			if (reduceQ.matches) return;
+			for (const c of cards) {
+				if (c.hidden) continue;
+				const was = before.get(c);
+				const now = c.getBoundingClientRect();
+				const frames = was
+					? [{ translate: `${was.left - now.left}px ${was.top - now.top}px` }, { translate: "0 0" }]
+					: [{ opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1 }];
+				c.animate(frames, { duration: 380, easing: "cubic-bezier(0.2, 0.9, 0.3, 1)" });
+			}
 		});
 	}
 	filter.hidden = false;
-	movePill();
-	addEventListener("resize", movePill);
 
-	// Detail sheet.
-	const dialog = root.querySelector(".pj-dialog");
-	const sheet = dialog.querySelector(".pj-sheet");
-	let from = null;
+	// Detail sheet: facet's .f-sheet gives the look, the entry animation and the scroll lock.
+	const sheet = root.querySelector(".site-pj-sheet");
+	const body = sheet.querySelector(".site-pj-sheet-body");
 
 	function open(card) {
-		from = card;
-		cards.forEach((c) => (c.style.viewTransitionName = ""));
-		card.style.viewTransitionName = "pj-open";
-		transition(() => {
-			card.style.viewTransitionName = "";
-			const top = card.querySelector(".pj-top").cloneNode(true);
-			const scroll = document.createElement("div");
-			scroll.className = "pj-scroll";
-			scroll.append(card.querySelector("template.pj-detail").content.cloneNode(true));
-			scroll.querySelector(".pj-d-title").id = "pj-sheet-title";
-			const close = document.createElement("button");
-			close.type = "button";
-			close.className = "pj-close";
-			close.setAttribute("aria-label", "Close");
-			close.textContent = "✕";
-			close.addEventListener("click", shut);
-			sheet.replaceChildren(close, top, scroll);
-			sheet.style.setProperty("--brand", card.style.getPropertyValue("--brand"));
-			sheet.style.viewTransitionName = "pj-open";
-			dialog.showModal();
-			top.classList.add("pj-play");
-		});
+		const close = document.createElement("button");
+		close.type = "button";
+		close.className = "site-pj-close";
+		close.setAttribute("aria-label", "Close");
+		close.textContent = "✕";
+		close.addEventListener("click", shut);
+		const top = card.querySelector(".site-pj-top").cloneNode(true);
+		top.classList.add("site-pj-play");
+		body.replaceChildren(close, top, card.querySelector("template.site-pj-detail").content.cloneNode(true));
+		body.querySelector(".site-pj-d-title").id = "site-pj-sheet-title";
+		body.style.setProperty("--brand", card.style.getPropertyValue("--brand"));
+		if (!sheet.open) sheet.showModal();
+		body.parentElement.scrollTop = 0;
 		history.replaceState(null, "", "#" + card.id);
 	}
 
+	// Closing drops the card from the URL at once (the dialog's close event comes a task later).
+	const clearHash = () => location.hash && history.replaceState(null, "", location.pathname + location.search);
 	function shut() {
-		if (!dialog.open) return;
-		const card = from;
-		const t = transition(() => {
-			sheet.style.viewTransitionName = "";
-			dialog.close();
-			if (card && !card.hidden) card.style.viewTransitionName = "pj-open";
-		});
-		const done = () => card && (card.style.viewTransitionName = "");
-		t ? t.finished.then(done) : done();
-		history.replaceState(null, "", location.pathname + location.search);
+		clearHash();
+		sheet.close();
 	}
 
-	dialog.addEventListener("cancel", (e) => {
-		e.preventDefault();
-		shut();
+	// Escape closes a modal dialog natively (cancel); a click outside the sheet's box closes it too.
+	sheet.addEventListener("click", (e) => {
+		const r = sheet.getBoundingClientRect();
+		const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+		if (e.target === sheet && !inside) shut();
 	});
-	dialog.addEventListener("click", (e) => {
-		if (e.target === dialog) shut();
-	});
+	sheet.addEventListener("cancel", clearHash);
+	sheet.addEventListener("close", clearHash);
 
 	for (const card of cards) {
-		if (!card.querySelector("template.pj-detail")) continue;
-		card.dataset.detail = "";
+		if (!card.hasAttribute("data-has-detail")) continue;
 		const hint = document.createElement("button");
 		hint.type = "button";
-		hint.className = "pj-hint";
+		hint.className = "site-pj-hint";
 		hint.textContent = "Details →";
 		hint.setAttribute("aria-label", "Details: " + card.querySelector("h2").textContent.trim());
 		hint.setAttribute("aria-haspopup", "dialog");
+		hint.addEventListener("click", () => open(card));
 		card.append(hint);
 		card.addEventListener("click", (e) => {
-			if (!e.target.closest("a")) open(card);
+			if (!e.target.closest("a, button")) open(card);
 		});
 	}
 
-	const target = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
-	if (target && target.dataset.detail !== undefined) open(target);
+	const fromHash = () => {
+		const id = decodeURIComponent(location.hash.slice(1));
+		const card = id && document.getElementById(id);
+		if (card && cards.includes(card) && card.hasAttribute("data-has-detail")) open(card);
+	};
+	addEventListener("hashchange", fromHash);
+	fromHash();
 })();
