@@ -40,8 +40,10 @@ def test_chromatron_switches_looks(site_url, page_factory):
     page = page_factory()
     page.goto(f"{site_url}{CHROMATRON}")
     assert page.locator(".f-docs .f-toc a").count() >= 2  # posts get a TOC by default
-    assert page.locator("header .site-post-banner").is_visible()
-    loaded = page.locator(".site-post-banner, .f-figure img, .f-gallery img").evaluate_all(
+    # Its banner opens the post as a cover, with the nav floating over it.
+    assert page.locator("#cover.f-cover h1").is_visible()
+    assert page.locator(".f-nav.f-nav--over.is-ready").count() == 1
+    loaded = page.locator(".f-cover__media, .f-figure img, .f-gallery img").evaluate_all(
         "els => els.filter(e => e.checkVisibility()).map(e => e.complete && e.naturalWidth > 0)"
     )
     assert loaded and all(loaded)
