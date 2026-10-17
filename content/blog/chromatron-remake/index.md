@@ -7,6 +7,7 @@ date = 2026-10-11T18:00:00-07:00
 tags = ["Chromatron", "Claude Code", "Reverse Engineering", "Rust", "Games"]
 [extra]
 card = "card.png"
+card_fit = "fill"
 banner = "banner.jpg"
 +++
 

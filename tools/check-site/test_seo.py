@@ -48,3 +48,10 @@ def test_dated_pages_are_blog_postings(public_dir):
     html = read(public_dir, "/blog/shell-upgrade/")
     post = next(b for b in ld_blocks(html) if b["@type"] == "BlogPosting")
     assert post["author"]["@id"].endswith("/#person")
+
+
+def test_posts_point_at_generated_cards_when_present(public_dir):
+    html = read(public_dir, "/blog/shell-upgrade/")
+    card = (public_dir.parent / "static" / "cards" / "blog" / "shell-upgrade.png")
+    expected = "/cards/blog/shell-upgrade.png" if card.is_file() else "/card.png"
+    assert expected in html

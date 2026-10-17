@@ -1,4 +1,9 @@
-{%- if page?.extra?.card -%}
+{#- The share image: a generated per-post card when the build made one (static/cards/…, from
+    tools/og-card/posts.py), else the page's own card, else the section's, else the page's banner,
+    else the site card. -#}
+{%- if page?.date and get_image_metadata(path="cards/" ~ (page.path | trim_start(pat="/") | trim_end(pat="/")) ~ ".png", allow_missing=true) -%}
+	{{ get_url(path="cards/" ~ (page.path | trim_start(pat="/") | trim_end(pat="/")) ~ ".png") }}
+{%- elif page?.extra?.card -%}
 	{{ get_url(path=page.colocated_path ~ page.extra.card) }}
 {%- elif section?.extra?.card -%}
 	{{ get_url(path=section.colocated_path ~ section.extra.card) }}
