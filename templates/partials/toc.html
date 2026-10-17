@@ -1,7 +1,8 @@
+{#- Same-page "#id" links: facet's scroll spy follows only those (a full permalink is skipped). -#}
 <nav class="f-toc" aria-label="On this page" data-f-scrollspy>
   <p class="f-docs__label">On this page</p>
   {%- for h in page.toc %}
-  <a href="{{ h.permalink | safe }}">{{ h.title }}</a>
-  {%- for c in h.children %}<a class="site-toc-sub" href="{{ c.permalink | safe }}">{{ c.title }}</a>{% endfor %}
+  <a href="#{{ h.id }}">{{ h.title }}</a>
+  {%- for c in h.children %}<a class="site-toc-sub" href="#{{ c.id }}">{{ c.title }}</a>{% endfor %}
   {%- endfor %}
 </nav>
