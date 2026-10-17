@@ -47,21 +47,37 @@ def test_own_card_fit_and_fill_keep_the_left_side():
     assert fit.getpixel((1080, 315))[0] < 150
 
 
+def test_fit_keeps_the_whole_image_and_melts_from_its_edge():
+    own = Image.new("RGB", (1200, 630), (250, 10, 10))
+    fit = posts.render_post(meta(extra={"card": "c.png"}), "/blog/x/", own)
+    # fitted to 70% of the inner card (1104 px wide): 773 x 406, from x = 48
+    width = round(0.7 * (1200 - 96))
+    # no pixel of the image itself fades, right up to its edge
+    for f in (0.05, 0.5, 0.95):
+        assert fit.getpixel((48 + round(f * width), 315)) == (250, 10, 10), f
+    # past the edge, its last column melts into the card over ~10-15% of the card's width
+    past = 48 + width + 0.06 * 1200
+    r, g, b = fit.getpixel((round(past), 315))
+    assert 60 < r < 250, r
+    assert fit.getpixel((48 + width + round(0.16 * 1200), 315))[0] < 150
+
+
 def test_the_gem_stays_inside_the_card():
     rnd = random.Random(1)
-    for poly in posts.gem(rnd, (620, 60, 1140, 570)):
+    for poly in posts.gem(rnd, posts.GEM_BOX):
         for x, y in poly:
-            assert 600 <= x <= 1160 and 40 <= y <= 590
+            assert 620 <= x <= 1152 and 48 <= y <= 582
 
 
 def test_many_gems_have_facets_and_stay_in_their_box():
     for seed in range(200):
-        polys = posts.gem(random.Random(seed), (620, 60, 1140, 570))
+        polys = posts.gem(random.Random(seed), posts.GEM_BOX)
         assert len(polys) >= 5, seed
         for poly in polys:
             assert len(poly) >= 3
             for x, y in poly:
-                assert 620 <= x <= 1140 and 60 <= y <= 570, seed
+                assert 620 <= x <= 1152 and 48 <= y <= 582, seed
+    assert posts.GEM_BOX == (620, 48, 1152, 582)  # the card frame: the rounded mask crops the gem
 
 
 def test_text_stays_left_of_the_gem_for_real_posts():

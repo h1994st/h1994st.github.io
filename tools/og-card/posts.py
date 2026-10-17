@@ -39,7 +39,8 @@ S = 2  # drawn at 2x, then downsampled with Lanczos
 
 INSET, RADIUS = 48, 36  # the rounded card frame
 TEXT_X, TEXT_RIGHT = 104, 700  # the text block's left edge and the line it never crosses
-GEM_BOX = (620, 60, 1140, 570)
+EDGE = 0.12  # fit: how far, as a share of the card's width, an image's edge melts
+GEM_BOX = (620, INSET, W - INSET, H - INSET)  # the frame; its rounded mask crops the gem
 
 
 def oklch_to_rgb(lightness, chroma, hue):
@@ -361,7 +362,9 @@ def _fade(width, height, start, end):
 
 
 def _own(im, own, fit):
-    """The post's own image over the generated card, opaque on the left and fading out."""
+    """The post's own image over the generated card. `fill` covers the card and its right part
+    fades; `fit` keeps the whole image opaque and melts it from its right edge: the last column
+    of pixels is stretched sideways over EDGE of the card's width, fading out."""
     iw, ih = (W - 2 * INSET) * S, (H - 2 * INSET) * S
     own = own.convert("RGB")
     if fit == "fill":
@@ -371,8 +374,12 @@ def _own(im, own, fit):
     else:
         scale = min(0.7 * iw / own.width, ih / own.height)
         size = (round(own.width * scale), round(own.height * scale))
-        pic = own.resize(size, Image.Resampling.LANCZOS)
-        mask = _fade(size[0], size[1], 0.75, 1.0)
+        image = own.resize(size, Image.Resampling.LANCZOS)
+        band = round(EDGE * W * S)
+        pic = Image.new("RGB", (size[0] + band, size[1]))
+        pic.paste(image, (0, 0))
+        pic.paste(image.crop((size[0] - 1, 0, size[0], size[1])).resize((band, size[1])), (size[0], 0))
+        mask = _fade(pic.width, size[1], size[0] / pic.width, 1.0)
         pos = (INSET * S, INSET * S + (ih - size[1]) // 2)
     layer = Image.new("RGB", im.size, PAGE)
     layer.paste(pic, pos)
