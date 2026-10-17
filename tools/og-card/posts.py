@@ -30,15 +30,15 @@ from pathlib import Path
 from fontTools.ttLib import TTFont
 from PIL import Image, ImageChops, ImageDraw, ImageFont, ImageOps
 
-from render import H, W
-
 ROOT = Path(__file__).resolve().parents[2]
 FONTS = ROOT / "static" / "vendor" / "facet" / "dist" / "fonts"
 SITE = "https://shengtuo.me"
+W, H = 1200, 630
 S = 2  # drawn at 2x, then downsampled with Lanczos
 
 INSET, RADIUS = 48, 36  # the rounded card frame
 TEXT_X, TEXT_RIGHT = 104, 700  # the text block's left edge and the line it never crosses
+BYLINE = "Shengtuo Hu  ·  nu1lptr"
 EDGE = 0.12  # fit: how far, as a share of the card's width, an image's edge melts
 GEM_BOX = (620, INSET, W - INSET, H - INSET)  # the frame; its rounded mask crops the gem
 
@@ -249,16 +249,16 @@ def _seed(path, extra):
     return hashlib.sha256((path + str(extra.get("card_seed") or "")).encode()).digest()
 
 
-def _frame():
+def frame():
     mask = Image.new("L", (W * S, H * S), 0)
     ImageDraw.Draw(mask).rounded_rectangle(
         (INSET * S, INSET * S, (W - INSET) * S - 1, (H - INSET) * S - 1), radius=RADIUS * S, fill=255)
     return mask
 
 
-def _background(path, extra):
-    """The generated card at 2x: page color around a rounded deep Moss card, fading to a deeper
-    green, a dot grid that brightens to the right, and the post's gem."""
+def background(seed, gem=True):
+    """A generated card at 2x: page color around a rounded deep Moss card, fading to a deeper
+    green, a dot grid that brightens to the right and, if `gem`, the gem seeded by `seed`."""
     c = Image.new("RGB", (W * S, H * S), PAGE)
     d = ImageDraw.Draw(c)
     for x in range(0, W * S, S):
@@ -268,10 +268,15 @@ def _background(path, extra):
             a = max(0.0, (gx - 560) / 600)
             r = 1.6 * S
             d.ellipse((gx * S - r, gy * S - r, gx * S + r, gy * S + r), fill=mix(DEEP, MOSS, 0.12 + 0.4 * a))
-    _draw_gem(d, random.Random(_seed(path, extra)), GEM_BOX)
+    if gem:
+        _draw_gem(d, random.Random(seed), GEM_BOX)
     out = Image.new("RGB", (W * S, H * S), PAGE)
-    out.paste(c, (0, 0), _frame())
+    out.paste(c, (0, 0), frame())
     return out
+
+
+def _background(path, extra):
+    return background(_seed(path, extra))
 
 
 def _wrap(text, f, width, lines):
@@ -316,35 +321,49 @@ def _date(value):
     return f"{value:%b} {value.day}, {value.year}"
 
 
-def _layout(m):
+def _runs(kicker, title, description, byline, site):
     """Every text run on a text card: name -> [(xy at 2x, text, font, fill)]."""
-    width = (TEXT_RIGHT - TEXT_X) * S
     x = TEXT_X * S
+    width = (TEXT_RIGHT - TEXT_X) * S
     mono = font("geist-mono", 22)
     runs = {"meta": [], "title": [], "description": [], "byline": [], "site": []}
-    # date and up to three tags, as many as fit
+    if kicker:
+        runs["meta"].append(((x, 104 * S), kicker, mono, mix(DEEP, ON, 0.8)))
+    serif = font("source-serif-4", 70, weight=600, optical_size=60)
+    y = 154
+    for line in _wrap(title or "", serif, width, 3):
+        runs["title"].append(((x, y * S), line, serif, ON))
+        y += 82
+    sans = font("geist", 28)
+    y += 12
+    for line in _wrap(description or "", sans, width, 2 if y > 330 else 3):
+        runs["description"].append(((x, y * S), line, sans, mix(DEEP, ON, 0.85)))
+        y += 40
+    runs["byline"].append(((x, (H - 112) * S), byline, font("geist", 26, weight=500), ON))
+    runs["site"].append((((W - 104) * S - mono.getlength(site), (H - 108) * S), site, mono, mix(DEEP, ON, 0.8)))
+    return runs
+
+
+def _layout(m):
+    """A post's text runs: date and as many of its first three tags as fit, then the title,
+    description and byline."""
+    width = (TEXT_RIGHT - TEXT_X) * S
+    mono = font("geist-mono", 22)
     tags = list(m.get("tags") or [])[:3]
     while True:
         line = " · ".join([_date(m["date"])] + tags).upper() if m.get("date") else " · ".join(tags).upper()
         if not tags or mono.getlength(line) <= width:
             break
         tags.pop()
-    if line:
-        runs["meta"].append(((x, 104 * S), line, mono, mix(DEEP, ON, 0.8)))
-    serif = font("source-serif-4", 70, weight=600, optical_size=60)
-    y = 154
-    for line in _wrap(m.get("title") or "", serif, width, 3):
-        runs["title"].append(((x, y * S), line, serif, ON))
-        y += 82
-    sans = font("geist", 28)
-    y += 12
-    for line in _wrap(m.get("description") or "", sans, width, 2 if y > 330 else 3):
-        runs["description"].append(((x, y * S), line, sans, mix(DEEP, ON, 0.85)))
-        y += 40
-    runs["byline"].append(((x, (H - 112) * S), "Shengtuo Hu  ·  nu1lptr", font("geist", 26, weight=500), ON))
-    site = "shengtuo.me"
-    runs["site"].append((((W - 104) * S - mono.getlength(site), (H - 108) * S), site, mono, mix(DEEP, ON, 0.8)))
-    return runs
+    return _runs(line, m.get("title"), m.get("description"), BYLINE, "shengtuo.me")
+
+
+def draw_text(im, kicker, title, description, byline=None, site="shengtuo.me"):
+    """Draw a text card's left side onto `im` (a 2x background)."""
+    d = ImageDraw.Draw(im)
+    for runs in _runs(kicker, title, description, byline or BYLINE, site).values():
+        for xy, text, f, fill in runs:
+            d.text(xy, text, font=f, fill=fill)
 
 
 def text_boxes(m):
@@ -385,7 +404,7 @@ def _own(im, own, fit):
     layer.paste(pic, pos)
     m = Image.new("L", im.size, 0)
     m.paste(mask, pos)
-    im.paste(layer, (0, 0), ImageChops.multiply(m, _frame()))
+    im.paste(layer, (0, 0), ImageChops.multiply(m, frame()))
 
 
 def render_post(meta, path, own):

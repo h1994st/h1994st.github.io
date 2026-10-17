@@ -36,10 +36,10 @@ The `Check` workflow runs both on every pull request.
 uv run --with pillow --with fonttools --with brotli tools/og-card/posts.py --out static/cards
 
 # site-wide static/card.png
-uv run --with pillow tools/og-card/render.py
+uv run --with pillow --with fonttools --with brotli tools/og-card/render.py
 
 # content/projects/card.png
-uv run --with pillow --with resvg-py tools/og-card/projects.py
+uv run --with pillow --with fonttools --with brotli --with resvg-py tools/og-card/projects.py
 
 # static/favicon.svg, favicon.ico, apple-touch-icon.png
 uv run --with fonttools --with brotli --with resvg-py --with pillow tools/icon/render.py
