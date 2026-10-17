@@ -227,7 +227,7 @@ async with asyncssh.connect(TARGET_HOST, username=USERNAME, password=PASSWORD) a
 
 Output:
 
-```txt,f-code-wrap=false
+```txt,wrap=false
 [+] Current user: uid=1000(oliver) gid=1000(oliver) groups=1000(oliver),999(netdata)
 [+] User flag: 92da...1da7
 /tmp/bash
