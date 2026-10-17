@@ -1,4 +1,4 @@
-from conftest import BASE_URL, serve_from_public
+from conftest import BASE_URL, serve_from_public, stub_third_party, third_party
 
 
 def test_cards_open_a_sheet_by_hash_or_click(site_url, page_factory):
@@ -77,8 +77,8 @@ def test_hover_and_filter_are_still_under_reduced_motion(site_url, page_factory)
 def test_touch_screens_see_the_details_hint(browser, site_url):
     """Hover is decoration: on a touch screen the Details control shows at rest."""
     ctx = browser.new_context(viewport={"width": 390, "height": 844}, has_touch=True, is_mobile=True)
+    ctx.route(third_party, stub_third_party)
     ctx.route(f"{BASE_URL}/**", serve_from_public)
-    ctx.route("**googletagmanager.com/**", lambda r: r.fulfill(body="", content_type="text/javascript"))
     page = ctx.new_page()
     page.goto(f"{site_url}/projects/")
     hint = page.locator("#cairn .site-pj-hint")

@@ -40,6 +40,19 @@ def serve_from_public(route):
         route.fulfill(status=404, body="")
 
 
+def third_party(url):
+    host = urllib.parse.urlsplit(url).hostname or ""
+    return host not in ("127.0.0.1", "localhost", urllib.parse.urlsplit(BASE_URL).hostname)
+
+
+def stub_third_party(route):
+    kind = route.request.resource_type
+    if kind == "image":
+        route.fulfill(body=PIXEL, content_type="image/gif")
+    else:
+        route.fulfill(body="", content_type="text/javascript" if kind == "script" else "text/html")
+
+
 def site_paths():
     return sorted(
         "/" + p.relative_to(PUBLIC).as_posix().removesuffix("index.html")
@@ -85,10 +98,9 @@ def page_factory(browser):
             reduced_motion="reduce" if reduced_motion else "no-preference",
         )
         ctx.add_init_script(f"try{{localStorage.setItem('facet-theme','{theme}')}}catch{{}}")
-        # Never reach Google from tests.
-        ctx.route("**googletagmanager.com/**", lambda r: r.fulfill(body="", content_type="text/javascript"))
-        # YouTube embeds log their own errors into the page's console; stub the iframe.
-        ctx.route("**youtube-nocookie.com/**", lambda r: r.fulfill(body="", content_type="text/html"))
+        # Never reach a third party (GA, YouTube, 500px photos, ...): a slow or failing host would log
+        # console errors and fail the sweep. Images get a 1x1 GIF; everything else an empty body.
+        ctx.route(third_party, stub_third_party)
         # get_url() makes absolute links to the live site; serve those from this build.
         ctx.route(f"{BASE_URL}/**", serve_from_public)
         page = ctx.new_page()

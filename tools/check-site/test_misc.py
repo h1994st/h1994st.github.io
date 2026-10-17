@@ -1,4 +1,4 @@
-from conftest import BASE_URL, PUBLIC, serve_from_public
+from conftest import BASE_URL, PUBLIC, serve_from_public, stub_third_party, third_party
 
 CHROMATRON = "/blog/chromatron-remake/"
 
@@ -53,6 +53,7 @@ def test_chromatron_switches_looks(site_url, page_factory):
 
 def test_chromatron_without_js_shows_modern_and_no_dead_control(site_url, browser):
     ctx = browser.new_context(java_script_enabled=False, viewport={"width": 1280, "height": 900})
+    ctx.route(third_party, stub_third_party)
     ctx.route(f"{BASE_URL}/**", serve_from_public)
     try:
         page = ctx.new_page()
