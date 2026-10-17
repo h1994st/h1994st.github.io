@@ -13,3 +13,11 @@ def test_every_old_url_still_answers(public_dir):
         if not target.is_file():
             missing.append(url)
     assert missing == [], missing
+
+
+def test_moved_urls_redirect_and_stay_out_of_the_sitemap(public_dir):
+    for old in ("blog/page/2", "blog/page/3", "blog/htb/page/2", "publications"):
+        html = (public_dir / old / "index.html").read_text()
+        assert 'http-equiv="refresh"' in html, old
+    sitemap = (public_dir / "sitemap.xml").read_text()
+    assert "/page/" not in sitemap and "/publications/" not in sitemap

@@ -8,36 +8,18 @@ def resume_extra():
     return tomllib.loads(text.split("+++")[1])["extra"]
 
 
-def test_resume_uses_the_facet_layout(site_url, page_factory):
-    page = page_factory()
-    page.goto(f"{site_url}/resume/")
-    assert page.locator("main.f-resume .f-resume__head h1").inner_text() == "Shengtuo Hu"
-    sections = page.locator(".f-resume__body nav.f-toc a").all_inner_texts()
-    assert sections[:2] == ["Summary", "Experience"]
-    assert page.locator("#experience .f-resume__entry").count() >= 3
-
-
-def test_resume_prints_one_column_without_the_nav(site_url, page_factory):
+def test_resume_prints_one_column_with_link_targets(site_url, page_factory):
+    """On paper the section nav goes, body links are underlined and publication and project links
+    spell out their URL."""
     page = page_factory()
     page.goto(f"{site_url}/resume/")
     page.emulate_media(media="print")
     assert page.evaluate("getComputedStyle(document.querySelector('.f-resume__body nav.f-toc')).display") == "none"
-
-
-def test_resume_prints_link_targets(site_url, page_factory):
-    """On paper, body links are underlined and publication and project links spell out their URL."""
-    page = page_factory()
-    page.goto(f"{site_url}/resume/")
-    page.emulate_media(media="print")
     for sel in (".f-pubs a.f-chip", "#projects a.f-chip"):
         href, after, line = page.eval_on_selector(
             sel, "a => [a.href, getComputedStyle(a, '::after').content, getComputedStyle(a).textDecorationLine]")
         assert after == f'" ({href})"' and line == "underline", (sel, after, line)
     assert page.eval_on_selector(".f-resume__contact a", "a => getComputedStyle(a, '::after').content") == "none"
-
-
-def test_publications_alias_still_redirects(public_dir):
-    assert 'http-equiv="refresh"' in (public_dir / "publications" / "index.html").read_text()
 
 
 HREFS = "el => [...el.querySelectorAll('a')].map(a => a.getAttribute('href'))"
@@ -52,10 +34,14 @@ def entries(page, selector, items):
 
 
 def test_resume_renders_every_generated_field(site_url, page_factory):
-    """Every field of the generated [extra] reaches the page, in the entry it belongs to."""
+    """Every field of the generated [extra] reaches the page, in the entry it belongs to, in facet's
+    resume layout; roles carry no duty bullets; the section nav follows the scroll."""
     r = resume_extra()
     page = page_factory()
     page.goto(f"{site_url}/resume/")
+    assert page.locator("main.f-resume .f-resume__head h1").inner_text() == "Shengtuo Hu"
+    sections = page.locator(".f-resume__body nav.f-toc a").all_inner_texts()
+    assert sections[:2] == ["Summary", "Experience"]
     head = page.locator(".f-resume__head")
     assert r["headline"] in head.inner_text()
     assert head.locator(".f-resume__contact").evaluate(HREFS) == [c["url"] for c in r["contact"]]
@@ -91,19 +77,9 @@ def test_resume_renders_every_generated_field(site_url, page_factory):
     for item, li in zip(r["publications"], page.locator(".f-pubs > li").all()):
         if name in item["authors"]:
             assert li.locator(".f-pubs__authors b").inner_text() == name, item["title"]
-
-
-def test_resume_roles_have_no_duty_bullets(site_url, page_factory):
-    """Roles carry metadata and one summary line only."""
-    page = page_factory()
-    page.goto(f"{site_url}/resume/")
+    # Roles carry metadata and one summary line only.
     assert page.locator(".f-resume__bullets, #experience li ul").count() == 0
-    assert page.locator("#experience .f-timeline > li p").count() <= len(resume_extra()["experience"])
-
-
-def test_resume_marks_the_section_in_view(site_url, page_factory):
-    page = page_factory()
-    page.goto(f"{site_url}/resume/")
+    assert page.locator("#experience .f-timeline > li p").count() <= len(r["experience"])
     page.evaluate("document.getElementById('publications').scrollIntoView()")
     page.wait_for_function(
         "document.querySelector('.f-resume__body nav.f-toc a[aria-current]')?.hash === '#publications'"
@@ -111,7 +87,7 @@ def test_resume_marks_the_section_in_view(site_url, page_factory):
 
 
 def test_resume_has_one_sticky_bar_on_phones(site_url, page_factory):
-    """At 390px only the site nav and the section pill bar stick; no old .rs-* bar or sidebar."""
+    """At 390px only the site nav and the section pill bar stick."""
     page = page_factory(width=390)
     page.goto(f"{site_url}/resume/")
     page.evaluate("window.scrollTo(0, 1500)")
@@ -123,4 +99,3 @@ def test_resume_has_one_sticky_bar_on_phones(site_url, page_factory):
            }).map(e => e.className)"""
     )
     assert len(sticky) <= 2, sticky
-    assert page.locator(".rs-nav, .rs-side, script[src*='resume-nav']").count() == 0

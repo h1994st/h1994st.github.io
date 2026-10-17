@@ -1,23 +1,23 @@
 from conftest import BASE_URL, serve_from_public
 
 
-def test_projects_render_as_cards_with_a_sheet(site_url, page_factory):
+def test_cards_open_a_sheet_by_hash_or_click(site_url, page_factory):
+    """The home page links featured projects as /projects/#<id>; the hash opens that card's sheet,
+    the backdrop closes it and clears the hash; a click opens a sheet and Escape closes it."""
     page = page_factory()
-    page.goto(f"{site_url}/projects/")
-    cards = page.locator(".site-pj-card")
-    assert cards.count() >= 5
+    page.goto(f"{site_url}/projects/#grammar-mutator")
+    assert page.locator(".site-pj-card").count() >= 5
+    for pid in ("rllvm", "grammar-mutator", "chromatron"):
+        assert page.locator(f".site-pj-card#{pid}").count() == 1, pid
+    page.wait_for_selector("dialog.site-pj-sheet[open]")
+    assert "Grammar-Mutator" in page.locator(".site-pj-sheet-body h2").inner_text()
+    page.mouse.click(5, 5)  # the backdrop
+    assert page.locator("dialog.f-sheet[open]").count() == 0
+    assert page.evaluate("location.hash") == ""
     page.locator(".site-pj-card[data-has-detail] h2").first.click()
     page.wait_for_selector("dialog.f-sheet[open]")
     page.keyboard.press("Escape")
     assert page.locator("dialog.f-sheet[open]").count() == 0
-
-
-def test_filter_chips_filter(site_url, page_factory):
-    page = page_factory()
-    page.goto(f"{site_url}/projects/")
-    page.locator(".site-pj-filter button").nth(1).click()
-    visible = page.locator(".site-pj-card:visible").count()
-    assert 0 < visible < page.locator(".site-pj-card").count()
 
 
 TAGS = "[...document.querySelectorAll('.site-pj-card:not(.site-pj-more)')].map(c => c.dataset.tags.split(' '))"
@@ -42,20 +42,6 @@ def test_filter_chips_state_and_counts(site_url, page_factory):
     assert page.locator(".site-pj-card:visible").count() == total
 
 
-def test_home_anchors_reach_their_cards(site_url, page_factory):
-    """The home page links featured projects as /projects/#<id>; the hash opens that card's sheet."""
-    page = page_factory()
-    page.goto(f"{site_url}/projects/")
-    for pid in ("rllvm", "grammar-mutator", "chromatron"):
-        assert page.locator(f".site-pj-card#{pid}").count() == 1, pid
-    page.goto(f"{site_url}/projects/#grammar-mutator")
-    page.wait_for_selector("dialog.site-pj-sheet[open]")
-    assert "Grammar-Mutator" in page.locator(".site-pj-sheet-body h2").inner_text()
-    page.mouse.click(5, 5)  # the backdrop
-    assert page.locator("dialog.f-sheet[open]").count() == 0
-    assert page.evaluate("location.hash") == ""
-
-
 def test_sheet_fits_a_phone(site_url, page_factory):
     page = page_factory(width=390)
     page.goto(f"{site_url}/projects/#rllvm")
@@ -66,29 +52,26 @@ def test_sheet_fits_a_phone(site_url, page_factory):
     assert sw <= cw
 
 
-def test_hover_animations_are_still_under_reduced_motion(site_url, page_factory):
-    page = page_factory(reduced_motion=True)
-    page.goto(f"{site_url}/projects/")
-    for pid in ("rllvm", "chromatron", "my-resume", "grammar-mutator"):
-        page.locator(f"#{pid}").hover()
-        page.wait_for_timeout(200)
-        running = page.evaluate("document.getAnimations().filter(a => a.playState === 'running').length")
-        assert running == 0, pid
-        if pid == "rllvm":  # the typed command is shown whole, not left at zero width
-            assert page.locator("#rllvm .site-pj-cmd").bounding_box()["width"] > 50
+RUNNING = "document.getAnimations().filter(a => a.playState === 'running').length"
 
 
-def test_filter_is_still_under_reduced_motion(site_url, page_factory):
+def test_hover_and_filter_are_still_under_reduced_motion(site_url, page_factory):
     page = page_factory(reduced_motion=True)
     page.add_init_script("""{ const animate = Element.prototype.animate; window.__animateCalls = 0;
         Element.prototype.animate = function (...a) { window.__animateCalls++; return animate.apply(this, a); }; }""")
     page.goto(f"{site_url}/projects/")
+    for pid in ("rllvm", "chromatron", "my-resume", "grammar-mutator"):
+        page.locator(f"#{pid}").hover()
+        page.wait_for_timeout(200)
+        assert page.evaluate(RUNNING) == 0, pid
+        if pid == "rllvm":  # the typed command is shown whole, not left at zero width
+            assert page.locator("#rllvm .site-pj-cmd").bounding_box()["width"] > 50
     page.mouse.move(0, 0)
+    page.evaluate("window.__animateCalls = 0")
     page.locator(".site-pj-filter button").nth(2).click()
     assert page.evaluate("window.__animateCalls") == 0
     page.wait_for_timeout(100)  # facet cuts the chips' color transitions to 0.01ms; let them end
-    running = page.evaluate("document.getAnimations().filter(a => a.playState === 'running').length")
-    assert running == 0
+    assert page.evaluate(RUNNING) == 0
 
 
 def test_touch_screens_see_the_details_hint(browser, site_url):

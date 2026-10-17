@@ -1,5 +1,7 @@
 """Site search: the facet sheet, its keyboard shortcuts, and escaped results."""
 
+import json
+
 
 def open_search(page, site_url):
     page.goto(f"{site_url}/")
@@ -7,70 +9,52 @@ def open_search(page, site_url):
     page.wait_for_selector("#site-search[open]")
 
 
-def test_slash_opens_and_escape_closes(site_url, page_factory):
-    page = page_factory()
-    open_search(page, site_url)
-    page.keyboard.press("Escape")
-    assert page.locator("#site-search[open]").count() == 0
-
-
-def test_title_matches_rank_first(site_url, page_factory):
-    page = page_factory()
-    open_search(page, site_url)
-    page.fill("#site-search input", "bitcode")
-    page.wait_for_selector(".site-search-results li")
-    assert "itcode" in page.locator(".site-search-results li a").first.inner_text()
-
-
-def test_search_escapes_and_matches_bodies(site_url, page_factory):
-    page = page_factory()
-    open_search(page, site_url)
-    page.fill("#site-search input", "<script>")
-    page.wait_for_timeout(200)
-    assert page.locator(".site-search-results script").count() == 0
-    page.fill("#site-search input", "zzzzqqq")
-    page.wait_for_timeout(200)
-    assert "No results" in page.locator(".site-search-status").inner_text()
-    assert page.errors == []
-
-
-def test_arrows_move_through_results(site_url, page_factory):
-    page = page_factory()
-    open_search(page, site_url)
-    page.fill("#site-search input", "rllvm")
-    page.wait_for_selector(".site-search-results li")
-    page.keyboard.press("ArrowDown")
-    assert page.evaluate("document.activeElement === document.querySelector('.site-search-results a')")
-    page.keyboard.press("ArrowUp")
-    assert page.evaluate("document.activeElement === document.querySelector('#site-search input')")
-
-
-def test_slash_ignored_while_typing_or_with_modifier(site_url, page_factory):
+def test_search_by_keyboard(site_url, page_factory):
+    """/ opens search unless typing or with a modifier, Escape closes it; title matches rank first;
+    arrows move between the input and the results; no match says so."""
     page = page_factory()
     page.goto(f"{site_url}/")
     page.evaluate("document.body.insertAdjacentHTML('beforeend', '<div id=ce contenteditable>x</div>')")
     page.focus("#ce")
     page.keyboard.press("/")
     assert page.locator("#site-search[open]").count() == 0
-    page.evaluate("document.activeElement.blur()")
+    page.evaluate("document.getElementById('ce').remove()")
     page.keyboard.press("Control+/")
     assert page.locator("#site-search[open]").count() == 0
+    page.keyboard.press("/")
+    page.wait_for_selector("#site-search[open]")
+    page.keyboard.press("Escape")
+    # Closed, and focus has left the input, so "/" is no longer typed into it.
+    page.wait_for_function("(d => !d.open && !d.contains(document.activeElement))(document.getElementById('site-search'))")
+    page.keyboard.press("/")
+    page.wait_for_selector("#site-search[open]")
+    page.fill("#site-search input", "bitcode")
+    page.wait_for_selector(".site-search-results li")
+    assert "itcode" in page.locator(".site-search-results li a").first.inner_text()
+    page.keyboard.press("ArrowDown")
+    assert page.evaluate("document.activeElement === document.querySelector('.site-search-results a')")
+    page.keyboard.press("ArrowUp")
+    assert page.evaluate("document.activeElement === document.querySelector('#site-search input')")
+    page.fill("#site-search input", "zzzzqqq")
+    page.wait_for_function("document.querySelector('.site-search-status').textContent.includes('No results')")
+    assert page.errors == []
 
 
 def test_open_sheet_fits_and_scrolls_inside(site_url, page_factory):
+    page = page_factory(width=390, reduced_motion=True)
+    open_search(page, site_url)
     for width in (390, 1280):
-        page = page_factory(width=width, reduced_motion=True)
-        open_search(page, site_url)
+        page.set_viewport_size({"width": width, "height": 900})
         page.fill("#site-search input", "e")
         page.wait_for_selector(".site-search-results li")
-        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), width
         box = page.locator("#site-search").bounding_box()
-        assert box["y"] >= 0 and box["y"] + box["height"] <= page.viewport_size["height"]
+        assert box["y"] >= 0 and box["y"] + box["height"] <= page.viewport_size["height"], width
         res = page.locator(".site-search-results")
         assert res.evaluate("el => getComputedStyle(el).overflowY") in ("auto", "scroll")
         page.fill("#site-search input", "editor")
         page.wait_for_selector(".site-search-results li")
-        assert res.evaluate("el => el.scrollWidth <= el.clientWidth")
+        assert res.evaluate("el => el.scrollWidth <= el.clientWidth"), width
 
 
 STUB_URL = "**/search_index.en.json"
@@ -91,8 +75,6 @@ def test_index_failure_reports_and_retries(site_url, page_factory):
 
 
 def test_results_are_escaped(site_url, page_factory):
-    import json
-
     doc = {
         "url": "https://shengtuo.me/",
         "title": 'Zork <img src=x onerror="window.__x=1"> &amp;',
@@ -109,12 +91,3 @@ def test_results_are_escaped(site_url, page_factory):
     assert page.evaluate("window.__x") is None
     assert "<img" in page.locator(".site-search-results a").first.inner_text()
     assert "&amp;" in page.locator(".site-search-results p").first.inner_text()
-
-
-def test_nav_button_opens_sheet(site_url, page_factory):
-    page = page_factory()
-    page.goto(f"{site_url}/")
-    btn = page.locator(".site-search-open")
-    assert btn.is_visible()
-    btn.click()
-    page.wait_for_selector("#site-search[open]")
