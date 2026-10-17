@@ -1,16 +1,24 @@
 /* Site-only styles on top of facet: unlayered, so they win without !important. */
 
-/* The CRT screen from the old theme, on facet tokens: a Moss glow, scanlines, phosphor text. */
+/* The CRT screen from the old theme, on facet tokens: a Moss glow, scanlines, phosphor text. The
+   screen is dark in both themes; in the light theme it is a softer deep green with a vignette, and
+   the phosphor stays lit (the dark theme's Moss), so it glows on a light page too. */
 .site-crt {
+  --site-phosphor: var(--f-unless-light, var(--f-accent)) var(--f-unless-dark, oklch(0.76 0.06 130));
   position: relative;
   overflow: hidden;
   border-radius: var(--f-r-lg);
   corner-shape: squircle;
   background: radial-gradient(
-    color-mix(in oklch, var(--f-accent) 34%, black),
-    color-mix(in oklch, var(--f-accent) 9%, black) 80%
+    var(--f-unless-light, color-mix(in oklch, var(--f-accent) 34%, black))
+      var(--f-unless-dark, oklch(0.33 0.035 140)),
+    var(--f-unless-light, color-mix(in oklch, var(--f-accent) 9%, black))
+      var(--f-unless-dark, oklch(0.2 0.02 150)) 80%
   );
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06), var(--f-shadow);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.06),
+    inset 0 0 2.5rem var(--f-unless-light, transparent) var(--f-unless-dark, rgb(0 0 0 / 0.45)),
+    var(--f-shadow);
 }
 .site-crt::before {
   position: absolute;
@@ -24,11 +32,11 @@
   padding: var(--f-space-4) var(--f-space-5);
   overflow: auto;
   background: none;
-  color: var(--f-accent);
+  color: var(--site-phosphor);
   font: 0.62rem/1.15 var(--f-font-mono);
   text-shadow:
-    0 0 0.25rem color-mix(in oklch, var(--f-accent) 55%, transparent),
-    0 0 0.75rem var(--f-accent);
+    0 0 0.25rem color-mix(in oklch, var(--site-phosphor) 55%, transparent),
+    0 0 0.75rem var(--site-phosphor);
 }
 
 /* Zola's GitHub alerts (blockquote.markdown-alert-<kind>) look like facet alerts. */
