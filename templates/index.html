@@ -29,6 +29,7 @@
       <h2>Writing</h2>
       {%- set blog = get_section(path="blog/_index.md") %}
       {%- set rows = blog.pages[:5] %}
+      {%- set year_tag = "h3" %}
       {%- include "partials/post_rows.html" %}
       <p><a href="{{ blog.permalink }}">All posts →</a></p>
     </section>

@@ -14,6 +14,8 @@ function load() {
       if (!r.ok) throw new Error(r.status);
       return r.json();
     })
+    // Transparent sections (blog/htb) index their pages twice: keep the first of each url.
+    .then((docs) => docs.filter((d, i) => docs.findIndex((e) => e.url === d.url) === i))
     .catch((err) => {
       index = null; // let a later keystroke retry
       throw err;

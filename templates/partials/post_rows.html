@@ -1,4 +1,6 @@
-{#- Rows of posts grouped by year: `rows` is a list of pages, newest first. -#}
+{#- Rows of posts grouped by year: `rows` is a list of pages, newest first. The includer may set
+    `year_tag` (default h2) so the year headings nest under its own heading. -#}
+{%- set yt = year_tag | default(value="h2") %}
 {%- set_global last_year = 0 %}
 {%- for p in rows %}
 {%- if p.year != last_year %}
@@ -7,7 +9,7 @@
 </section>
 {%- endif %}
 <section class="f-list__year">
-  <h2>{{ p.year }}</h2>
+  <{{ yt }}>{{ p.year }}</{{ yt }}>
   <ul>
 {%- set_global last_year = p.year %}
 {%- endif %}

@@ -9,12 +9,14 @@ left of the deep Moss card, the home page's gem on the right. Edit this script, 
 output is deterministic.
 """
 import hashlib
+import tomllib
 
 from PIL import Image
 
 from posts import H, ROOT, W, background, draw_text
 
-KICKER = "SECURITY RESEARCHER · NU1LPTR"
+_CONFIG = tomllib.loads((ROOT / "config.toml").read_text())
+KICKER = f"{_CONFIG['extra']['author']['role'].upper()} · NU1LPTR"
 LEAD = "Program analysis, LLVM, fuzzing, and network security. Palo Alto Networks; Ph.D. from Michigan."
 
 

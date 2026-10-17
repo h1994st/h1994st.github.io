@@ -7,6 +7,7 @@ def test_lists(site_url, page_factory):
     assert years == sorted(years, reverse=True) and "2026" in years
     assert page.locator(".f-list__row").count() >= 10
     page.goto(f"{site_url}/blog/htb/")
+    assert page.locator("main a[href*='github.com/h1994st/HTB']").count() == 1  # the section intro
     assert page.locator(".site-featured").count() == 1
     assert page.locator(".f-list__row").count() == 7  # plus the featured one: all eight
     page.goto(f"{site_url}/tags/hackthebox/")

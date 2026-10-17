@@ -94,7 +94,6 @@ home_title = "Shengtuo Hu - Security Researcher"
 twitter = "@ShengtuoHu"
 accent = "moss"                     # <html data-accent>
 facet = "/vendor/facet/dist"        # where facet's files are served from
-source_url = "https://github.com/h1994st/h1994st.github.io"
 ga4 = "G-ZMH6NLL7C7"                # <html data-f-ga4>, read by facet's analytics.js
 
 # On/off switches for the kept extras.

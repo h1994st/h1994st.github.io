@@ -35,6 +35,10 @@ def test_search_by_keyboard(site_url, page_factory):
     assert page.evaluate("document.activeElement === document.querySelector('.site-search-results a')")
     page.keyboard.press("ArrowUp")
     assert page.evaluate("document.activeElement === document.querySelector('#site-search input')")
+    page.fill("#site-search input", "cap")  # HTB writeups sit in two sections: listed once
+    page.wait_for_function("document.querySelector('.site-search-status').textContent.includes('result')")
+    urls = page.locator(".site-search-results li a").evaluate_all("els => els.map(e => e.getAttribute('href'))")
+    assert urls and len(urls) == len(set(urls))
     page.fill("#site-search input", "zzzzqqq")
     page.wait_for_function("document.querySelector('.site-search-status').textContent.includes('No results')")
     assert page.errors == []

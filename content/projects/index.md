@@ -10,7 +10,7 @@ template = "projects.html"
 # `mascot` SVG sitting beside it. `tags` drive the filter.
 # `url`s starting with "@/" are internal and resolved with get_url.
 [extra]
-# Share card, from `uv run --with pillow --with resvg-py tools/og-card/projects.py`.
+# Share card, from `uv run --with pillow --with fonttools --with brotli --with resvg-py tools/og-card/projects.py`.
 card = "card.png"
 intro = "Things I build on the side: compiler tooling, fuzzing, a game I loved as a kid, and notes from breaking things on purpose."
 filters = [

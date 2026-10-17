@@ -2,17 +2,19 @@
 {#- Posts and plain pages. A page with headings uses the Docs layout (sticky TOC) unless its
     [extra] toc says otherwise; the default comes from [extra.features].toc. -#}
 {% block main %}
-{%- set toc_mode = page.extra?.toc | default(value=config.extra.features.toc) -%}
+{%- set toc_raw = page.extra?.toc | default(value=config.extra.features.toc) -%}
+{#- Old posts say toc = true (the sidebar) or toc = false (none). -#}
+{%- if toc_raw == true %}{% set toc_mode = "sidebar" %}{% elif toc_raw == false %}{% set toc_mode = "none" %}{% else %}{% set toc_mode = toc_raw %}{% endif -%}
 {%- set has_toc = toc_mode == "sidebar" and page.toc | length > 0 -%}
 {%- if has_toc %}
-<div id="main" class="f-docs f-prose">
+<main id="main" class="f-docs f-prose">
   {% include "partials/toc.html" %}
   <article class="site-post">
     {% include "partials/post_header.html" %}
     {{ page.content | safe }}
     {% include "partials/post_footer.html" %}
   </article>
-</div>
+</main>
 {%- else %}
 <main id="main" class="f-reading f-page f-prose site-post">
   {% include "partials/post_header.html" %}

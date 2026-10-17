@@ -13,13 +13,14 @@ def real_pages(public_dir):
 
 def test_pages(public_dir, site_url, page_factory):
     """Each page loads once; theme and width switch in place: no sideways scroll, no errors, and
-    every code block in a post or note has a copy button."""
+    every code block in a post or note has a copy button; each page has exactly one main landmark."""
     page = page_factory()
     for path in real_pages(public_dir):
         page.errors.clear()
         page.goto(f"{site_url}{path}")
         if path.startswith(("/blog/", "/notebook/")):
             assert page.locator("pre .f-code-copy").count() == page.locator("pre").count(), path
+        assert page.locator("main#main").count() == 1, path
         page.evaluate("document.fonts.ready.then(() => 1)")
         for theme in ("dark", "light"):
             page.evaluate(f"document.documentElement.dataset.theme = '{theme}'")

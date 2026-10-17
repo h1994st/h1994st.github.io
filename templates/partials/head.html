@@ -50,11 +50,6 @@
 	{%- for style in styles %}
 	<link rel="stylesheet" href="{{ get_url(path=style) | safe }}" />
 	{%- endfor %}
-	{%- if page?.extra?.scripts %}
-		{%- for script in page.extra.scripts %}
-	<script defer src="{{ get_url(path=script) | safe }}"></script>
-		{%- endfor %}
-	{%- endif %}
 
 	<meta property="og:site_name" content="{{ config.title }}" />
 	{#- Open Graph ---------------------------------------------------------

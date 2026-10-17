@@ -5,6 +5,9 @@
     <h1>{{ section.title }}</h1>
     {%- if section.description %}<p class="f-meta">{{ section.description }}</p>{% endif %}
   </header>
+  {%- if section.content %}
+  {{ section.content | safe }}
+  {%- endif %}
   {%- if paginator %}{% set rows = paginator.pages %}{% else %}{% set rows = section.pages %}{% endif %}
   {%- if not paginator or paginator.current_index == 1 %}
   {%- set top = rows | first %}
