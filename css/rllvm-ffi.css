@@ -1,0 +1,240 @@
+/* Diagrams for the cross-language query post.
+ *
+ * Same contract as diagrams.css and rllvm-substrate.css: the figure frame
+ * (margin, kicker, caption) is facet's .f-figure, and this file draws only the
+ * diagrams, on facet's tokens, so both themes follow the site automatically.
+ * The one semantic color is the faulting read, in facet's muted --f-danger. */
+
+.ffi-fig > :not(figcaption, .f-figure__kicker) {
+	font-family: var(--f-font-mono);
+}
+
+/* A group label inside a figure (Rust-led, C-led) sits right above its rows. */
+.ffi-fig .f-figure__kicker {
+	margin: 0;
+}
+
+/* A language tag. Three languages, distinguished by weight and border rather
+   than by hue, so the figure survives a monochrome print. */
+.ffi-lang {
+	display: inline-block;
+	min-width: 3.4em;
+	padding: 0.05rem 0.4rem;
+	border: 1px solid var(--f-line-2);
+	border-radius: 4px;
+	font-size: var(--f-text-xs);
+	text-align: center;
+	color: var(--f-fg-2);
+}
+
+.ffi-lang.is-rust {
+	border-style: solid;
+	background: var(--f-bg-2);
+	color: var(--f-fg);
+}
+
+.ffi-lang.is-c {
+	border-style: dashed;
+}
+
+.ffi-lang.is-cxx {
+	border-style: dotted;
+}
+
+/* ---------- crossings: one row per call, both lead directions ---------- */
+
+.ffi-crossings {
+	display: grid;
+	gap: 1.4rem;
+}
+
+.ffi-crossings .ffi-group {
+	display: grid;
+	gap: 0.45rem;
+}
+
+.ffi-crossings ol {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 0.4rem;
+}
+
+.ffi-crossings li {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.5rem 0.7rem;
+	border: 1px solid var(--f-line-2);
+	border-radius: 8px;
+	background: var(--f-bg-2);
+	font-size: var(--f-text-xs);
+}
+
+.ffi-crossings .ffi-fn {
+	color: var(--f-fg);
+}
+
+.ffi-crossings .ffi-arrow {
+	color: var(--f-fg-2);
+}
+
+.ffi-crossings .ffi-where {
+	margin-left: auto;
+	color: var(--f-fg-2);
+}
+
+/* ---------- lifetime: two lanes, one value, one dangling read ---------- */
+
+.ffi-life {
+	display: grid;
+	gap: 0;
+	border: 1px solid var(--f-line-2);
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.ffi-life .ffi-step {
+	display: grid;
+	grid-template-columns: 4.2rem 1fr 0.9rem;
+	align-items: center;
+	gap: 0.7rem;
+	padding: 0.6rem 0.8rem;
+	border-bottom: 1px solid var(--f-line-2);
+	font-size: var(--f-text-xs);
+}
+
+.ffi-life .ffi-step:last-child {
+	border-bottom: 0;
+}
+
+.ffi-life .ffi-side {
+	color: var(--f-fg-2);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+
+.ffi-life .ffi-what {
+	color: var(--f-fg);
+}
+
+.ffi-life .ffi-at {
+	display: block;
+	margin-top: 0.15rem;
+	color: var(--f-fg-2);
+}
+
+/* The bar in the right-hand gutter is the value's lifetime. It is drawn only
+   on the steps where the ConnectionId is alive, so the gap below it is the
+   whole bug: the pointer outlives the bar. */
+.ffi-life .ffi-bar {
+	justify-self: center;
+	width: 3px;
+	height: 100%;
+	min-height: 2.1rem;
+	border-radius: 2px;
+	background: var(--f-line-2);
+}
+
+.ffi-life .ffi-step.is-alive .ffi-bar {
+	background: var(--f-fg);
+}
+
+.ffi-life .ffi-step.is-dead .ffi-bar {
+	background: repeating-linear-gradient(
+		to bottom,
+		var(--f-fg-3) 0 2px,
+		transparent 2px 5px
+	);
+}
+
+/* The return to C. A rule across the whole width, because this is where one
+   language's guarantees stop applying. */
+.ffi-life .ffi-return {
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	padding: 0.45rem 0.8rem;
+	border-bottom: 1px solid var(--f-line-2);
+	background: var(--f-bg-2);
+	color: var(--f-fg-2);
+	font-size: var(--f-text-xs);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.ffi-life .ffi-step.is-fault .ffi-what {
+	color: var(--f-danger);
+}
+
+.ffi-life .ffi-step.is-fault .ffi-what::after {
+	content: " \2190 reads freed memory";
+	color: var(--f-fg-2);
+	text-transform: none;
+	letter-spacing: 0;
+}
+
+/* ---------- funnel: how far each step narrows the search ---------- */
+
+.ffi-funnel {
+	display: grid;
+	gap: 0.5rem;
+}
+
+/* The bar and the text never share space: overlaying a label on a partial
+   fill puts the fill's edge through a glyph at every width but 100%. */
+.ffi-funnel .ffi-rung {
+	display: grid;
+	grid-template-columns: 3rem 8rem 1fr;
+	align-items: center;
+	gap: 0.8rem;
+	font-size: var(--f-text-xs);
+}
+
+.ffi-funnel .ffi-count {
+	text-align: right;
+	color: var(--f-fg);
+}
+
+.ffi-funnel .ffi-track {
+	height: 0.85rem;
+	border: 1px solid var(--f-line-2);
+	border-radius: 3px;
+	background: var(--f-bg-2);
+	overflow: hidden;
+}
+
+.ffi-funnel .ffi-fill {
+	display: block;
+	width: var(--w);
+	height: 100%;
+	background: color-mix(in srgb, var(--f-fg) 30%, transparent);
+}
+
+.ffi-funnel .ffi-label {
+	color: var(--f-fg-2);
+}
+
+.ffi-funnel .ffi-label b {
+	color: var(--f-fg);
+	font-weight: normal;
+}
+
+@media (max-width: 34rem) {
+	.ffi-life .ffi-step {
+		grid-template-columns: 3.2rem 1fr 0.9rem;
+		gap: 0.5rem;
+	}
+
+	.ffi-crossings .ffi-where {
+		margin-left: 0;
+		flex-basis: 100%;
+	}
+
+	.ffi-funnel .ffi-rung {
+		grid-template-columns: 2.6rem 4.5rem 1fr;
+		gap: 0.5rem;
+	}
+}

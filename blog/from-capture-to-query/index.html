@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en" data-accent="moss" data-f-ga4="G-ZMH6NLL7C7">
+<head>
+<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" /><script>try{var t=localStorage.getItem("facet-theme");if(/^(dark|light|auto)$/.test(t))document.documentElement.dataset.theme=t}catch(e){}</script>
+	<meta name="description" content="rllvm-query adds an analysis step to the rllvm workflow. A real use-after-free in quiche shows what it can answer about a mixed C and Rust program, and what it still cannot." />
+	<meta name="author" content="Shengtuo Hu" />
+	<meta name="theme-color" content="#13161c" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f5f7f9" media="(prefers-color-scheme: light)" />
+	<title>rllvm: From Capture to Query - nu1lptr</title>
+	<link rel="canonical" href="https://shengtuo.me/blog/from-capture-to-query/" /><link rel="icon" href="https://shengtuo.me/favicon.ico" sizes="32x32" />
+	<link rel="icon" href="https://shengtuo.me/favicon.svg" type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="https://shengtuo.me/apple-touch-icon.png" />
+	<link rel="alternate" type="application/rss+xml" title="nu1lptr - RSS Feed" href="https://shengtuo.me/rss.xml" />
+	<link rel="alternate" type="application/atom+xml" title="nu1lptr - Atom Feed" href="https://shengtuo.me/atom.xml" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/facet.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/cast/cast-layered.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/icons.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/giallo.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/site.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/rllvm-ffi.css" />
+
+	<meta property="og:site_name" content="nu1lptr" /><meta property="og:title" content="rllvm: From Capture to Query" />
+	<meta property="og:url" content="https://shengtuo.me/blog/from-capture-to-query/" />
+	<meta property="og:description" content="rllvm-query adds an analysis step to the rllvm workflow. A real use-after-free in quiche shows what it can answer about a mixed C and Rust program, and what it still cannot." />
+	<meta property="og:image" content="https://shengtuo.me/cards/blog/from-capture-to-query.png" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="article:published_time" content="2026-09-21T18:00:00-07:00" />
+	<meta property="article:author" content="Shengtuo Hu" />
+	<meta property="article:tag" content="rllvm" />
+	<meta property="article:tag" content="LLVM" />
+	<meta property="article:tag" content="Rust" />
+	<meta property="article:tag" content="Security" />
+	<meta property="article:tag" content="Static Analysis" /><meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="rllvm: From Capture to Query" />
+	<meta name="twitter:description" content="rllvm-query adds an analysis step to the rllvm workflow. A real use-after-free in quiche shows what it can answer about a mixed C and Rust program, and what it still cannot." />
+	<meta name="twitter:image" content="https://shengtuo.me/cards/blog/from-capture-to-query.png" />
+	<meta name="twitter:site" content="@ShengtuoHu" />
+	<meta name="twitter:creator" content="@ShengtuoHu" /><script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	"@id": "https://shengtuo.me/blog/from-capture-to-query/#article",
+	"mainEntityOfPage": "https://shengtuo.me/blog/from-capture-to-query/",
+	"url": "https://shengtuo.me/blog/from-capture-to-query/",
+	"headline": "rllvm: From Capture to Query",
+	"description": "rllvm-query adds an analysis step to the rllvm workflow. A real use-after-free in quiche shows what it can answer about a mixed C and Rust program, and what it still cannot.",
+	"datePublished": "2026-09-21T18:00:00-07:00",
+	"dateModified": "2026-09-21T18:00:00-07:00",
+	"image": "https://shengtuo.me/cards/blog/from-capture-to-query.png",
+	"keywords": ["rllvm","LLVM","Rust","Security","Static Analysis"],
+	"inLanguage": "en",
+	"author": {
+		"@type": "Person",
+		"@id": "https://shengtuo.me/#person",
+		"name": "Shengtuo Hu",
+		"url": "https://shengtuo.me/"
+	},
+	"publisher": { "@id": "https://shengtuo.me/#person" }
+}
+</script>
+
+
+
+</head>
+<body>
+  <a class="f-visually-hidden" href="#main">Skip to content</a>
+  <nav class="f-nav f-nav--fixed" aria-label="Site">
+  <a class="f-nav__brand" href="https://shengtuo.me">nu1lptr</a>
+  <a href="https://shengtuo.me/blog/" aria-current="page">Blog</a>
+  <a href="https://shengtuo.me/projects/">Projects</a>
+  <a href="https://shengtuo.me/resume/">Resume</a>
+  <button class="f-btn f-btn--quiet site-search-open" type="button" aria-label="Search" title="Search (/)" hidden>
+    <svg class="site-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+  </button>
+  <button class="f-theme-toggle" type="button" data-f-theme-toggle>Auto</button>
+</nav>
+
+  
+<main id="main" class="f-docs f-prose" data-f-code-ln="true" data-f-code-wrap="true" data-f-code-frame="false">
+  <nav class="f-toc" aria-label="On this page" data-f-scrollspy>
+  <p class="f-docs__label">On this page</p>
+  <a href="#tl-dr">TL;DR</a>
+  <a href="#a-blind-spot-in-mixed-language-programs">A blind spot in mixed-language programs</a>
+  <a href="#getting-both-languages-into-one-module">Getting both languages into one module</a>
+  <a href="#a-real-bug-where-the-languages-meet">A real bug where the languages meet</a>
+  <a href="#asking-rllvm-query-about-it">Asking rllvm-query about it</a>
+  <a href="#scanning-the-whole-ffi-surface">Scanning the whole FFI surface</a>
+  <a href="#does-it-affect-my-build">Does it affect my build?</a>
+  <a href="#where-the-answers-stop">Where the answers stop</a>
+  <a href="#what-comes-next">What comes next</a>
+</nav>
+
+  <article class="site-post">
+<header class="f-reading__title">
+  <p class="f-kicker"><a href="https://shengtuo.me/blog/">nu1lptr&#39;s Blog</a></p>
+  <h1>rllvm: From Capture to Query</h1>
+  <p class="f-meta site-post-meta">
+    <time datetime="2026-09-21">Sep 21, 2026</time> · 12 min read · <a href="https://shengtuo.me/tags/rllvm/">rllvm</a> · <a href="https://shengtuo.me/tags/llvm/">LLVM</a> · <a href="https://shengtuo.me/tags/rust/">Rust</a> · <a href="https://shengtuo.me/tags/security/">Security</a> · <a href="https://shengtuo.me/tags/static-analysis/">Static Analysis</a> · <button class="f-btn f-btn--quiet site-share" type="button">Share</button><span class="site-share-status" role="status"></span>
+  </p>
+</header>
+
+    <p><img src="https://shengtuo.me/rllvm/assets/images/banner.png" alt="rllvm: extract, catalog, and query LLVM bitcode from real software" /></p>
+<h2 id="tl-dr"><a class="zola-anchor" href="#tl-dr" aria-label="Link to this section">#</a>
+TL;DR</h2>
+<p>The first two posts in this series were about producing artifacts: extracting
+<a href="https://shengtuo.me/blog/whole-program-bitcode/">whole-program bitcode</a>, then keeping the
+modules and their provenance in a
+<a href="https://shengtuo.me/blog/beyond-single-bitcode-file/">catalog</a> instead of merging them away.
+<code>rllvm-query</code> adds the step those were building toward. It reads a catalog and
+answers questions in source terms: who defines this, who calls it, what does it
+call, what path reaches it.</p>
+<p>This post puts that step to work on a program written in two languages. The
+example is CVE-2026-11941, a use-after-free in Cloudflare's quiche that is made
+entirely of safe Rust and still hands C a pointer to freed memory. The queries
+locate it, scan the rest of the library for the same shape, and then run out of
+road in a place worth being precise about.</p>
+<h2 id="a-blind-spot-in-mixed-language-programs"><a class="zola-anchor" href="#a-blind-spot-in-mixed-language-programs" aria-label="Link to this section">#</a>
+A blind spot in mixed-language programs</h2>
+<p>Programs written in a single language are becoming the exception. A Rust crate
+pulls in a <code>-sys</code> dependency and half of its real work happens in C. A C
+codebase adopts Rust one module at a time.</p>
+<p>The boundary between the two is the riskiest part of such a program. Ownership
+stops being tracked there, error conventions stop matching, and who frees what
+has to be written in a comment because no type carries it across. It is also the
+one place that ordinary tooling does not look, for an understandable reason:
+every ecosystem's index is scoped to its own build. <code>rust-analyzer</code> stops at the
+<code>extern "C"</code> declaration, because Cargo compiled nothing past it. <code>clangd</code> never
+heard of the Rust caller. <code>cargo audit</code> reasons over the dependency graph, which
+suits crates and says nothing about the BoringSSL that a build script compiled
+along the way. <code>unsafe</code> marks where Rust stops trusting itself, and stays silent
+about the other side.</p>
+<p>So the questions that matter most at the boundary are the ones nobody can ask.</p>
+<h2 id="getting-both-languages-into-one-module"><a class="zola-anchor" href="#getting-both-languages-into-one-module" aria-label="Link to this section">#</a>
+Getting both languages into one module</h2>
+<p><code>rustc</code> and <code>clang</code> are both LLVM front ends. Once a call across the boundary
+becomes an LLVM <code>call</code> instruction, the language has been erased: there is a
+caller, a callee, and a source location for each. The boundary belongs to how we
+build software rather than to the compiled program, so the whole job reduces to
+capturing both halves at once. That used to take one environment variable. Now
+it takes two.</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-7">export</span><span> CC</span><span class="z-3">=</span><span>rllvm-cc CXX</span><span class="z-3">=</span><span>rllvm-cxx RUSTC_WRAPPER</span><span class="z-3">=</span><span>rllvm-rustc</span></span></code></pre>
+<p>The <a rel="noopener external" target="_blank" href="https://github.com/h1994st/rllvm/tree/main/examples/ffi"><code>examples/ffi</code></a>
+directory holds the smallest version of this I could write: two programs whose
+call graphs cross the boundary, one led from each language, because the gap in
+the tooling runs both ways.</p>
+<figure class="f-figure ffi-fig ffi-crossings" aria-label="Two small programs whose call graphs cross the FFI boundary, one led from Rust and one led from C">
+<div class="ffi-group">
+<p class="f-figure__kicker">Rust-led</p>
+<ol>
+<li><span class="ffi-lang is-rust">Rust</span><span class="ffi-fn">main::main</span><span class="ffi-arrow">&#9656;</span><span class="ffi-lang is-c">C</span><span class="ffi-fn">c_double</span><span class="ffi-arrow">&#9656;</span><span class="ffi-lang is-rust">Rust</span><span class="ffi-fn">rust_add</span><span class="ffi-where">main.rs:12</span></li>
+<li><span class="ffi-lang is-rust">Rust</span><span class="ffi-fn">main::main</span><span class="ffi-arrow">&#9656;</span><span class="ffi-lang is-cxx">C++</span><span class="ffi-fn">cxx_triple</span><span class="ffi-where">main.rs:13</span></li>
+</ol>
+</div>
+<div class="ffi-group">
+<p class="f-figure__kicker">C-led</p>
+<ol>
+<li><span class="ffi-lang is-c">C</span><span class="ffi-fn">main</span><span class="ffi-arrow">&#9656;</span><span class="ffi-lang is-rust">Rust</span><span class="ffi-fn">rust_scale</span><span class="ffi-arrow">&#9656;</span><span class="ffi-lang is-c">C</span><span class="ffi-fn">c_offset</span><span class="ffi-where">c_main.c:8</span></li>
+</ol>
+</div>
+<figcaption>One module holds all three languages, and each crossing is reported at the line that makes the call. Direction matters more than it looks: a Rust staticlib drags in a prebuilt <b>std</b> that never went through the wrapper, so whichever language leads decides how much of the program you can see.</figcaption>
+</figure>
+<h2 id="a-real-bug-where-the-languages-meet"><a class="zola-anchor" href="#a-real-bug-where-the-languages-meet" aria-label="Link to this section">#</a>
+A real bug where the languages meet</h2>
+<p>quiche is Cloudflare's QUIC and HTTP/3 library: a Cargo workspace that also
+builds BoringSSL through a build script and exposes a C API behind a feature
+flag. In June it published
+<a rel="noopener external" target="_blank" href="https://github.com/cloudflare/quiche/security/advisories/GHSA-mh64-ph39-mrc9">GHSA-mh64-ph39-mrc9</a>,
+CVE-2026-11941, a use-after-free in two of its FFI functions, fixed in 0.29.2.</p>
+<p>The entire defect, from <code>quiche/src/ffi.rs</code> at 0.29.1:</p>
+<pre class="giallo z-code" data-lang="rust"><code data-lang="rust"><span class="giallo-l"><span class="z-10">impl</span><span class="z-3">&lt;&#39;</span><span class="z-12">a</span><span class="z-3">&gt;</span><span class="z-12"> Iterator</span><span class="z-3 z-i"> for</span><span class="z-12"> ConnectionIdIter</span><span class="z-3">&lt;&#39;</span><span class="z-12">a</span><span class="z-3">&gt; {</span></span>
+<span class="giallo-l"><span class="z-7">    type</span><span class="z-12"> Item</span><span class="z-3"> =</span><span class="z-12"> ConnectionId</span><span class="z-3">&lt;&#39;</span><span class="z-12">a</span><span class="z-3">&gt;;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-10">    fn</span><span class="z-2"> next</span><span class="z-3">(&amp;</span><span class="z-7">mut</span><span> self</span><span class="z-3">) -&gt;</span><span class="z-12"> Option</span><span class="z-3">&lt;</span><span>Self</span><span class="z-3">::</span><span class="z-12">Item</span><span class="z-3">&gt; {</span></span>
+<span class="giallo-l"><span class="z-7">        let</span><span> v</span><span class="z-3"> =</span><span> self</span><span class="z-3">.</span><span>cids</span><span class="z-3">.</span><span class="z-2">get</span><span class="z-3">(</span><span>self</span><span class="z-3">.</span><span>index</span><span class="z-3">)?;</span></span>
+<span class="giallo-l"><span>        self</span><span class="z-3">.</span><span>index </span><span class="z-3">+=</span><span class="z-10"> 1</span><span class="z-3">;</span></span>
+<span class="giallo-l"><span class="z-12">        Some</span><span class="z-3">(</span><span>v</span><span class="z-3">.</span><span class="z-2">clone</span><span class="z-3">())</span><span class="z-1 z-i">            // an owned ConnectionId</span></span>
+<span class="giallo-l"><span class="z-3">    }</span></span>
+<span class="giallo-l"><span class="z-3">}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3">#[</span><span>no_mangle</span><span class="z-3">]</span></span>
+<span class="giallo-l"><span class="z-10">pub</span><span class="z-7"> extern</span><span class="z-3"> &quot;</span><span class="z-6">C</span><span class="z-3">&quot;</span><span class="z-10"> fn</span><span class="z-2"> quiche_connection_id_iter_next</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span>    iter</span><span class="z-3">: &amp;</span><span class="z-7">mut</span><span class="z-12"> ConnectionIdIter</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span>    out</span><span class="z-3">: &amp;</span><span class="z-7">mut</span><span class="z-3"> *</span><span class="z-7">const</span><span class="z-12"> u8</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span>    out_len</span><span class="z-3">: &amp;</span><span class="z-7">mut</span><span> size_t</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">) -&gt;</span><span class="z-12"> bool</span><span class="z-3"> {</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span class="z-7"> let</span><span class="z-12"> Some</span><span class="z-3">(</span><span>conn_id</span><span class="z-3">) =</span><span> iter</span><span class="z-3">.</span><span class="z-2">next</span><span class="z-3">() {</span><span class="z-1 z-i">   // owned; dropped below</span></span>
+<span class="giallo-l"><span class="z-7">        let</span><span> id</span><span class="z-3"> =</span><span> conn_id</span><span class="z-3">.</span><span class="z-2">as_ref</span><span class="z-3">();</span></span>
+<span class="giallo-l"><span class="z-3">        *</span><span>out</span><span class="z-3"> =</span><span> id</span><span class="z-3">.</span><span class="z-2">as_ptr</span><span class="z-3">();</span><span class="z-1 z-i">                // escapes to C</span></span>
+<span class="giallo-l"><span class="z-3">        *</span><span>out_len</span><span class="z-3"> =</span><span> id</span><span class="z-3">.</span><span class="z-2">len</span><span class="z-3">();</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        return</span><span class="z-3"> true;</span></span>
+<span class="giallo-l"><span class="z-3">    }</span><span class="z-1 z-i">                                      // conn_id freed here</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3">    false</span></span>
+<span class="giallo-l"><span class="z-3">}</span></span></code></pre>
+<p>There is no <code>unsafe</code> block. The borrow checker is satisfied and it is right to
+be: <code>conn_id</code> is an owned value, dropped correctly at the end of its scope.
+Every guarantee Rust makes holds.</p>
+<p>What goes wrong is that a raw pointer into that value crossed an <code>extern "C"</code>
+signature on the way out, and C reads it after the drop. Rust's ownership model
+ends at the signature, and both halves of this program are correct on their own.</p>
+<p>The C half is an ordinary loop. quiche's own C examples never touch this
+iterator, so the caller below
+(<a rel="noopener external" target="_blank" href="https://github.com/h1994st/rllvm/blob/main/examples/external/quiche/cid_logger.c"><code>cid_logger.c</code></a>)
+ships with the rllvm example instead:</p>
+<pre class="giallo z-code" data-lang="c"><code data-lang="c"><span class="giallo-l"><span class="z-7">static void</span><span class="z-2"> log_source_ids</span><span class="z-3">(</span><span>quiche_conn </span><span class="z-3">*</span><span class=" z-i">conn</span><span class="z-3">) {</span></span>
+<span class="giallo-l"><span class="z-9">    quiche_connection_id_iter </span><span class="z-3">*</span><span class="z-9">iter </span><span class="z-3">=</span><span class="z-2"> quiche_conn_source_ids</span><span class="z-3">(</span><span class="z-9">conn</span><span class="z-3">);</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">    const uint8_t</span><span class="z-3"> *</span><span class="z-9">cid </span><span class="z-3">= NULL;</span></span>
+<span class="giallo-l"><span class="z-7">    size_t</span><span class="z-9"> cid_len </span><span class="z-3">=</span><span class="z-10"> 0</span><span class="z-3">;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">    while</span><span class="z-3"> (</span><span class="z-2">quiche_connection_id_iter_next</span><span class="z-3">(</span><span class="z-9">iter</span><span class="z-3">, &amp;</span><span class="z-9">cid</span><span class="z-3">, &amp;</span><span class="z-9">cid_len</span><span class="z-3">)) {</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        for</span><span class="z-3"> (</span><span class="z-7">size_t</span><span class="z-9"> i </span><span class="z-3">=</span><span class="z-10"> 0</span><span class="z-3">;</span><span class="z-9"> i </span><span class="z-3">&lt;</span><span class="z-9"> cid_len</span><span class="z-3">;</span><span class="z-9"> i</span><span class="z-3">++) {</span></span>
+<span class="giallo-l"><span class="z-2">            fprintf</span><span class="z-3">(</span><span class="z-9">stderr</span><span class="z-3">, &quot;</span><span class="z-9">%02x</span><span class="z-3">&quot;,</span><span> cid</span><span class="z-3">[</span><span class="z-9">i</span><span class="z-3">]);</span><span class="z-1 z-i">   // reads freed memory</span></span>
+<span class="giallo-l"><span class="z-3">        }</span></span>
+<span class="giallo-l"><span class="z-2">        fprintf</span><span class="z-3">(</span><span class="z-9">stderr</span><span class="z-3">, &quot;</span><span>\n</span><span class="z-3">&quot;);</span></span>
+<span class="giallo-l"><span class="z-3">    }</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-2">    quiche_connection_id_iter_free</span><span class="z-3">(</span><span class="z-9">iter</span><span class="z-3">);</span></span>
+<span class="giallo-l"><span class="z-3">}</span></span></code></pre><figure class="f-figure ffi-fig" aria-label="A timeline showing the ConnectionId being cloned, its pointer escaping to C, the value being dropped, and C reading the freed memory">
+<div class="ffi-life">
+<div class="ffi-step is-alive"><span class="ffi-side">Rust</span><span class="ffi-what">clone a <b>ConnectionId</b> out of the iterator<span class="ffi-at">ffi.rs:1157</span></span><span class="ffi-bar"></span></div>
+<div class="ffi-step is-alive"><span class="ffi-side">Rust</span><span class="ffi-what">*out = id.as_ptr(), the pointer escapes<span class="ffi-at">ffi.rs:1158</span></span><span class="ffi-bar"></span></div>
+<div class="ffi-step is-dead"><span class="ffi-side">Rust</span><span class="ffi-what">drop_glue::&lt;ConnectionId&gt;, the buffer is freed<span class="ffi-at">ffi.rs:1162</span></span><span class="ffi-bar"></span></div>
+<div class="ffi-return">return to C, and out still holds the pointer</div>
+<div class="ffi-step is-dead is-fault"><span class="ffi-side">C</span><span class="ffi-what">fprintf("%02x", cid[i])<span class="ffi-at">cid_logger.c:22</span></span><span class="ffi-bar"></span></div>
+</div>
+<figcaption>The solid bar is the value's lifetime; the dashed continuation is the pointer outliving it. Only the join between the two halves is wrong, and the join is what neither language's tooling reads.</figcaption>
+</figure>
+<h2 id="asking-rllvm-query-about-it"><a class="zola-anchor" href="#asking-rllvm-query-about-it" aria-label="Link to this section">#</a>
+Asking rllvm-query about it</h2>
+<p>What follows runs against quiche 0.29.1 with the FFI feature on, linked against
+that C program.</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">git</span><span class="z-6"> clone --recursive https://github.com/cloudflare/quiche</span><span class="z-3"> &amp;&amp;</span><span class="z-2"> cd</span><span class="z-6"> quiche</span></span>
+<span class="giallo-l"><span class="z-12">git</span><span class="z-6"> checkout</span><span class="z-10"> 0.29.1</span></span>
+<span class="giallo-l"><span class="z-12">git</span><span class="z-6"> submodule update --init --recursive</span></span>
+<span class="giallo-l"><span class="z-12">curl</span><span class="z-6"> -fsSLO https://raw.githubusercontent.com/h1994st/rllvm/main/examples/external/quiche/cid_logger.c</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">export</span><span> RUSTC_WRAPPER</span><span class="z-3">=</span><span>rllvm-rustc CC</span><span class="z-3">=</span><span>rllvm-cc</span></span>
+<span class="giallo-l"><span class="z-12">cargo</span><span class="z-6"> build -p quiche --features ffi</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>MACOSX_DEPLOYMENT_TARGET</span><span class="z-3">=$(</span><span class="z-12">sw_vers</span><span class="z-6"> -productVersion</span><span class="z-3">)</span><span class="z-12"> \</span></span>
+<span class="giallo-l"><span class="z-6">  rllvm-cc -g -Iquiche/include cid_logger.c</span><span> \</span></span>
+<span class="giallo-l"><span class="z-6">           target/debug/libquiche.a -o cid_logger</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-12">rllvm-get-bc</span><span class="z-6"> cid_logger --output-dir cat</span></span></code></pre>
+<p>The deployment target is macOS housekeeping: the build script compiles
+BoringSSL against the host SDK, and without it the link reports a few hundred
+"built for newer macOS version" warnings. Plain <code>clang</code> does the same.</p>
+<p>Answers print as text, with Rust symbols already demangled. Two variables keep
+the commands short:</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span>CAT</span><span class="z-3">=</span><span class="z-6">cat/catalog.json</span></span>
+<span class="giallo-l"><span>FN</span><span class="z-3">=</span><span class="z-6">quiche_connection_id_iter_next</span></span></code></pre>
+<p>The definition is Rust, and the caller is C, each reported at its own line:</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">rllvm-query</span><span class="z-6"> --catalog</span><span> $CAT</span><span class="z-6"> defs</span><span> $FN</span></span>
+<span class="giallo-l"><span class="z-12">rllvm-query</span><span class="z-6"> --catalog</span><span> $CAT</span><span class="z-6"> callers</span><span> $FN</span></span></code></pre><pre class="giallo z-code" data-lang="plain" data-wrap="false"><code data-lang="plain" data-wrap="false"><span class="giallo-l"><span>quiche/src/ffi.rs:1154  quiche_connection_id_iter_next</span></span>
+<span class="giallo-l"><span>log_source_ids</span></span>
+<span class="giallo-l"><span>    cid_logger.c:20  direct    quiche_connection_id_iter_next</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>note: 503 indirect call site(s), 4 with an LLVM target bound</span></span></code></pre>
+<p><code>callees</code> on the FFI function is the bug in three lines. <code>grep</code> drops the
+panic-handling edges that every Rust function carries:</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">rllvm-query</span><span class="z-6"> --catalog</span><span> $CAT</span><span class="z-6"> callees</span><span> $FN</span><span class="z-3"> |</span><span class="z-12"> grep</span><span class="z-6"> -v panic</span></span></code></pre><pre class="giallo z-code" data-lang="plain" data-wrap="false"><code data-lang="plain" data-wrap="false"><span class="giallo-l"><span>quiche/src/ffi.rs:1157  direct    &lt;quiche::ffi::ConnectionIdIter as core::iter::traits::iterator::Iterator&gt;::next</span></span>
+<span class="giallo-l"><span>quiche/src/ffi.rs:1157  intrinsic llvm.memcpy.p0.p0.i64</span></span>
+<span class="giallo-l"><span>quiche/src/ffi.rs:1158  direct    &lt;quiche::packet::ConnectionId as core::convert::AsRef&lt;[u8]&gt;&gt;::as_ref</span></span>
+<span class="giallo-l"><span>quiche/src/ffi.rs:1162  direct    core::ptr::drop_glue::&lt;quiche::packet::ConnectionId&gt;</span></span>
+<span class="giallo-l"><span>quiche/src/ffi.rs:1162  direct    core::ptr::drop_glue::&lt;quiche::packet::ConnectionId&gt;</span></span></code></pre>
+<p>Clone, take a pointer, free. Run the same query against 0.29.2 and the
+<code>drop_glue</code> lines are gone, because the fix stopped owning anything:</p>
+<pre class="giallo z-code" data-lang="plain" data-wrap="false"><code data-lang="plain" data-wrap="false"><span class="giallo-l"><span>quiche/src/ffi.rs:1146  direct    &lt;alloc::vec::Vec&lt;quiche::packet::ConnectionId&gt; as core::ops::deref::Deref&gt;::deref</span></span>
+<span class="giallo-l"><span>quiche/src/ffi.rs:1146  direct    &lt;[quiche::packet::ConnectionId]&gt;::get::&lt;usize&gt;</span></span>
+<span class="giallo-l"><span>quiche/src/ffi.rs:1147  direct    &lt;quiche::packet::ConnectionId as core::convert::AsRef&lt;[u8]&gt;&gt;::as_ref</span></span></code></pre>
+<p><code>reach</code> walks from the C entry point to the Rust function, and records the
+crossing as its own kind of step:</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">rllvm-query</span><span class="z-6"> --catalog</span><span> $CAT</span><span class="z-6"> reach main</span><span> $FN</span></span></code></pre><pre class="giallo z-code" data-lang="plain"><code data-lang="plain"><span class="giallo-l"><span>call              main</span></span>
+<span class="giallo-l"><span>call              log_source_ids</span></span>
+<span class="giallo-l"><span>binding           quiche_connection_id_iter_next  (unique, 1 candidate(s))</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>note: 503 indirect call site(s), 4 with an LLVM target bound</span></span></code></pre>
+<p>Two ordinary calls inside C, then a <code>binding</code>: a C declaration that resolved to
+one candidate definition in a Rust module. The answer distinguishes a call it
+observed from a link it resolved, and says which one carries the path.</p>
+<h2 id="scanning-the-whole-ffi-surface"><a class="zola-anchor" href="#scanning-the-whole-ffi-surface" aria-label="Link to this section">#</a>
+Scanning the whole FFI surface</h2>
+<p>Everything above starts from knowing the answer. The more useful question is
+whether the bug has a shape you can search for, stated without reference to the
+CVE:</p>
+<blockquote>
+<p>An <code>extern "C"</code> entry point hands C a raw pointer into a value, and then drops
+that value before returning.</p>
+</blockquote>
+<p>In call-graph terms that is two conditions on one function's callees: something
+that takes a pointer into <code>T</code>, and <code>drop_glue::&lt;T&gt;</code>. Both already appear in the
+output, so the scan is a loop over the FFI surface, which <code>ffi-exports</code> lists
+from the catalog:</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">rllvm-query</span><span class="z-6"> --catalog</span><span> $CAT</span><span class="z-6"> ffi-exports</span><span> \</span></span>
+<span class="giallo-l"><span class="z-3">  |</span><span class="z-12"> awk</span><span class="z-3"> &#39;</span><span class="z-6">NF &amp;&amp; $1 != &quot;note:&quot; { print $NF }</span><span class="z-3">&#39; &gt;</span><span class="z-6"> surface.txt</span></span>
+<span class="giallo-l"><span class="z-12">wc</span><span class="z-6"> -l</span><span class="z-3"> &lt;</span><span class="z-6"> surface.txt</span><span class="z-1 z-i">        # 169 entry points</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">for</span><span> fn</span><span class="z-3 z-i"> in</span><span class="z-3"> $(</span><span class="z-12">cat</span><span class="z-6"> surface.txt</span><span class="z-3">);</span><span class="z-3 z-i"> do</span></span>
+<span class="giallo-l"><span>  out</span><span class="z-3">=$(</span><span class="z-12">rllvm-query</span><span class="z-6"> --catalog</span><span> $CAT</span><span class="z-6"> callees</span><span class="z-3"> &quot;</span><span>$fn</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">  if</span><span class="z-12"> grep</span><span class="z-6"> -q drop_glue</span><span class="z-3"> &lt;&lt;&lt;&quot;</span><span>$out</span><span class="z-3">&quot; &amp;&amp;</span></span>
+<span class="giallo-l"><span class="z-12">     grep</span><span class="z-6"> -Eq</span><span class="z-3"> &#39;</span><span class="z-6">::(as_ref|as_ptr|as_slice)$</span><span class="z-3">&#39; &lt;&lt;&lt;&quot;</span><span>$out</span><span class="z-3">&quot;;</span><span class="z-3 z-i"> then</span></span>
+<span class="giallo-l"><span class="z-2">    echo</span><span class="z-3"> &quot;</span><span>$fn</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3 z-i">  fi</span></span>
+<span class="giallo-l"><span class="z-3 z-i">done</span></span></code></pre>
+<p><code>ffi-exports</code> lists the definitions that Rust modules export under an unmangled
+name, which is what <code>#[no_mangle]</code> produces. It tells a Rust module from a C
+one by its debug info, or by the compiler that <code>llvm.ident</code> names, and it says
+how many functions it could not attribute instead of guessing. The first
+version of this scan went through <code>llvm-nm</code>, a <code>quiche_</code> prefix and Mach-O's
+leading underscore, which was exactly the kind of step that belongs in the tool
+(<a rel="noopener external" target="_blank" href="https://github.com/h1994st/rllvm/issues/243">#243</a>).</p>
+<p>169 entry points reduce to 7 candidates, and both functions the advisory names
+are among them:</p>
+<table><thead><tr><th>Candidate</th><th>Reading it</th></tr></thead><tbody>
+<tr><td><code>quiche_connection_id_iter_next</code></td><td><strong>CVE-2026-11941</strong></td></tr>
+<tr><td><code>quiche_conn_retired_scid_next</code></td><td><strong>CVE-2026-11941</strong></td></tr>
+<tr><td><code>quiche_conn_source_id</code></td><td>safe: the dropped <code>ConnectionId</code> is the borrowed variant</td></tr>
+<tr><td><code>quiche_conn_destination_id</code></td><td>safe: the same</td></tr>
+<tr><td><code>quiche_accept</code></td><td>filter noise: the match was <code>Option::as_ref</code></td></tr>
+<tr><td><code>quiche_conn_new_with_tls</code></td><td>filter noise: the same</td></tr>
+<tr><td><code>quiche_h3_take_last_priority_update</code></td><td>safe <em>if</em> the C callback behaves</td></tr>
+</tbody></table>
+<p>One caveat on how much this proves. I wrote the filter after reading the
+advisory. The shape is general, since handing C a pointer into something you
+then drop is a whole class of FFI bug. This run still does not establish that I
+would have picked it blind. What it does establish is that the class fits in two
+predicates over ordinary output, that it ranks both real defects into seven of a
+hundred and sixty-nine, and that the signal disappears when the bug is fixed.</p>
+<h2 id="does-it-affect-my-build"><a class="zola-anchor" href="#does-it-affect-my-build" aria-label="Link to this section">#</a>
+Does it affect my build?</h2>
+<p><code>cargo audit</code> gives one answer for any quiche below 0.29.2: vulnerable. The
+advisory is more careful, and names the thing that actually decides it.</p>
+<blockquote>
+<p>Only applications using those FFI functions are affected. The FFI API is
+disabled by default by a build-time feature flag.</p>
+</blockquote>
+<p>That is a whole-program question, with four different true answers depending on
+how the program was built.</p>
+<table><thead><tr><th>Build</th><th>Definition present</th><th>Callers</th><th>What is true</th></tr></thead><tbody>
+<tr><td>default features</td><td>no</td><td>n/a</td><td>the code was never compiled</td></tr>
+<tr><td><code>--features ffi</code>, quiche's own <code>client.c</code></td><td>yes</td><td>0</td><td>linked in, never called</td></tr>
+<tr><td><code>--features ffi</code>, a C app that iterates CIDs</td><td>yes</td><td>1</td><td>reachable</td></tr>
+<tr><td>0.29.2, same C app</td><td>yes</td><td>1</td><td>fixed</td></tr>
+</tbody></table>
+<p>The second row is worth sitting with. <code>nm</code> confirms
+<code>_quiche_connection_id_iter_next</code> is in that binary as a defined symbol, and
+<code>callers</code> still returns zero. Present and reachable are different facts, and
+only one of them describes your risk.</p>
+<p>For a caller that does exist, <code>callees log_source_ids</code> lists its calls in
+program order, so you can see what happens after the crossing (the arrows are
+mine):</p>
+<pre class="giallo z-code" data-lang="plain" data-wrap="false"><code data-lang="plain" data-wrap="false"><span class="giallo-l"><span>cid_logger.c:15  direct    quiche_conn_source_ids</span></span>
+<span class="giallo-l"><span>cid_logger.c:20  direct    quiche_connection_id_iter_next   &lt;- the crossing</span></span>
+<span class="giallo-l"><span>cid_logger.c:22  direct    fprintf                          &lt;- after it</span></span>
+<span class="giallo-l"><span>cid_logger.c:24  direct    fprintf                          &lt;- after it</span></span>
+<span class="giallo-l"><span>cid_logger.c:27  direct    quiche_connection_id_iter_free</span></span></code></pre>
+<p>Anything sequenced after the crossing is a candidate consumer of a pointer that
+Rust has already freed. The two <code>fprintf</code> calls are a three-line reading window.</p>
+<figure class="f-figure ffi-fig ffi-funnel" aria-label="Each step narrows the search: 169 FFI entry points, 7 candidates, 1 caller, 3 lines of C to read">
+<div class="ffi-rung"><span class="ffi-count">169</span><span class="ffi-track"><span class="ffi-fill" style="--w:100%"></span></span><span class="ffi-label"><b>FFI entry points</b>, listed by ffi-exports</span></div>
+<div class="ffi-rung"><span class="ffi-count">7</span><span class="ffi-track"><span class="ffi-fill" style="--w:34%"></span></span><span class="ffi-label"><b>candidates</b>: callees take a pointer into T and drop T</span></div>
+<div class="ffi-rung"><span class="ffi-count">1</span><span class="ffi-track"><span class="ffi-fill" style="--w:16%"></span></span><span class="ffi-label"><b>caller</b>, with a file and a line</span></div>
+<div class="ffi-rung"><span class="ffi-count">3</span><span class="ffi-track"><span class="ffi-fill" style="--w:7%"></span></span><span class="ffi-label"><b>lines of C</b> left to read</span></div>
+<figcaption>The bars are illustrative rather than to scale. Every step is mechanical except the last one, which is the point: the tool decides where to look and a person decides what is there.</figcaption>
+</figure>
+<h2 id="where-the-answers-stop"><a class="zola-anchor" href="#where-the-answers-stop" aria-label="Link to this section">#</a>
+Where the answers stop</h2>
+<p>Five of those seven candidates are safe, for two different kinds of reason.</p>
+<p><code>ConnectionId</code> is a Cow-like type: <code>enum { Vec(Vec&lt;u8&gt;), Ref(&amp;'a [u8]) }</code>.
+<code>quiche_conn_source_id</code> drops one, but it drops the <em>borrowed</em> variant, so the
+drop frees nothing and the pointer stays valid. The call graph sees
+<code>drop_glue::&lt;ConnectionId&gt;</code> either way and cannot separate the two.</p>
+<p><code>quiche_accept</code> and <code>quiche_conn_new_with_tls</code> are the cheaper kind of wrong.
+Both call <code>Option::as_ref</code>, a borrow helper that hands out no raw pointer at
+all, and my filter matched on the method name. Neither function gives C a
+pointer into anything it later drops, so the pattern never applied to them.</p>
+<p><code>quiche_h3_take_last_priority_update</code> is more interesting. It takes a pointer
+into an owned <code>Vec&lt;u8&gt;</code>, passes it to a callback supplied by C, and frees the
+buffer when the callback returns. Whether that is safe depends on what the C
+callback does with the pointer, and the contract lives in a header comment that
+nothing enforces. I called it safe above by reading the Rust and assuming the C
+behaves. That was an assumption rather than an analysis.</p>
+<p>The Cow case and the callback case ask the same question: does this pointer
+outlive the value behind it? <code>rllvm-query</code> does not perform data-flow analysis,
+so it cannot answer either.
+The same limit shows up at indirect calls, where <code>indirect-targets</code> reports a
+target set when LLVM recorded one and reports the callback above as unresolved.
+Tracking a value through a store, which is how the C side would retain that
+pointer, is outside what a call graph describes at all.</p>
+<h2 id="what-comes-next"><a class="zola-anchor" href="#what-comes-next" aria-label="Link to this section">#</a>
+What comes next</h2>
+<p>Two things, in the order I care about them.</p>
+<p>The queries in this post form a short procedure: is the function here, does
+anything call it, what happens after the crossing. Two of those steps can end
+the investigation early. That belongs in tooling rather than in a blog post.
+<a rel="noopener external" target="_blank" href="https://github.com/h1994st/rllvm/issues/188">Issue #188</a> is a Claude Code
+plugin bundling the MCP server with two skills: how to capture bitcode for the
+build in front of you, and how to read an answer without over-claiming it. An
+assistant reading source approximates a call graph by matching names, and across
+an FFI boundary it cannot even approximate. The early exits matter most, because
+"the version range matches, therefore you are affected" is the failure an agent
+would otherwise reproduce at scale.</p>
+<p>The second is the data flow this post kept needing. I would rather borrow that
+than build it. <a rel="noopener external" target="_blank" href="https://github.com/secure-software-engineering/phasar">PhASAR</a>
+and <a rel="noopener external" target="_blank" href="https://github.com/SVF-tools/SVF">SVF</a> have solved pointer and value
+analysis for years, and have always taken whole-program C and C++ bitcode.
+Getting that file out of a real build was the awkward step they were waiting on.
+A module with Rust in it too is new input for tools that already work. Running
+them behind the same query contract
+(<a rel="noopener external" target="_blank" href="https://github.com/h1994st/rllvm/issues/149">#149</a>,
+<a rel="noopener external" target="_blank" href="https://github.com/h1994st/rllvm/issues/242">#242</a>) is what would separate a
+borrowed <code>ConnectionId</code> from an owned one, and say whether a pointer escapes
+past a drop. The output should stay evidence: sources, sinks, and the path. A
+tool that reports "vulnerable" without showing its work has only moved the
+guessing somewhere else.</p>
+<p>Indirect calls remain the hard problem they have always been. I do not expect
+that to change soon, and the honest move is to keep saying so in the answer.</p>
+<hr />
+<p>This post was drafted with Claude Code. Every command in it was run and every
+result verified by me.</p>
+<p><code>rllvm</code> is Apache-2.0 and available on
+<a rel="noopener external" target="_blank" href="https://github.com/h1994st/rllvm">GitHub</a>, including the
+<a rel="noopener external" target="_blank" href="https://github.com/h1994st/rllvm/tree/main/examples/ffi">FFI example</a> and
+<a rel="noopener external" target="_blank" href="https://github.com/h1994st/rllvm/tree/main/examples/external/quiche">notes on quiche</a>
+used here. Measurements were taken on arm64 macOS against quiche 0.29.1 and
+0.29.2, built with rustc 1.98.0 and read with LLVM 23.1.1.</p>
+
+    
+<nav class="site-prev-next" aria-label="More posts"><a href="https://shengtuo.me/blog/beyond-single-bitcode-file/">← Older: Beyond a Single Bitcode File</a><a href="https://shengtuo.me/blog/chromatron-remake/">Newer: Playing Chromatron Again, Twenty Years Later →</a>
+</nav>
+
+  </article>
+</main>
+
+  <footer class="f-footer"><div class="f-footer__cats" aria-hidden="true"></div>
+  <ul class="f-social site-footer-social" aria-label="Elsewhere">
+    <li><a class="f-social__link" href="https://github.com/h1994st" rel="me noopener"><span class="f-icon f-icon--github" aria-hidden="true"></span><span class="f-visually-hidden">GitHub</span></a></li>
+    <li><a class="f-social__link" href="https://scholar.google.com/citations?user=VOefXMMAAAAJ" rel="me noopener"><span class="f-icon f-icon--google-scholar" aria-hidden="true"></span><span class="f-visually-hidden">Google Scholar</span></a></li>
+    <li><a class="f-social__link" href="https://www.linkedin.com/in/shengtuo/" rel="me noopener"><span class="f-icon f-icon--linkedin" aria-hidden="true"></span><span class="f-visually-hidden">LinkedIn</span></a></li>
+    <li><a class="f-social__link" href="https://x.com/ShengtuoHu" rel="me noopener"><span class="f-icon f-icon--x" aria-hidden="true"></span><span class="f-visually-hidden">X</span></a></li>
+    <li><a class="f-social__link" href="https://www.instagram.com/hst_nullderef/" rel="me noopener"><span class="f-icon f-icon--instagram" aria-hidden="true"></span><span class="f-visually-hidden">Instagram</span></a></li>
+  </ul>
+  <p class="site-footer-links"><a href="https://shengtuo.me/blog/">Blog</a> · <a href="https://shengtuo.me/notebook/">Notebook</a> · <a href="https://shengtuo.me/misc/">Misc.</a> · 
+    <a href="https://shengtuo.me/atom.xml">Feed</a>
+  </p>
+  <p>© 2026 Shengtuo Hu</p>
+</footer>
+
+  <dialog class="f-sheet" id="site-search" aria-label="Search" data-index="https://shengtuo.me/search_index.en.json">
+  <div class="f-sheet__panel">
+    <input class="f-input f-search" type="search" placeholder="Search posts and notes" aria-label="Search" autocomplete="off" />
+    <p class="f-meta site-search-status" role="status"></p>
+    <ol class="site-search-results"></ol>
+  </div>
+</dialog>
+<script type="module" src="https://shengtuo.me/js/site/search.js"></script>
+
+  
+  <script type="module" src="https://shengtuo.me/vendor/facet/dist/js/facet.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/cats.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/code-copy.js"></script><script type="module" src="https://shengtuo.me/js/site/share.js"></script>
+
+</body>
+</html>

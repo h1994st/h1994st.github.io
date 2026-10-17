@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en" data-accent="moss" data-f-ga4="G-ZMH6NLL7C7">
+<head>
+<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" /><script>try{var t=localStorage.getItem("facet-theme");if(/^(dark|light|auto)$/.test(t))document.documentElement.dataset.theme=t}catch(e){}</script>
+	<meta name="description" content="rllvm and rules_rllvm solve the same problem from opposite ends: one poses as your compiler, the other asks the build system." />
+	<meta name="author" content="Shengtuo Hu" />
+	<meta name="theme-color" content="#13161c" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f5f7f9" media="(prefers-color-scheme: light)" />
+	<title>Two Ways to Extract Whole-Program Bitcode - nu1lptr</title>
+	<link rel="canonical" href="https://shengtuo.me/blog/whole-program-bitcode/" /><link rel="icon" href="https://shengtuo.me/favicon.ico" sizes="32x32" />
+	<link rel="icon" href="https://shengtuo.me/favicon.svg" type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="https://shengtuo.me/apple-touch-icon.png" />
+	<link rel="alternate" type="application/rss+xml" title="nu1lptr - RSS Feed" href="https://shengtuo.me/rss.xml" />
+	<link rel="alternate" type="application/atom+xml" title="nu1lptr - Atom Feed" href="https://shengtuo.me/atom.xml" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/facet.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/cast/cast-layered.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/icons.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/giallo.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/site.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/diagrams.css" />
+
+	<meta property="og:site_name" content="nu1lptr" /><meta property="og:title" content="Two Ways to Extract Whole-Program Bitcode" />
+	<meta property="og:url" content="https://shengtuo.me/blog/whole-program-bitcode/" />
+	<meta property="og:description" content="rllvm and rules_rllvm solve the same problem from opposite ends: one poses as your compiler, the other asks the build system." />
+	<meta property="og:image" content="https://shengtuo.me/cards/blog/whole-program-bitcode.png" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="article:published_time" content="2026-09-07T18:00:00-07:00" />
+	<meta property="article:author" content="Shengtuo Hu" />
+	<meta property="article:tag" content="rllvm" />
+	<meta property="article:tag" content="LLVM" />
+	<meta property="article:tag" content="Bazel" />
+	<meta property="article:tag" content="Rust" /><meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Two Ways to Extract Whole-Program Bitcode" />
+	<meta name="twitter:description" content="rllvm and rules_rllvm solve the same problem from opposite ends: one poses as your compiler, the other asks the build system." />
+	<meta name="twitter:image" content="https://shengtuo.me/cards/blog/whole-program-bitcode.png" />
+	<meta name="twitter:site" content="@ShengtuoHu" />
+	<meta name="twitter:creator" content="@ShengtuoHu" /><script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	"@id": "https://shengtuo.me/blog/whole-program-bitcode/#article",
+	"mainEntityOfPage": "https://shengtuo.me/blog/whole-program-bitcode/",
+	"url": "https://shengtuo.me/blog/whole-program-bitcode/",
+	"headline": "Two Ways to Extract Whole-Program Bitcode",
+	"description": "rllvm and rules_rllvm solve the same problem from opposite ends: one poses as your compiler, the other asks the build system.",
+	"datePublished": "2026-09-07T18:00:00-07:00",
+	"dateModified": "2026-09-07T18:00:00-07:00",
+	"image": "https://shengtuo.me/cards/blog/whole-program-bitcode.png",
+	"keywords": ["rllvm","LLVM","Bazel","Rust"],
+	"inLanguage": "en",
+	"author": {
+		"@type": "Person",
+		"@id": "https://shengtuo.me/#person",
+		"name": "Shengtuo Hu",
+		"url": "https://shengtuo.me/"
+	},
+	"publisher": { "@id": "https://shengtuo.me/#person" }
+}
+</script>
+
+
+
+</head>
+<body>
+  <a class="f-visually-hidden" href="#main">Skip to content</a>
+  <nav class="f-nav f-nav--fixed" aria-label="Site">
+  <a class="f-nav__brand" href="https://shengtuo.me">nu1lptr</a>
+  <a href="https://shengtuo.me/blog/" aria-current="page">Blog</a>
+  <a href="https://shengtuo.me/projects/">Projects</a>
+  <a href="https://shengtuo.me/resume/">Resume</a>
+  <button class="f-btn f-btn--quiet site-search-open" type="button" aria-label="Search" title="Search (/)" hidden>
+    <svg class="site-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+  </button>
+  <button class="f-theme-toggle" type="button" data-f-theme-toggle>Auto</button>
+</nav>
+
+  
+<main id="main" class="f-docs f-prose" data-f-code-ln="true" data-f-code-wrap="true" data-f-code-frame="false">
+  <nav class="f-toc" aria-label="On this page" data-f-scrollspy>
+  <p class="f-docs__label">On this page</p>
+  <a href="#rllvm-pose-as-the-compiler">rllvm: pose as the compiler</a><a class="site-toc-sub" href="#how-it-works">How it works</a><a class="site-toc-sub" href="#where-the-idea-came-from">Where the idea came from</a><a class="site-toc-sub" href="#what-rllvm-adds">What rllvm adds</a><a class="site-toc-sub" href="#what-it-costs">What it costs</a>
+  <a href="#rules-rllvm-ask-the-build-system">rules_rllvm: ask the build system</a><a class="site-toc-sub" href="#why-i-stopped-wrapping-rllvm">Why I stopped wrapping rllvm</a><a class="site-toc-sub" href="#how-it-works-1">How it works</a><a class="site-toc-sub" href="#what-living-in-the-graph-buys">What living in the graph buys</a><a class="site-toc-sub" href="#what-it-costs-1">What it costs</a>
+  <a href="#which-one-to-use">Which one to use</a>
+  <a href="#what-building-both-taught-me">What building both taught me</a>
+  <a href="#what-comes-next">What comes next</a>
+</nav>
+
+  <article class="site-post">
+<header class="f-reading__title">
+  <p class="f-kicker"><a href="https://shengtuo.me/blog/">nu1lptr&#39;s Blog</a></p>
+  <h1>Two Ways to Extract Whole-Program Bitcode</h1>
+  <p class="f-meta site-post-meta">
+    <time datetime="2026-09-07">Sep 7, 2026</time> · 14 min read · <a href="https://shengtuo.me/tags/rllvm/">rllvm</a> · <a href="https://shengtuo.me/tags/llvm/">LLVM</a> · <a href="https://shengtuo.me/tags/bazel/">Bazel</a> · <a href="https://shengtuo.me/tags/rust/">Rust</a> · <button class="f-btn f-btn--quiet site-share" type="button">Share</button><span class="site-share-status" role="status"></span>
+  </p>
+</header>
+
+    <p>A compiler sees one source file at a time. That is the whole design: hand it a file,
+get back an object file, repeat, and let the linker staple the results together. It
+works so well that we forget it is a constraint.</p>
+<p>It becomes a constraint the moment you want to analyze a program instead of build it.
+Checking a property that spans function boundaries, running a custom compiler pass
+over everything at once, auditing every call site of a risky API — each of these needs
+the whole program in one piece, in a form built for analysis rather than for
+execution. LLVM bitcode is that form: what the compiler works in after it has
+understood your code but before it has turned it into machine instructions.</p>
+<p>Getting bitcode for one file is easy. Getting it for a whole program, out of a real
+build, is not. The difficulty is not that the information is missing but that the
+build throws it away. After <code>make</code> finishes, nothing on disk records which source
+files went into which binary, or how each one was compiled. The linker knew, briefly,
+and did not write it down.</p>
+<p>I have built two tools that recover it. They share a name, a goal, and almost no code,
+because they come at the problem from opposite ends.</p>
+<h2 id="rllvm-pose-as-the-compiler"><a class="zola-anchor" href="#rllvm-pose-as-the-compiler" aria-label="Link to this section">#</a>
+rllvm: pose as the compiler</h2>
+<p><a rel="noopener external" target="_blank" href="https://shengtuo.me/rllvm/">rllvm</a> is a set of compiler wrappers written in Rust. You
+point your build at them and build normally:</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-7">export</span><span> CC</span><span class="z-3">=</span><span>rllvm-cc CXX</span><span class="z-3">=</span><span>rllvm-cxx</span></span>
+<span class="giallo-l"><span class="z-12">./configure</span><span class="z-3"> &amp;&amp;</span><span class="z-12"> make</span></span>
+<span class="giallo-l"><span class="z-12">rllvm-get-bc</span><span class="z-6"> ./myprogram</span><span class="z-1 z-i">      # produces myprogram.bc</span></span></code></pre><h3 id="how-it-works"><a class="zola-anchor" href="#how-it-works" aria-label="Link to this section">#</a>
+How it works</h3>
+<p>Underneath, each source file compiles twice: once to the object file your build
+expects, and once to bitcode written off to the side. The second copy then has to be
+findable again, and that is the interesting part. Every object file carries a small
+extra section — a labelled region of bytes that object files can hold alongside code
+and data — recording the path to that file's bitcode. The linker has no idea what that
+section means, so it does the one thing linkers do with sections they do not
+recognize: it concatenates them. The finished binary ends up carrying a complete list
+of the bitcode files that make it up, assembled by a tool that does not know it is
+helping.</p>
+<figure class="f-figure bc-fig bc-ledger" aria-label="Five source files each record one bitcode path, and the linker concatenates them into a single section naming the whole program">
+<ol>
+<li style="--i:0"><span class="src">parse.c</span><span class="tie" aria-hidden="true"></span><span class="bc">parse.bc</span></li>
+<li style="--i:1"><span class="src">lexer.c</span><span class="tie" aria-hidden="true"></span><span class="bc">lexer.bc</span></li>
+<li style="--i:2"><span class="src">codegen.c</span><span class="tie" aria-hidden="true"></span><span class="bc">codegen.bc</span></li>
+<li style="--i:3"><span class="src">util.c</span><span class="tie" aria-hidden="true"></span><span class="bc">util.bc</span></li>
+<li style="--i:4"><span class="src">main.c</span><span class="tie" aria-hidden="true"></span><span class="bc">main.bc</span></li>
+</ol>
+<figcaption>Each object file carries one line. The linker concatenates them into <b>__RLLVM,__rllvm_bc</b>, so the finished binary holds the whole list, and <b>rllvm-get-bc</b> reads it back out as <b>prog.bc</b>.</figcaption>
+</figure>
+<p>I still think that is a good trick. It borrows the linker as an accumulator, and it
+asks nothing of your project except permission to be its compiler — a knob every build
+system already has.</p>
+<h3 id="where-the-idea-came-from"><a class="zola-anchor" href="#where-the-idea-came-from" aria-label="Link to this section">#</a>
+Where the idea came from</h3>
+<p>The trick is not mine. <a rel="noopener external" target="_blank" href="https://github.com/travitch/whole-program-llvm">wllvm</a>
+established it years ago with Python wrappers that build each file normally, build it
+again as bitcode, and record where that bitcode landed in a section called <code>.llvm_bc</code>;
+a companion tool, <code>extract-bc</code>, reads the section back out of the finished binary and
+links the pieces together. <a rel="noopener external" target="_blank" href="https://github.com/SRI-CSL/gllvm">gllvm</a> is the same
+design rewritten in Go, and it runs faster for an unglamorous reason: it generates
+bitcode in parallel where the Python wrappers fork and wait. The two differ mostly in
+reach, as wllvm can drive gcc through the dragonegg plugin while gllvm is clang-only
+and its README rules out combining it with link-time optimization.</p>
+<p>rllvm is the third entry in that lineage, and the naming says so: <code>w</code> for
+whole-program, <code>g</code> for Go, <code>r</code> for Rust. If gllvm or wllvm already work for you, there
+is no urgency to switch.</p>
+<h3 id="what-rllvm-adds"><a class="zola-anchor" href="#what-rllvm-adds" aria-label="Link to this section">#</a>
+What rllvm adds</h3>
+<p>What rllvm adds, above all, is records that survive being moved. The original design
+writes down where each bitcode file landed as an absolute path, which holds up exactly
+as long as nothing moves. Rename the directory, run the build inside a container and
+read the results outside it, or reuse a cached object file that another machine
+compiled, and every recorded path names a directory that does not exist. What makes
+this particular failure unpleasant is that extraction does not stop; it simply
+resolves fewer files than it should and hands you a smaller program than you asked
+for. rllvm can record those paths relative to a root you name at extraction time
+instead. Because the section is plain text, both forms can appear in the same binary
+and objects built before the change keep working.</p>
+<p>The rest of what rllvm adds is reach. Turning on link-time optimization removes the
+object file that the original mechanism needs to write into, so rllvm records the path
+another way and hides the difference behind the same interface. Its rustc wrapper
+copes with cargo naming outputs its own way, so a cargo build gives back bitcode with
+dependency crates included. It produces whole-program bitcode for a linked WebAssembly
+module rather than only for the pieces that went into it. For projects too large to
+link in one pass it can stage the merge directory by directory, or produce an archive
+instead. And <code>rllvm-info</code> reports what a module actually contains, which is worth more
+than it sounds when the characteristic failure is an empty result.</p>
+<h3 id="what-it-costs"><a class="zola-anchor" href="#what-it-costs" aria-label="Link to this section">#</a>
+What it costs</h3>
+<p>The weaknesses follow from the same trick as the strengths. The section holds a path,
+not the bitcode, so the binary is not self-contained: <code>make clean</code> breaks it, moving
+the directory breaks it, and copying the binary to another machine breaks it. Storing
+the bitcode itself would fix this, and I have a working prototype, but bitcode is
+comparable to or larger than the object code it would ride along with, and I have not
+been willing to pay that in binary size. Compiling every file twice is a real tax on a
+large C++ project. And because a wrapper has to understand the compiler's command line
+well enough to know what is being built, one misread flag is enough to make bitcode
+stop appearing.</p>
+<p>Linkers supply the rest of the difficulty, and each lesson arrived the hard way.
+Nothing in the program references that extra section, so a linker that discards
+unreferenced data throws it away unless it is explicitly marked to keep. The
+WebAssembly linker deletes sections with certain LLVM-standard names while faithfully
+keeping every other custom section, which is exactly why rllvm's sections are not
+named after LLVM's.</p>
+<h2 id="rules-rllvm-ask-the-build-system"><a class="zola-anchor" href="#rules-rllvm-ask-the-build-system" aria-label="Link to this section">#</a>
+rules_rllvm: ask the build system</h2>
+<p><a rel="noopener external" target="_blank" href="https://shengtuo.me/rules_rllvm/">rules_rllvm</a> answers the same question for Bazel
+builds, and it does not use rllvm to do it.</p>
+<h3 id="why-i-stopped-wrapping-rllvm"><a class="zola-anchor" href="#why-i-stopped-wrapping-rllvm" aria-label="Link to this section">#</a>
+Why I stopped wrapping rllvm</h3>
+<p>I did not start from scratch. I started by wrapping rllvm inside Bazel rules — keep
+the wrappers, keep the sections, let Bazel drive them — and spent a while on it before
+concluding it could not be made to work properly.</p>
+<p>The obstacles were not details. Bazel keeps only the files an action declares in
+advance as its outputs, so bitcode written off to the side gets discarded when the
+action finishes and never comes back at all when the build runs on another machine.
+The absolute paths recorded in those sections are wrong on any machine but the one
+that compiled them, which quietly breaks a shared cache. Extraction afterwards is a
+separate pass Bazel knows nothing about, so none of it is incremental or cached. And
+depending on the rllvm binary tied the whole thing to one processor architecture,
+which meant it would not run on my own laptop. Working around all of that meant asking
+Bazel to stop doing the things people use Bazel for.</p>
+<p>So I stopped wrapping and started again on a better premise. Bazel already knows the
+dependency graph, and it already knows the exact command it used to compile every
+file, because it built that command itself. A wrapper under Bazel spends all its
+ingenuity recovering information that was never lost.</p>
+<h3 id="how-it-works-1"><a class="zola-anchor" href="#how-it-works-1" aria-label="Link to this section">#</a>
+How it works</h3>
+<p>These rules ask instead. They use a Bazel <em>aspect</em> — a piece of code that walks over
+the targets you already have and attaches extra work to them, without you editing a
+single build file. For each source file it finds, the aspect asks the toolchain for
+the compile command Bazel was going to run anyway, changes where the output goes, and
+declares the result as a proper build output. There is no compiler wrapper, nothing
+hidden inside object files, and no absolute path anywhere in the results.</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">bazel</span><span class="z-6"> build //:app_bc</span></span></code></pre><h3 id="what-living-in-the-graph-buys"><a class="zola-anchor" href="#what-living-in-the-graph-buys" aria-label="Link to this section">#</a>
+What living in the graph buys</h3>
+<p>The first thing this buys is that extraction costs nothing until somebody asks for it.
+The bitcode files are not part of what a target normally produces; they sit in a
+separate group you request by name, and Bazel runs work only when something needs its
+output. An ordinary build runs none of it. That is what makes it reasonable to leave
+these rules switched on in a repository other people share, because the people who
+never wanted bitcode never pay for it.</p>
+<p>The second is that every point in the dependency graph becomes an extraction point.
+The bitcode travels up the graph node by node, which makes a library just as
+addressable as a finished program. "Give me the bitcode for this one library, not
+linked into anything" is a request the wrapper approach cannot express at all, because
+reading those sections starts at the final binary.</p>
+<p>Handling shared dependencies is where this earns its keep: each point in the graph
+collects only its own source files, never its dependencies'. Folding a dependency's
+bitcode into everything that uses it would include a shared library twice, and merging
+then fails on the duplicate definitions. Instead the bitcode travels in a set that
+treats the same file as the same file, so when two libraries both depend on a third,
+the shared one contributes exactly one copy.</p>
+<figure class="f-figure bc-fig bc-graph" aria-label="A diamond dependency graph in which two libraries both depend on a third, which contributes one copy of its bitcode">
+<svg viewBox="0 0 420 300" role="img">
+<g class="edges">
+<line x1="172" y1="66" x2="112" y2="128"/>
+<line x1="248" y1="66" x2="308" y2="128"/>
+<line x1="112" y1="172" x2="172" y2="234"/>
+<line x1="308" y1="172" x2="248" y2="234"/>
+</g>
+<g class="node" style="--i:0">
+<rect x="155" y="22" width="110" height="44" rx="8"/>
+<text class="target" x="210" y="41">//:diamond</text>
+<text class="bc" x="210" y="57">diamond.bc</text>
+</g>
+<g class="node" style="--i:1">
+<rect x="37" y="128" width="110" height="44" rx="8"/>
+<text class="target" x="92" y="147">//:lib_a</text>
+<text class="bc" x="92" y="163">lib_a.bc</text>
+</g>
+<g class="node" style="--i:1">
+<rect x="273" y="128" width="110" height="44" rx="8"/>
+<text class="target" x="328" y="147">//:lib_b</text>
+<text class="bc" x="328" y="163">lib_b.bc</text>
+</g>
+<g class="node shared" style="--i:2">
+<rect x="155" y="234" width="110" height="44" rx="8"/>
+<text class="target" x="210" y="253">//:lib_c</text>
+<text class="bc" x="210" y="269">lib_c.bc</text>
+</g>
+</svg>
+<figcaption>Both paths down from <b>//:diamond</b> arrive at <b>//:lib_c</b>. Because the bitcode travels in a set keyed on file identity, <b>lib_c.bc</b> is built once and merged once. The edges are dashed because they are declared during analysis and run nothing until an output group asks for them.</figcaption>
+</figure>
+<p>The third is that the bitcode always matches the real compile. The aspect never
+interprets a command line; it asks the toolchain for the command Bazel had already
+built and changes only where the output goes. A wrapper has to understand flags it did
+not write, and anything it misreads becomes bitcode that quietly differs from the
+object that actually shipped. Here there is nothing to misread. For the same reason,
+the work behaves like every other step in the build: scheduled, parallelized, cached,
+and distributed across machines, with no special case for a shared cache because there
+are no absolute paths to go stale.</p>
+<h3 id="what-it-costs-1"><a class="zola-anchor" href="#what-it-costs-1" aria-label="Link to this section">#</a>
+What it costs</h3>
+<p>The cost of all this is that it works with Bazel and nothing else, and with a recent
+Bazel at that, since older-style workspace configuration is no longer supported. What
+makes the approach clean is exactly what makes it narrow.</p>
+<p>The smaller costs are worth naming too. A rule cannot mark itself as "do not build me
+by default," so bitcode targets get swept up by a build-everything command unless
+whoever writes them opts out. Running a one-off extraction without editing build files
+works, but the incantation is clumsy and easy to get subtly wrong. Because the aspect
+reuses the toolchain's own machinery, it is coupled to the internals of the LLVM and
+Rust rule sets, and an upstream release can require changes here; I took that deal
+deliberately, since deriving those commands independently would drift out of sync
+silently, which is worse. It is also early software: not yet in Bazel's central
+package registry, so depending on it takes an extra line. Objective-C works only on
+macOS and needs an extra flag, and Swift does not work yet because the bitcode it
+emits is newer than what the toolchain's LLVM tools will read.</p>
+<h2 id="which-one-to-use"><a class="zola-anchor" href="#which-one-to-use" aria-label="Link to this section">#</a>
+Which one to use</h2>
+<p>If you build with Bazel, use rules_rllvm. If you build with anything else, use rllvm.
+That is the honest short answer, and the second half covers most existing C and C++
+software.</p>
+<table><thead><tr><th></th><th>rllvm</th><th>rules_rllvm</th></tr></thead><tbody>
+<tr><td>Build system</td><td>Any</td><td>Bazel only</td></tr>
+<tr><td>How you adopt it</td><td>Set <code>CC</code> and build</td><td>Point an aspect at existing targets</td></tr>
+<tr><td>Extract from</td><td>The finished binary</td><td>Any library or binary in the graph</td></tr>
+<tr><td>Cost when unused</td><td>Every file compiles twice</td><td>Nothing runs</td></tr>
+<tr><td>Result</td><td>Points at bitcode by path</td><td>Ordinary build outputs</td></tr>
+<tr><td>Portability</td><td>The entire point</td><td>Not a goal</td></tr>
+</tbody></table>
+<p>The more useful question is what each tool assumes about your situation. Reach for
+rllvm when you do not control the build — third-party source, a vendored tree,
+reproducing somebody else's build — or when you need one method that behaves the same
+across many projects that share no build system. Reach for rules_rllvm when you are
+already using Bazel, and especially when you want bitcode for individual libraries,
+when your builds are cached or spread across machines, or when you cannot afford to
+double the cost of a build people run all day.</p>
+<p>Neither is a strict upgrade on the other. rllvm buys portability with a second compile
+and a result that points at files instead of containing them. rules_rllvm buys
+precision and costs nothing when idle, by giving up every build system but one.</p>
+<h2 id="what-building-both-taught-me"><a class="zola-anchor" href="#what-building-both-taught-me" aria-label="Link to this section">#</a>
+What building both taught me</h2>
+<p>Where you get into the build decides everything else. Both tools answer the same
+question, and nearly every difference between them follows from one choice about where
+to intervene. rllvm intervenes at the compiler, which every build system can be told
+to swap out, so it works everywhere and understands nothing about the project it sits
+inside. rules_rllvm intervenes at the build system, which understands everything and
+exists in exactly one place. Portability, cost, robustness, and what you can even
+extract were not four decisions. They were one, and I did not see that clearly until I
+had built the second tool.</p>
+<p>Recovering what somebody already knows is a losing game when you have the option of
+asking. rllvm's central trick reconstructs, after the fact, something the build never
+bothered to record. That is satisfying to make work, and it is also labor that exists
+only because nobody wrote the answer down. Under Bazel the answer is written down, and
+reconstructing it anyway means maintaining a careful parser for command lines that the
+build system generated itself. This does not make reconstruction bad. With make or
+autotools there is nobody to ask, and reconstruction is the only approach that works
+at all. It makes noticing which situation you are in the actual skill, because the
+answer is a property of the environment rather than of the problem.</p>
+<p>Trying to get both sets of benefits got me neither, which is what the pivot taught me.
+Wrapping rllvm inside Bazel rules looked like reuse: one mechanism, one codebase, a
+thin adapter. What it produced was the fragility of reconstruction plus a constant
+fight with the guarantees that make Bazel worth using. The two designs are not layers.
+They are alternatives, and the honest move was to stop making one wear the other as a
+costume.</p>
+<h2 id="what-comes-next"><a class="zola-anchor" href="#what-comes-next" aria-label="Link to this section">#</a>
+What comes next</h2>
+<p>Extraction is a means, not an end. A <code>.bc</code> file matters only because something else
+reads it, and plenty of things already do: symbolic execution engines like KLEE, and
+static analysis frameworks like SVF and Phasar, all take whole-program bitcode as
+their input. Getting that file out of a real build has always been the awkward step,
+which is why tools like these exist at all.</p>
+<p>The direction I find most interesting now is handing those facts to a coding
+assistant. An assistant reading your source approximates the call graph by matching
+names and patterns. It cannot know what actually reaches what once everything is
+linked, and indirect calls make the guess worse. Bitcode knows. A small query
+interface over a whole-program module — who calls this function, whether anything can
+reach that one, what an indirect call might actually target — turns a guess into a
+lookup. The answers have to come back as file and line numbers rather than as compiler
+IR, because that is where the work happens.</p>
+<p>For security review the useful output is evidence, not a verdict. Asking whether
+attacker-controlled input can reach a risky function is a reachability question, and
+the honest answer is the path itself, so a person can read those particular functions
+and decide. Static analysis over-approximates. A tool that reports "vulnerable"
+without showing its work has only moved the guessing somewhere else.</p>
+<p>None of this is built yet, and two things would decide whether it works. The bitcode
+has to be compiled with debug information and little optimization, or there is nothing
+to map back to source. Indirect calls remain the hard problem they have always been.
+But extraction that works per library and costs nothing when idle is a good substrate
+for a loop that asks a question, changes a file, and asks again.</p>
+<hr />
+<p>Both projects are Apache-2.0 and take issues and patches:
+<a rel="noopener external" target="_blank" href="https://github.com/h1994st/rllvm">rllvm</a> ·
+<a rel="noopener external" target="_blank" href="https://github.com/h1994st/rules_rllvm">rules_rllvm</a></p>
+
+    
+<aside class="site-backlinks">
+  <h2>Pages linking here</h2>
+  <ul><li><a href="https://shengtuo.me/blog/beyond-single-bitcode-file/">Beyond a Single Bitcode File</a></li><li><a href="https://shengtuo.me/blog/from-capture-to-query/">rllvm: From Capture to Query</a></li></ul>
+</aside>
+<nav class="site-prev-next" aria-label="More posts"><a href="https://shengtuo.me/blog/htb/editor/">← Older: Editor</a><a href="https://shengtuo.me/blog/beyond-single-bitcode-file/">Newer: Beyond a Single Bitcode File →</a>
+</nav>
+
+  </article>
+</main>
+
+  <footer class="f-footer"><div class="f-footer__cats" aria-hidden="true"></div>
+  <ul class="f-social site-footer-social" aria-label="Elsewhere">
+    <li><a class="f-social__link" href="https://github.com/h1994st" rel="me noopener"><span class="f-icon f-icon--github" aria-hidden="true"></span><span class="f-visually-hidden">GitHub</span></a></li>
+    <li><a class="f-social__link" href="https://scholar.google.com/citations?user=VOefXMMAAAAJ" rel="me noopener"><span class="f-icon f-icon--google-scholar" aria-hidden="true"></span><span class="f-visually-hidden">Google Scholar</span></a></li>
+    <li><a class="f-social__link" href="https://www.linkedin.com/in/shengtuo/" rel="me noopener"><span class="f-icon f-icon--linkedin" aria-hidden="true"></span><span class="f-visually-hidden">LinkedIn</span></a></li>
+    <li><a class="f-social__link" href="https://x.com/ShengtuoHu" rel="me noopener"><span class="f-icon f-icon--x" aria-hidden="true"></span><span class="f-visually-hidden">X</span></a></li>
+    <li><a class="f-social__link" href="https://www.instagram.com/hst_nullderef/" rel="me noopener"><span class="f-icon f-icon--instagram" aria-hidden="true"></span><span class="f-visually-hidden">Instagram</span></a></li>
+  </ul>
+  <p class="site-footer-links"><a href="https://shengtuo.me/blog/">Blog</a> · <a href="https://shengtuo.me/notebook/">Notebook</a> · <a href="https://shengtuo.me/misc/">Misc.</a> · 
+    <a href="https://shengtuo.me/atom.xml">Feed</a>
+  </p>
+  <p>© 2026 Shengtuo Hu</p>
+</footer>
+
+  <dialog class="f-sheet" id="site-search" aria-label="Search" data-index="https://shengtuo.me/search_index.en.json">
+  <div class="f-sheet__panel">
+    <input class="f-input f-search" type="search" placeholder="Search posts and notes" aria-label="Search" autocomplete="off" />
+    <p class="f-meta site-search-status" role="status"></p>
+    <ol class="site-search-results"></ol>
+  </div>
+</dialog>
+<script type="module" src="https://shengtuo.me/js/site/search.js"></script>
+
+  
+  <script type="module" src="https://shengtuo.me/vendor/facet/dist/js/facet.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/cats.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/code-copy.js"></script><script type="module" src="https://shengtuo.me/js/site/share.js"></script>
+
+</body>
+</html>

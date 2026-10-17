@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 700" role="img" aria-labelledby="t d">
+  <title id="t">How Chromatron Remake was made</title>
+  <desc id="d">Drawn as a Chromatron board. White light from the original PowerPC app passes through Ghidra, which decompiles it, and Claude Code, which reads it and writes the Rust. The Rust engine is a prism that splits the light into a red beam lighting the four Mac apps and a blue beam lighting the browser version. A green beam runs from the browser to me as the player, and from me back to Claude Code as feedback.</desc>
+  <style>
+    svg {
+      --p1: #ffffff; --p2: #f1f3f9; --p3: #e7eaf3; --edge: rgba(27,35,64,.10);
+      --grid: #1b2340; --grid-o: .06;
+      --tile1: #ffffff; --tile1-o: .95; --tile2: #eef1f8; --tile2-o: .95; --tile-edge: rgba(27,35,64,.16);
+      --ink: #1b2340; --sub: #5b6585; --key: #46506e;
+      --white: #9aa4c4; --red: #f0213a; --green: #08b85a; --blue: #2457ff; --spark: #f2a900;
+      --hot-white: #5c6890; --hot-red: #b8001c; --hot-green: #00813d; --hot-blue: #0a35c8;
+      --glow-o: .28;
+    }
+    @media (prefers-color-scheme: dark) {
+      svg {
+        --p1: #1a2142; --p2: #0b0d18; --p3: #06070b; --edge: rgba(220,230,255,.06);
+        --grid: #96aaff; --grid-o: .07;
+        --tile1: #aabeff; --tile1-o: .12; --tile2: #788cdc; --tile2-o: .03; --tile-edge: rgba(220,230,255,.16);
+        --ink: #e1e8ff; --sub: #a9b6dc; --key: #a9b6dc;
+        --white: #ffffff; --red: #ff2234; --green: #18ff76; --blue: #2860ff; --spark: #ffe23c;
+        --hot-white: #ffffff; --hot-red: #ffc8c4; --hot-green: #d2ffe2; --hot-blue: #d6e2ff;
+        --glow-o: .45;
+      }
+    }
+    text { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .name { fill: var(--ink); font-size: 14px; font-weight: 750; }
+    .sub { fill: var(--sub); font-size: 12px; font-weight: 500; }
+    .key { fill: var(--key); font-size: 12px; font-weight: 500; }
+    .s1 { stop-color: var(--p1); } .s2 { stop-color: var(--p2); } .s3 { stop-color: var(--p3); }
+    .t1 { stop-color: var(--tile1); stop-opacity: var(--tile1-o); }
+    .t2 { stop-color: var(--tile2); stop-opacity: var(--tile2-o); }
+    .gridline { stroke: var(--grid); stroke-opacity: var(--grid-o); }
+    .panel-edge { fill: none; stroke: var(--edge); }
+    .tile { fill: url(#glass); stroke: var(--tile-edge); }
+    .icon { fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .icon-fill { fill: var(--ink); }
+    .spark { fill: var(--spark); }
+    .glow { fill: none; stroke-width: 9; stroke-linecap: round; opacity: var(--glow-o); filter: url(#blur); }
+    .core { fill: none; stroke-width: 2.6; stroke-linecap: round; }
+    .photon { fill: none; stroke-width: 4.5; stroke-linecap: round; stroke-dasharray: 2 34;
+              animation: flow 1.6s linear infinite; }
+    .white { stroke: var(--white); } .red { stroke: var(--red); } .green { stroke: var(--green); } .blue { stroke: var(--blue); }
+    .photon.white { stroke: var(--hot-white); } .photon.red { stroke: var(--hot-red); }
+    .photon.green { stroke: var(--hot-green); } .photon.blue { stroke: var(--hot-blue); }
+    .ring { fill: none; stroke-width: 2.6; }
+    .halo { animation: pulse 2.4s ease-in-out infinite; }
+    .rays { stroke-width: 2; stroke-linecap: round; animation: pulse 2.4s ease-in-out infinite; }
+    .twinkle { animation: pulse 1.8s ease-in-out infinite; }
+    @keyframes flow { to { stroke-dashoffset: -36; } }
+    @keyframes pulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) {
+      .photon, .halo, .rays, .twinkle { animation: none; }
+    }
+  </style>
+  <defs>
+    <radialGradient id="panel" cx="45%" cy="35%" r="80%">
+      <stop class="s1" offset="0"/><stop class="s2" offset=".55"/><stop class="s3" offset="1"/>
+    </radialGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop class="t1" offset="0"/><stop class="t2" offset="1"/>
+    </linearGradient>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path class="gridline" d="M36 0H0V36" fill="none"/>
+    </pattern>
+    <filter id="blur" filterUnits="userSpaceOnUse" x="0" y="0" width="360" height="700">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
+  </defs>
+  <rect width="360" height="700" rx="18" fill="url(#panel)"/>
+  <rect width="360" height="700" rx="18" fill="url(#grid)"/>
+  <rect x=".5" y=".5" width="359" height="699" rx="17.5" class="panel-edge"/>
+  <path class="glow white" d="M60 92V138"/>
+  <path class="core white" d="M60 92V138"/>
+  <path class="photon white" d="M60 92V138"/>
+  <path class="glow white" d="M60 202V248"/>
+  <path class="core white" d="M60 202V248"/>
+  <path class="photon white" d="M60 202V248"/>
+  <path class="glow white" d="M60 312V358"/>
+  <path class="core white" d="M60 312V358"/>
+  <path class="photon white" d="M60 312V358"/>
+  <path class="glow red" d="M52 422V488"/>
+  <path class="core red" d="M52 422V488"/>
+  <path class="photon red" d="M52 422V488"/>
+  <path class="glow blue" d="M72 422V452H200V488"/>
+  <path class="core blue" d="M72 422V452H200V488"/>
+  <path class="photon blue" d="M72 422V452H200V488"/>
+  <path class="glow green" d="M232 520H278"/>
+  <path class="core green" d="M232 520H278"/>
+  <path class="photon green" d="M232 520H278"/>
+  <path class="glow green" d="M310 488V236H84V248"/>
+  <path class="core green" d="M310 488V236H84V248"/>
+  <path class="photon green" d="M310 488V236H84V248"/>
+  <rect class="tile" x="28.0" y="28.0" width="64" height="64" rx="14"/>
+  <rect class="icon" x="48" y="45" width="24" height="30" rx="3.5"/>
+  <rect class="icon" x="52" y="49" width="16" height="12" rx="1.5"/>
+  <path class="icon" d="M61 68H67"/>
+  <circle class="spark twinkle" cx="55" cy="68" r="1.6"/>
+  <text class="name" x="104" y="58" text-anchor="start">Chromatron.app</text>
+  <text class="sub" x="104" y="76" text-anchor="start">PowerPC, 2003</text>
+  <rect class="tile" x="28.0" y="138.0" width="64" height="64" rx="14"/>
+  <circle class="icon" cx="57" cy="167" r="10"/>
+  <path class="icon" d="M64.5 174.5L73 183" stroke-width="3"/>
+  <text class="icon-fill" x="57" y="170.5" text-anchor="middle" font-size="8.5" font-weight="800" font-family="ui-monospace, Menlo, monospace">01</text>
+  <text class="name" x="104" y="168" text-anchor="start">Ghidra</text>
+  <text class="sub" x="104" y="186" text-anchor="start">decompiles it</text>
+  <rect class="tile" x="28.0" y="248.0" width="64" height="64" rx="14"/>
+  <rect class="icon" x="45" y="269" width="30" height="23" rx="3.5"/>
+  <path class="icon" d="M51 277L56 281.5L51 286M59 286H66"/>
+  <path class="spark twinkle" d="M74 258l2.2 5.3 5.3 2.2-5.3 2.2-2.2 5.3-2.2-5.3-5.3-2.2 5.3-2.2z"/>
+  <text class="name" x="104" y="278" text-anchor="start">Claude Code</text>
+  <text class="sub" x="104" y="296" text-anchor="start">reads it, writes Rust</text>
+  <rect class="tile" x="28.0" y="358.0" width="64" height="64" rx="14"/>
+  <path class="icon" d="M60 375L75 401H45Z" stroke-width="2"/>
+  <path class="icon" d="M57 384L65 398" stroke-opacity=".35"/>
+  <text class="name" x="104" y="388" text-anchor="start">Rust engine</text>
+  <text class="sub" x="104" y="406" text-anchor="start">one for all four games</text>
+  <rect class="tile" x="28.0" y="488.0" width="64" height="64" rx="14"/>
+  <circle class="glow red halo" cx="60" cy="520" r="10"/>
+  <circle class="ring red" cx="60" cy="520" r="10"/>
+  <circle class="red" cx="60" cy="520" r="3.5" style="fill: var(--red); stroke: none"/>
+  <path class="rays red" d="M75 520L80 520M45 520L40 520M60 535L60 540M60 505L60 500M70.65 530.65L74.2 534.2M49.35 530.65L45.8 534.2M70.65 509.35L74.2 505.8M49.35 509.35L45.8 505.8"/>
+  <rect class="tile" x="168.0" y="488.0" width="64" height="64" rx="14"/>
+  <circle class="glow blue halo" cx="200" cy="520" r="10"/>
+  <circle class="ring blue" cx="200" cy="520" r="10"/>
+  <circle class="blue" cx="200" cy="520" r="3.5" style="fill: var(--blue); stroke: none"/>
+  <path class="rays blue" d="M215 520L220 520M185 520L180 520M200 535L200 540M200 505L200 500M210.65 530.65L214.2 534.2M189.35 530.65L185.8 534.2M210.65 509.35L214.2 505.8M189.35 509.35L185.8 505.8"/>
+  <rect class="tile" x="278.0" y="488.0" width="64" height="64" rx="14"/>
+  <path class="icon" d="M299 511H321a7 7 0 0 1 7 6.5l1 7.5a4.5 4.5 0 0 1-8 3.2l-3.2-3.7H301.8l-3.2 3.7a4.5 4.5 0 0 1-8-3.2l1-7.5A7 7 0 0 1 299 511Z"/>
+  <path class="icon" d="M299 519h7M302.5 515.5v7"/>
+  <circle class="icon-fill" cx="316" cy="517.5" r="1.9"/>
+  <circle class="icon-fill" cx="320" cy="521.5" r="1.9"/>
+  <text class="name" x="60" y="576" text-anchor="middle">4 Mac apps</text>
+  <text class="sub" x="60" y="594" text-anchor="middle">Apple Silicon</text>
+  <text class="name" x="200" y="576" text-anchor="middle">Browser</text>
+  <text class="sub" x="200" y="594" text-anchor="middle">phones too</text>
+  <text class="name" x="310" y="576" text-anchor="middle">Me</text>
+  <text class="sub" x="310" y="594" text-anchor="middle">playing it</text>
+  <path class="core white" d="M24 630H48"/>
+  <text class="key" x="58" y="634">white light: the original game</text>
+  <path class="core red" d="M24 654H34"/>
+  <path class="core blue" d="M38 654H48"/>
+  <text class="key" x="58" y="658">red and blue: what came out</text>
+  <path class="core green" d="M24 678H48"/>
+  <text class="key" x="58" y="682">green: me, playing and reporting back</text>
+</svg>

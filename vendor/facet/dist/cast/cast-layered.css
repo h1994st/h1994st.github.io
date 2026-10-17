@@ -1,0 +1,3 @@
+/* facet file (not an upstream copy): loads the verbatim cast.css into the facet.cast layer, so
+   facet's component rules and unlayered site CSS both beat it. Consumers link this file. */
+@import url("cast.css") layer(facet.cast);

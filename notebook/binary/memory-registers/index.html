@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en" data-accent="moss" data-f-ga4="G-ZMH6NLL7C7">
+<head>
+<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" /><script>try{var t=localStorage.getItem("facet-theme");if(/^(dark|light|auto)$/.test(t))document.documentElement.dataset.theme=t}catch(e){}</script>
+	<meta name="description" content="How x86-64 general-purpose registers map onto the process memory layout, and how stack frames are built and torn down across calls." />
+	<meta name="author" content="Shengtuo Hu" />
+	<meta name="theme-color" content="#13161c" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f5f7f9" media="(prefers-color-scheme: light)" />
+	<title>Registers and Memory Layout - nu1lptr</title>
+	<link rel="canonical" href="https://shengtuo.me/notebook/binary/memory-registers/" /><link rel="icon" href="https://shengtuo.me/favicon.ico" sizes="32x32" />
+	<link rel="icon" href="https://shengtuo.me/favicon.svg" type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="https://shengtuo.me/apple-touch-icon.png" />
+	<link rel="alternate" type="application/rss+xml" title="nu1lptr - RSS Feed" href="https://shengtuo.me/rss.xml" />
+	<link rel="alternate" type="application/atom+xml" title="nu1lptr - Atom Feed" href="https://shengtuo.me/atom.xml" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/facet.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/cast/cast-layered.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/icons.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/giallo.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/site.css" />
+
+	<meta property="og:site_name" content="nu1lptr" /><meta property="og:title" content="Registers and Memory Layout" />
+	<meta property="og:url" content="https://shengtuo.me/notebook/binary/memory-registers/" />
+	<meta property="og:description" content="How x86-64 general-purpose registers map onto the process memory layout, and how stack frames are built and torn down across calls." />
+	<meta property="og:image" content="https://shengtuo.me/card.png" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" /><meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Registers and Memory Layout" />
+	<meta name="twitter:description" content="How x86-64 general-purpose registers map onto the process memory layout, and how stack frames are built and torn down across calls." />
+	<meta name="twitter:image" content="https://shengtuo.me/card.png" />
+	<meta name="twitter:site" content="@ShengtuoHu" />
+	<meta name="twitter:creator" content="@ShengtuoHu" />
+
+
+</head>
+<body>
+  <a class="f-visually-hidden" href="#main">Skip to content</a>
+  <nav class="f-nav f-nav--fixed" aria-label="Site">
+  <a class="f-nav__brand" href="https://shengtuo.me">nu1lptr</a>
+  <a href="https://shengtuo.me/blog/">Blog</a>
+  <a href="https://shengtuo.me/projects/">Projects</a>
+  <a href="https://shengtuo.me/resume/">Resume</a>
+  <button class="f-btn f-btn--quiet site-search-open" type="button" aria-label="Search" title="Search (/)" hidden>
+    <svg class="site-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+  </button>
+  <button class="f-theme-toggle" type="button" data-f-theme-toggle>Auto</button>
+</nav>
+
+  
+<main id="main" class="f-docs f-prose" data-f-code-ln="true" data-f-code-wrap="true" data-f-code-frame="false">
+  <nav class="f-toc" aria-label="On this page" data-f-scrollspy>
+  <p class="f-docs__label">On this page</p>
+  <a href="#registers-x64">Registers (x64)</a>
+  <a href="#memory-layout">Memory Layout</a><a class="site-toc-sub" href="#stack-frame-layout">Stack Frame Layout</a><a class="site-toc-sub" href="#position-independent-executables-pie">Position Independent Executables (PIE)</a><a class="site-toc-sub" href="#heap">Heap</a>
+  <a href="#references">References</a>
+</nav>
+
+  <article class="site-post">
+<header class="f-reading__title">
+  <p class="f-kicker"><a href="https://shengtuo.me/notebook/binary/">Binary Analysis and Exploitation</a></p>
+  <h1>Registers and Memory Layout</h1>
+</header>
+
+    <h2 id="registers-x64"><a class="zola-anchor" href="#registers-x64" aria-label="Link to this section">#</a>
+Registers (x64)</h2>
+<table><thead><tr><th>Register</th><th>Low 32-bits</th><th>Low 16-bits</th><th>Low 8-bits</th><th>Notes</th></tr></thead><tbody>
+<tr><td><code>%rax</code></td><td><code>%eax</code></td><td><code>%ax</code></td><td><code>%al</code></td><td>a function's return value, caller-saved</td></tr>
+<tr><td><code>%rdi</code></td><td><code>%edi</code></td><td><code>%di</code></td><td><code>%dil</code></td><td>1st argument of a function, caller-saved</td></tr>
+<tr><td><code>%rsi</code></td><td><code>%esi</code></td><td><code>%si</code></td><td><code>%sil</code></td><td>2nd argument of a function, caller-saved</td></tr>
+<tr><td><code>%rdx</code></td><td><code>%edx</code></td><td><code>%dx</code></td><td><code>%dl</code></td><td>3rd argument of a function, caller-saved</td></tr>
+<tr><td><code>%rcx</code></td><td><code>%ecx</code></td><td><code>%cx</code></td><td><code>%cl</code></td><td>4th argument of a function, caller-saved</td></tr>
+<tr><td><code>%r8</code></td><td><code>%r8d</code></td><td><code>%r8w</code></td><td><code>%r8b</code></td><td>5th argument of a function, caller-saved</td></tr>
+<tr><td><code>%r9</code></td><td><code>%r9d</code></td><td><code>%r9w</code></td><td><code>%r9b</code></td><td>6th argument of a function, caller-saved</td></tr>
+<tr><td><code>%r10</code></td><td><code>%r10d</code></td><td><code>%r10w</code></td><td><code>%r10b</code></td><td>temporary register, caller-saved</td></tr>
+<tr><td><code>%r11</code></td><td><code>%r11d</code></td><td><code>%r11w</code></td><td><code>%r11b</code></td><td>temporary register, caller-saved</td></tr>
+<tr><td><code>%rbp</code></td><td><code>%ebp</code></td><td><code>%bp</code></td><td><code>%bpl</code></td><td>base pointer, pointing to the base of the current stack frame, callee-saved</td></tr>
+<tr><td><code>%rsp</code></td><td><code>%esp</code></td><td><code>%sp</code></td><td><code>%spl</code></td><td>stack pointer, pointing to the topmost element in the stack, callee-saved</td></tr>
+<tr><td><code>%rbx</code></td><td><code>%ebx</code></td><td><code>%bx</code></td><td><code>%bl</code></td><td>local variable, callee-saved</td></tr>
+<tr><td><code>%r12</code></td><td><code>%r12d</code></td><td><code>%r12w</code></td><td><code>%r12b</code></td><td>local variable, callee-saved</td></tr>
+<tr><td><code>%r13</code></td><td><code>%r13d</code></td><td><code>%r13w</code></td><td><code>%r13b</code></td><td>local variable, callee-saved</td></tr>
+<tr><td><code>%r14</code></td><td><code>%r14d</code></td><td><code>%r14w</code></td><td><code>%r14b</code></td><td>local variable, callee-saved</td></tr>
+<tr><td><code>%r15</code></td><td><code>%r15d</code></td><td><code>%r15w</code></td><td><code>%r15b</code></td><td>local variable, callee-saved</td></tr>
+<tr><td><code>%rip</code></td><td></td><td></td><td></td><td>instruction pointer</td></tr>
+</tbody></table>
+<h2 id="memory-layout"><a class="zola-anchor" href="#memory-layout" aria-label="Link to this section">#</a>
+Memory Layout</h2>
+<p><img src="https://shengtuo.me/notebook/binary/memory-registers/Memory-Layout-of-C-Program.webp" alt="memory layout" /></p>
+<h3 id="stack-frame-layout"><a class="zola-anchor" href="#stack-frame-layout" aria-label="Link to this section">#</a>
+Stack Frame Layout</h3>
+<p>A stack is allocated at a high address and grows towards lower addresses.</p>
+<p><img src="https://shengtuo.me/notebook/binary/memory-registers/x64_frame_nonleaf.png" alt="stack frame layout" /></p>
+<h3 id="position-independent-executables-pie"><a class="zola-anchor" href="#position-independent-executables-pie" aria-label="Link to this section">#</a>
+Position Independent Executables (PIE)</h3>
+<p>The memory addresses are not fully randomized, particularly the lower 3 bits of the base address, even when PIE is enabled.</p>
+<pre class="giallo z-code" data-lang="plain" data-wrap="false"><code data-lang="plain" data-wrap="false"><span class="giallo-l"><span aria-hidden="true" class="giallo-ln"> 1</span><span>pwndbg&gt; info proc mappings</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln"> 2</span><span>process 67443</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln"> 3</span><span>Mapped address spaces:</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln"> 4</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln"> 5</span><span>Start Addr         End Addr           Size               Offset             Perms File</span></span>
+<span class="giallo-l z-hl"><span aria-hidden="true" class="giallo-ln"> 6</span><span>0x0000555555554000 0x0000555555555000 0x1000             0x0                r--p  /ptr/vuln</span></span>
+<span class="giallo-l z-hl"><span aria-hidden="true" class="giallo-ln"> 7</span><span>0x0000555555555000 0x0000555555556000 0x1000             0x1000             r-xp  /ptr/vuln</span></span>
+<span class="giallo-l z-hl"><span aria-hidden="true" class="giallo-ln"> 8</span><span>0x0000555555556000 0x0000555555557000 0x1000             0x2000             r--p  /ptr/vuln</span></span>
+<span class="giallo-l z-hl"><span aria-hidden="true" class="giallo-ln"> 9</span><span>0x0000555555557000 0x0000555555558000 0x1000             0x2000             r--p  /ptr/vuln</span></span>
+<span class="giallo-l z-hl"><span aria-hidden="true" class="giallo-ln">10</span><span>0x0000555555558000 0x0000555555559000 0x1000             0x3000             rw-p  /ptr/vuln</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">11</span><span>0x00007ffff7c00000 0x00007ffff7c28000 0x28000            0x0                r--p  /usr/lib/x86_64-linux-gnu/libc.so.6</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">12</span><span>0x00007ffff7c28000 0x00007ffff7db0000 0x188000           0x28000            r-xp  /usr/lib/x86_64-linux-gnu/libc.so.6</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">13</span><span>0x00007ffff7db0000 0x00007ffff7dff000 0x4f000            0x1b0000           r--p  /usr/lib/x86_64-linux-gnu/libc.so.6</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">14</span><span>0x00007ffff7dff000 0x00007ffff7e03000 0x4000             0x1fe000           r--p  /usr/lib/x86_64-linux-gnu/libc.so.6</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">15</span><span>0x00007ffff7e03000 0x00007ffff7e05000 0x2000             0x202000           rw-p  /usr/lib/x86_64-linux-gnu/libc.so.6</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">16</span><span>0x00007ffff7e05000 0x00007ffff7e12000 0xd000             0x0                rw-p</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">17</span><span>0x00007ffff7fa0000 0x00007ffff7fa3000 0x3000             0x0                rw-p</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">18</span><span>0x00007ffff7fbd000 0x00007ffff7fbf000 0x2000             0x0                rw-p</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">19</span><span>0x00007ffff7fbf000 0x00007ffff7fc1000 0x2000             0x0                r--p  [vvar]</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">20</span><span>0x00007ffff7fc1000 0x00007ffff7fc3000 0x2000             0x0                r--p  [vvar_vclock]</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">21</span><span>0x00007ffff7fc3000 0x00007ffff7fc5000 0x2000             0x0                r-xp  [vdso]</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">22</span><span>0x00007ffff7fc5000 0x00007ffff7fc6000 0x1000             0x0                r--p  /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">23</span><span>0x00007ffff7fc6000 0x00007ffff7ff1000 0x2b000            0x1000             r-xp  /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">24</span><span>0x00007ffff7ff1000 0x00007ffff7ffb000 0xa000             0x2c000            r--p  /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">25</span><span>0x00007ffff7ffb000 0x00007ffff7ffd000 0x2000             0x36000            r--p  /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">26</span><span>0x00007ffff7ffd000 0x00007ffff7fff000 0x2000             0x38000            rw-p  /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">27</span><span>0x00007ffffffdd000 0x00007ffffffff000 0x22000            0x0                rw-p  [stack]</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln">28</span><span>0xffffffffff600000 0xffffffffff601000 0x1000             0x0                --xp  [vsyscall]</span></span></code></pre><h3 id="heap"><a class="zola-anchor" href="#heap" aria-label="Link to this section">#</a>
+Heap</h3>
+<p>Unlike the stack, the heap segment starts at a low address and grows towards
+higher memory addresses. The basic concept in the heap meamory allocation is
+<code>chunk</code>, as defined below.</p>
+<pre class="giallo z-code" data-lang="c"><code data-lang="c"><span class="giallo-l"><span class="z-1 z-i">/*</span></span>
+<span class="giallo-l"><span class="z-1 z-i">  This struct declaration is misleading (but accurate and necessary).</span></span>
+<span class="giallo-l"><span class="z-1 z-i">  It declares a &quot;view&quot; into memory allowing access to necessary</span></span>
+<span class="giallo-l"><span class="z-1 z-i">  fields at known offsets from a given base. See explanation below.</span></span>
+<span class="giallo-l"><span class="z-1 z-i">*/</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">struct</span><span> malloc_chunk </span><span class="z-3">{</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-9">  INTERNAL_SIZE_T      mchunk_prev_size</span><span class="z-3">;</span><span class="z-1 z-i">  /* Size of previous chunk (if free).  */</span></span>
+<span class="giallo-l"><span class="z-9">  INTERNAL_SIZE_T      mchunk_size</span><span class="z-3">;</span><span class="z-1 z-i">       /* Size in bytes, including overhead. */</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">  struct</span><span class="z-9"> malloc_chunk</span><span class="z-3">*</span><span class="z-9"> fd</span><span class="z-3">;</span><span class="z-1 z-i">         /* double links -- used only if free. */</span></span>
+<span class="giallo-l"><span class="z-7">  struct</span><span class="z-9"> malloc_chunk</span><span class="z-3">*</span><span class="z-9"> bk</span><span class="z-3">;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">  /* Only used for large blocks: pointer to next larger size.  */</span></span>
+<span class="giallo-l"><span class="z-7">  struct</span><span class="z-9"> malloc_chunk</span><span class="z-3">*</span><span class="z-9"> fd_nextsize</span><span class="z-3">;</span><span class="z-1 z-i"> /* double links -- used only if free. */</span></span>
+<span class="giallo-l"><span class="z-7">  struct</span><span class="z-9"> malloc_chunk</span><span class="z-3">*</span><span class="z-9"> bk_nextsize</span><span class="z-3">;</span></span>
+<span class="giallo-l"><span class="z-3">};</span></span></code></pre><h4 id="house-of-force"><a class="zola-anchor" href="#house-of-force" aria-label="Link to this section">#</a>
+House of Force</h4>
+<p>"House Of Force" is an exploitation approach against the heap memory. This
+exploitation requires the attacker can override the size field in the top
+chunk's header. Then, the attacker can leverage the integer overflow to control
+the memory address that <code>malloc</code> will return, further leading to arbitrary
+memory read/write.</p>
+<h2 id="references"><a class="zola-anchor" href="#references" aria-label="Link to this section">#</a>
+References</h2>
+<ul>
+<li><a rel="noopener external" target="_blank" href="https://www.geeksforgeeks.org/c/memory-layout-of-c-program/">Memory Layout of C Program</a></li>
+<li><a rel="noopener external" target="_blank" href="https://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64">Stack frame layout on x86-64 - Eli Bendersky's website</a></li>
+<li><a rel="noopener external" target="_blank" href="https://cs.brown.edu/courses/cs033/docs/guides/x64_cheatsheet.pdf">x64 Cheat Sheet</a></li>
+<li><a rel="noopener external" target="_blank" href="https://web.stanford.edu/class/archive/cs/cs107/cs107.1174/guide_x86-64.html">CS107 Guide to x86-64</a></li>
+<li><a rel="noopener external" target="_blank" href="https://www.bordergate.co.uk/position-independent-executables/">Position Independent Executables &lt; BorderGate</a></li>
+<li><a rel="noopener external" target="_blank" href="https://ctf-wiki.org/pwn/linux/user-mode/heap/ptmalloc2/heap-structure/">Heap Structure - CTF Wiki</a></li>
+<li><a rel="noopener external" target="_blank" href="https://ctf-wiki.org/pwn/linux/user-mode/heap/ptmalloc2/house-of-force/">House Of Force - CTF Wiki</a></li>
+<li><a rel="noopener external" target="_blank" href="https://heap-exploitation.dhavalkapil.com/attacks/house_of_force">&gt;House of Force | heap-exploitation</a></li>
+<li><a rel="noopener external" target="_blank" href="https://elixir.bootlin.com/glibc/glibc-2.42/source/malloc/malloc.c">malloc.c - malloc/malloc.c -  Glibc source code glibc-2.42 - Bootlin Elixir Cross Referencer</a></li>
+</ul>
+
+    
+
+  </article>
+</main>
+
+  <footer class="f-footer"><div class="f-footer__cats" aria-hidden="true"></div>
+  <ul class="f-social site-footer-social" aria-label="Elsewhere">
+    <li><a class="f-social__link" href="https://github.com/h1994st" rel="me noopener"><span class="f-icon f-icon--github" aria-hidden="true"></span><span class="f-visually-hidden">GitHub</span></a></li>
+    <li><a class="f-social__link" href="https://scholar.google.com/citations?user=VOefXMMAAAAJ" rel="me noopener"><span class="f-icon f-icon--google-scholar" aria-hidden="true"></span><span class="f-visually-hidden">Google Scholar</span></a></li>
+    <li><a class="f-social__link" href="https://www.linkedin.com/in/shengtuo/" rel="me noopener"><span class="f-icon f-icon--linkedin" aria-hidden="true"></span><span class="f-visually-hidden">LinkedIn</span></a></li>
+    <li><a class="f-social__link" href="https://x.com/ShengtuoHu" rel="me noopener"><span class="f-icon f-icon--x" aria-hidden="true"></span><span class="f-visually-hidden">X</span></a></li>
+    <li><a class="f-social__link" href="https://www.instagram.com/hst_nullderef/" rel="me noopener"><span class="f-icon f-icon--instagram" aria-hidden="true"></span><span class="f-visually-hidden">Instagram</span></a></li>
+  </ul>
+  <p class="site-footer-links"><a href="https://shengtuo.me/blog/">Blog</a> · <a href="https://shengtuo.me/notebook/">Notebook</a> · <a href="https://shengtuo.me/misc/">Misc.</a> · 
+    <a href="https://shengtuo.me/atom.xml">Feed</a>
+  </p>
+  <p>© 2026 Shengtuo Hu</p>
+</footer>
+
+  <dialog class="f-sheet" id="site-search" aria-label="Search" data-index="https://shengtuo.me/search_index.en.json">
+  <div class="f-sheet__panel">
+    <input class="f-input f-search" type="search" placeholder="Search posts and notes" aria-label="Search" autocomplete="off" />
+    <p class="f-meta site-search-status" role="status"></p>
+    <ol class="site-search-results"></ol>
+  </div>
+</dialog>
+<script type="module" src="https://shengtuo.me/js/site/search.js"></script>
+
+  
+  <script type="module" src="https://shengtuo.me/vendor/facet/dist/js/facet.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/cats.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/code-copy.js"></script><script type="module" src="https://shengtuo.me/js/site/share.js"></script>
+
+</body>
+</html>

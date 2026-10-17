@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>nu1lptr - Chromatron</title>
+    <subtitle>Shengtuo Hu (nu1lptr), security researcher. Writing on program analysis, LLVM, fuzzing and network security.</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://shengtuo.me/tags/chromatron/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://shengtuo.me"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2026-10-11T18:00:00-07:00</updated>
+    <id>https://shengtuo.me/tags/chromatron/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Playing Chromatron Again, Twenty Years Later</title>
+        <published>2026-10-11T18:00:00-07:00</published>
+        <updated>2026-10-11T18:00:00-07:00</updated>
+        
+        <author>
+          <name>
+            Shengtuo Hu
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://shengtuo.me/blog/chromatron-remake/"/>
+        <id>https://shengtuo.me/blog/chromatron-remake/</id>
+        
+        <content type="html" xml:base="https://shengtuo.me/blog/chromatron-remake/">&lt;p&gt;Around 2006, my dad and I played a little puzzle game called Chromatron. You get a
+few lasers, some mirrors and colour filters, and a board of targets that light up
+when the right colour of light reaches them.&lt;/p&gt;
+&lt;p&gt;The version we played was not Sean Barrett&#39;s original, though. It was a Flash
+port by Hawkpeng79, and it only covered the first Chromatron, split into two
+Flash games of 25 levels each. That is why, for twenty years, I never knew there
+were three more.&lt;/p&gt;
+&lt;p&gt;Recently I wanted to play it again. Sean Barrett&#39;s site still has all four
+Chromatron games up for download, and three of them were new to me. None of
+them would open on my Mac. By the next evening I was playing all four, and the
+early levels of the first game came back as pure muscle memory: my hands knew
+where the mirrors went before I had really looked at the board.&lt;/p&gt;
+&lt;p&gt;I did not write a single line of code for this. Claude Code did. This post is
+about how that went, from the point of view of the person who mostly played.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Play it here: &lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://shengtuo.me/chromatron-remake/&quot;&gt;shengtuo.me/chromatron-remake&lt;/a&gt;&lt;/strong&gt;,
+all four games, phones included. The code is on
+&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/h1994st/chromatron-remake&quot;&gt;GitHub&lt;/a&gt;, and the native Apple
+Silicon apps are on its
+&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/h1994st/chromatron-remake/releases/tag/v1.0.0&quot;&gt;release page&lt;/a&gt;.&lt;/p&gt;
+&lt;figure class=&quot;f-wide site-video&quot;&gt;
+&lt;iframe
+	title=&quot;Chromatron Remake - Classic Laser Puzzles, Now in Your Browser&quot;
+	src=&quot;https://www.youtube-nocookie.com/embed/CMuqV2ZrpB4&quot;
+	allow=&quot;accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share&quot;
+	referrerpolicy=&quot;strict-origin-when-cross-origin&quot; allowfullscreen&gt;
+&lt;/iframe&gt;
+&lt;/figure&gt;
+&lt;script type=&quot;application/ld+json&quot;&gt;
+{
+	&quot;@context&quot;: &quot;https://schema.org&quot;,
+	&quot;@type&quot;: &quot;VideoObject&quot;,
+	&quot;name&quot;: &quot;Chromatron Remake - Classic Laser Puzzles, Now in Your Browser&quot;,
+	&quot;description&quot;: &quot;The Chromatron Remake trailer. Chromatron is a classic laser puzzle series from 2003-2004 by Sean Barrett: place mirrors, filters, prisms and splitters, mix coloured light, and light every target. Now playable in the browser and natively on Apple Silicon.&quot;,
+	&quot;thumbnailUrl&quot;: &quot;https://i.ytimg.com/vi/CMuqV2ZrpB4/maxresdefault.jpg&quot;,
+	&quot;uploadDate&quot;: &quot;2026-10-13T23:08:02-07:00&quot;,
+	&quot;duration&quot;: &quot;PT31S&quot;,
+	&quot;embedUrl&quot;: &quot;https://www.youtube.com/embed/CMuqV2ZrpB4&quot;,
+	&quot;url&quot;: &quot;https://www.youtube.com/watch?v=CMuqV2ZrpB4&quot;
+}
+&lt;/script&gt;
+&lt;p class=&quot;f-meta&quot;&gt;The trailer. Its puzzles were made new for the video, not taken from the original levels.&lt;/p&gt;
+&lt;h2 id=&quot;why-the-old-games-stopped-working&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#why-the-old-games-stopped-working&quot; aria-label=&quot;Link to this section&quot;&gt;#&lt;/a&gt;
+Why the old games stopped working&lt;/h2&gt;
+&lt;p&gt;The Mac versions of Chromatron came out in 2003 and 2004, built for PowerPC.
+Apple moved to Intel in 2006 and kept PowerPC apps running through Rosetta for a
+few more years, until Mac OS X Lion dropped it in 2011. On an Apple Silicon Mac
+today, the original apps are icons that refuse to launch.&lt;/p&gt;
+&lt;h2 id=&quot;the-game-in-one-picture&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#the-game-in-one-picture&quot; aria-label=&quot;Link to this section&quot;&gt;#&lt;/a&gt;
+The game in one picture&lt;/h2&gt;
+&lt;figure class=&quot;f-figure f-figure--bare&quot;&gt;
+&lt;img src=&quot;concept.svg&quot; alt=&quot;Diagram: a white laser passes a red filter and turns red, a mirror bounces it onto a target, and a green laser hits the same target, which lights up yellow because red and green light add up to yellow.&quot; width=&quot;720&quot; height=&quot;420&quot;&gt;
+&lt;figcaption&gt;Steer coloured lasers with mirrors and filters, and mix the light so every target gets exactly its colour.&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;Each level gives you some fixed pieces and a toolbox of movable ones. You drag
+them onto the grid and turn them in 45° steps. Light mixes the way light does, so
+red and green make yellow, and a target only lights up when it gets exactly its
+own colour. A level is solved when every target is lit at the same time. Each
+sequel adds stranger pieces: twisters in Chromatron 2, quad-benders in 3, logic
+gates and teleporters in 4.&lt;/p&gt;
+&lt;div&gt;
+&lt;div class=&quot;f-segmented&quot; role=&quot;radiogroup&quot; aria-label=&quot;Look&quot; data-f-variants=&quot;look&quot;&gt;
+&lt;label&gt;&lt;input type=&quot;radio&quot; name=&quot;chromatron-look&quot; value=&quot;modern&quot; checked&gt;Modern&lt;/label&gt;
+&lt;label&gt;&lt;input type=&quot;radio&quot; name=&quot;chromatron-look&quot; value=&quot;classic&quot;&gt;Classic&lt;/label&gt;
+&lt;/div&gt;
+&lt;ul class=&quot;f-gallery&quot;&gt;
+&lt;li&gt;&lt;img data-f-variant=&quot;look:modern&quot; src=&quot;chromatron1-modern.jpg&quot; alt=&quot;Chromatron, level 46 solved, in the modern look&quot; width=&quot;960&quot; height=&quot;600&quot;&gt;&lt;img data-f-variant=&quot;look:classic&quot; src=&quot;chromatron1.png&quot; alt=&quot;Chromatron, level 46 solved, in the classic look&quot; width=&quot;640&quot; height=&quot;480&quot;&gt;&lt;span class=&quot;f-gallery__label&quot;&gt;Chromatron&lt;/span&gt;&lt;/li&gt;
+&lt;li&gt;&lt;img data-f-variant=&quot;look:modern&quot; src=&quot;chromatron2-modern.jpg&quot; alt=&quot;Chromatron 2, level 22 solved, in the modern look&quot; width=&quot;960&quot; height=&quot;600&quot;&gt;&lt;img data-f-variant=&quot;look:classic&quot; src=&quot;chromatron2.png&quot; alt=&quot;Chromatron 2, level 22 solved, in the classic look&quot; width=&quot;640&quot; height=&quot;480&quot;&gt;&lt;span class=&quot;f-gallery__label&quot;&gt;Chromatron 2&lt;/span&gt;&lt;/li&gt;
+&lt;li&gt;&lt;img data-f-variant=&quot;look:modern&quot; src=&quot;chromatron3-modern.jpg&quot; alt=&quot;Chromatron 3, level 41 solved, in the modern look&quot; width=&quot;960&quot; height=&quot;600&quot;&gt;&lt;img data-f-variant=&quot;look:classic&quot; src=&quot;chromatron3.png&quot; alt=&quot;Chromatron 3, level 41 solved, in the classic look&quot; width=&quot;640&quot; height=&quot;480&quot;&gt;&lt;span class=&quot;f-gallery__label&quot;&gt;Chromatron 3&lt;/span&gt;&lt;/li&gt;
+&lt;li&gt;&lt;img data-f-variant=&quot;look:modern&quot; src=&quot;chromatron4-modern.jpg&quot; alt=&quot;Chromatron 4, level 21 solved, in the modern look&quot; width=&quot;960&quot; height=&quot;600&quot;&gt;&lt;img data-f-variant=&quot;look:classic&quot; src=&quot;chromatron4.png&quot; alt=&quot;Chromatron 4, level 21 solved, in the classic look&quot; width=&quot;640&quot; height=&quot;480&quot;&gt;&lt;span class=&quot;f-gallery__label&quot;&gt;Chromatron 4&lt;/span&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;p&gt;The web version got a new look a few days after the first release: beams sweep
+out from their lasers, targets flash as they light up, and pieces lift and turn
+as you move them. The classic look is still there, the way I remember it. Flip
+the switch above to compare, or use &lt;strong&gt;Actions ▸ Classic look&lt;/strong&gt; in the game. The
+Mac apps keep the classic look.&lt;/p&gt;
+&lt;h2 id=&quot;claude-code-did-the-engineering&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#claude-code-did-the-engineering&quot; aria-label=&quot;Link to this section&quot;&gt;#&lt;/a&gt;
+Claude Code did the engineering&lt;/h2&gt;
+&lt;p&gt;I gave Claude Code the four original apps and a short brief: make them run
+natively on my Mac, faithful to the originals, with the same rules, levels,
+sprites and text. I added two ground rules. Everything had to come from our own
+reading of the original programs, not from anyone else&#39;s work. And the game&#39;s
+data stays out of the repository.&lt;/p&gt;
+&lt;p&gt;From there, Claude did all of the engineering:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;It ran Ghidra on the command line to decompile the PowerPC code into C.&lt;/li&gt;
+&lt;li&gt;Subagents read through the decompiled output and wrote notes on how each game
+works, about 6,800 lines across the four games. Games 2 to 4 were worked out
+by comparing them against game 1.&lt;/li&gt;
+&lt;li&gt;It wrote a design, split the work into plans, and built the Rust code one task
+at a time, with a separate reviewer checking each task.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The first game was playable on my Mac the same night. All four Mac apps shipped
+the next evening, and the browser version the morning after that.&lt;/p&gt;
+&lt;p&gt;Lately a project called &lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://github.com/morluto/rea&quot;&gt;REA (Reverse Engineer Anything)&lt;/a&gt;
+has been trending on GitHub. It connects coding agents like Claude Code to Ghidra,
+IDA Pro and Hopper so they can take a program apart and rebuild it. Chromatron
+Remake did not use REA; Claude Code just drove Ghidra from the command line. But
+it is the same idea, and seeing both at once made it click for me: an old program
+you can no longer run does not have to be the end of it.&lt;/p&gt;
+&lt;h2 id=&quot;how-it-fits-together&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#how-it-fits-together&quot; aria-label=&quot;Link to this section&quot;&gt;#&lt;/a&gt;
+How it fits together&lt;/h2&gt;
+&lt;figure class=&quot;f-figure f-figure--bare&quot;&gt;
+&lt;picture&gt;
+&lt;source media=&quot;(max-width: 600px)&quot; srcset=&quot;how-tall.svg&quot; width=&quot;360&quot; height=&quot;700&quot;&gt;
+&lt;img src=&quot;how-wide.svg&quot; alt=&quot;Diagram drawn as a Chromatron board: white light from the original PowerPC app passes through Ghidra and Claude Code into the Rust engine, a prism that splits it into a red beam lighting the four Mac apps and a blue beam lighting the browser version. A green beam runs from the browser to me and from me back to Claude Code.&quot; width=&quot;760&quot; height=&quot;400&quot;&gt;
+&lt;/picture&gt;
+&lt;figcaption&gt;Drawn as a Chromatron board: the original game is the white light, the Rust engine is the prism, and the green beam is me.&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;What I like most as a player is that there is one engine underneath everything.
+The four Mac apps and the web page share the same rules, levels and drawing code,
+so once the Mac version was right, the browser version was mostly new wiring
+around it. Saves and copied solutions even use the original games&#39; formats, so a
+solution copied in the browser pastes straight into the Mac app.&lt;/p&gt;
+&lt;p&gt;The repository itself contains no game data. The build reads the levels, graphics
+and text from the original apps, downloaded from Sean Barrett&#39;s site. The apps on
+the release page and the web version do include that data once built, which is
+why the credit at the end of this post matters to me.&lt;/p&gt;
+&lt;h2 id=&quot;my-job-was-to-play&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#my-job-was-to-play&quot; aria-label=&quot;Link to this section&quot;&gt;#&lt;/a&gt;
+My job was to play&lt;/h2&gt;
+&lt;p&gt;My part was being the player, especially for the web version. Some of what I ran
+into, none of which a test caught:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;In WeChat&#39;s in-app browser, the toolbox filled the whole width of the screen
+and the page would not scroll.&lt;/li&gt;
+&lt;li&gt;Right-click turns a piece the other way, but in the browser it opened the
+context menu instead.&lt;/li&gt;
+&lt;li&gt;On a phone, the piece you drag floats a little above your finger so you can
+see it, which made it impossible to start a drag near the top of the board.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Each one went over as a message from me and came back as a release, most of
+them on that third day.&lt;/p&gt;
+&lt;h2 id=&quot;small-things-it-found-along-the-way&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#small-things-it-found-along-the-way&quot; aria-label=&quot;Link to this section&quot;&gt;#&lt;/a&gt;
+Small things it found along the way&lt;/h2&gt;
+&lt;p&gt;A few things turned up inside the original programs that I would never have
+known about otherwise:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Chromatron 1 has 62 levels inside it, but only 50 are playable. The other 12
+are still there, and they still solve.&lt;/li&gt;
+&lt;li&gt;Chromatron 3&#39;s unused levels have placeholder names like &quot;level005&quot;, with hints
+that just say &quot;foobar&quot; and &quot;blah&quot;.&lt;/li&gt;
+&lt;li&gt;The &quot;silverspaceship.com&quot; at the bottom of the screen is not stored as plain
+text. Each byte is XORed with the one before it, the same way in all four games.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;thank-you-sean&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#thank-you-sean&quot; aria-label=&quot;Link to this section&quot;&gt;#&lt;/a&gt;
+Thank you, Sean&lt;/h2&gt;
+&lt;p&gt;Chromatron is Sean Barrett&#39;s game. The design, the levels, the graphics and the
+text are all his, from Silver Spaceship Software, and you can still get the
+originals from &lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://silverspaceship.com/chromatron/&quot;&gt;silverspaceship.com/chromatron&lt;/a&gt;.
+Thanks also to Hawkpeng79, whose Flash port is how I found the game in the
+first place.&lt;/p&gt;
+&lt;blockquote class=&quot;markdown-alert-note&quot;&gt;
+&lt;p&gt;Chromatron Remake is an unofficial, independent port. It is not affiliated
+with or endorsed by Sean Barrett or Silver Spaceship Software. If he would
+like it taken down, I will take it down.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;If you played Chromatron back then too,
+&lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https://shengtuo.me/chromatron-remake/&quot;&gt;give it a try&lt;/a&gt;. Your hands might remember
+more than you expect.&lt;/p&gt;
+</content>
+        
+    </entry>
+</feed>
