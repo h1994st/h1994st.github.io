@@ -32,6 +32,15 @@ def test_copy_button_copies_without_line_numbers(site_url, page_factory):
     lines = page.evaluate("navigator.clipboard.readText()").splitlines()
     assert lines[0] == "pwndbg> info proc mappings"
     assert lines[1] == "process 67443"
+    # That block keeps Zola's own numbers and, marked wrap=false, scrolls instead of wrapping.
+    first = "document.querySelector('.f-prose pre code')"
+    assert page.evaluate(f"getComputedStyle({first}).whiteSpace") == "pre"
+    assert page.evaluate(f"getComputedStyle({first}.firstElementChild, '::before').content") == "none"
+    # Elsewhere the site defaults apply (config [extra.features]): facet numbers and wraps.
+    page.goto(f"{site_url}/blog/shell-upgrade/")
+    code = page.locator(".f-prose pre code").first
+    assert code.evaluate("c => getComputedStyle(c).whiteSpace") == "pre-wrap"
+    assert code.evaluate("c => getComputedStyle(c.firstElementChild, '::before').content") == "counter(f-code-ln)"
 
 
 def test_backlinks_list_pages_linking_here(public_dir):

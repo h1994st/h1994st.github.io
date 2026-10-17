@@ -61,15 +61,15 @@ sequel adds stranger pieces: twisters in Chromatron 2, quad-benders in 3, logic
 gates and teleporters in 4.
 
 <div>
-<div class="f-segmented" role="group" aria-label="Look" data-f-variants="look" hidden>
-<button type="button" data-variant="modern" aria-pressed="true">Modern</button>
-<button type="button" data-variant="classic" aria-pressed="false">Classic</button>
+<div class="f-segmented" role="radiogroup" aria-label="Look" data-f-variants="look">
+<label><input type="radio" name="chromatron-look" value="modern" checked>Modern</label>
+<label><input type="radio" name="chromatron-look" value="classic">Classic</label>
 </div>
 <ul class="f-gallery">
-<li><img data-f-variant="look:modern" src="chromatron1-modern.jpg" alt="Chromatron, level 46 solved, in the modern look" width="960" height="600"><img data-f-variant="look:classic" hidden src="chromatron1.png" alt="Chromatron, level 46 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron</span></li>
-<li><img data-f-variant="look:modern" src="chromatron2-modern.jpg" alt="Chromatron 2, level 22 solved, in the modern look" width="960" height="600"><img data-f-variant="look:classic" hidden src="chromatron2.png" alt="Chromatron 2, level 22 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 2</span></li>
-<li><img data-f-variant="look:modern" src="chromatron3-modern.jpg" alt="Chromatron 3, level 41 solved, in the modern look" width="960" height="600"><img data-f-variant="look:classic" hidden src="chromatron3.png" alt="Chromatron 3, level 41 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 3</span></li>
-<li><img data-f-variant="look:modern" src="chromatron4-modern.jpg" alt="Chromatron 4, level 21 solved, in the modern look" width="960" height="600"><img data-f-variant="look:classic" hidden src="chromatron4.png" alt="Chromatron 4, level 21 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 4</span></li>
+<li><img data-f-variant="look:modern" src="chromatron1-modern.jpg" alt="Chromatron, level 46 solved, in the modern look" width="960" height="600"><img data-f-variant="look:classic" src="chromatron1.png" alt="Chromatron, level 46 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron</span></li>
+<li><img data-f-variant="look:modern" src="chromatron2-modern.jpg" alt="Chromatron 2, level 22 solved, in the modern look" width="960" height="600"><img data-f-variant="look:classic" src="chromatron2.png" alt="Chromatron 2, level 22 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 2</span></li>
+<li><img data-f-variant="look:modern" src="chromatron3-modern.jpg" alt="Chromatron 3, level 41 solved, in the modern look" width="960" height="600"><img data-f-variant="look:classic" src="chromatron3.png" alt="Chromatron 3, level 41 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 3</span></li>
+<li><img data-f-variant="look:modern" src="chromatron4-modern.jpg" alt="Chromatron 4, level 21 solved, in the modern look" width="960" height="600"><img data-f-variant="look:classic" src="chromatron4.png" alt="Chromatron 4, level 21 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 4</span></li>
 </ul>
 </div>
 

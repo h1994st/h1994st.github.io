@@ -6,8 +6,13 @@
 {#- Old posts say toc = true (the sidebar) or toc = false (none). -#}
 {%- if toc_raw == true %}{% set toc_mode = "sidebar" %}{% elif toc_raw == false %}{% set toc_mode = "none" %}{% else %}{% set toc_mode = toc_raw %}{% endif -%}
 {%- set has_toc = toc_mode == "sidebar" and page.toc | length > 0 -%}
+{#- Code block defaults for facet, from [extra.features] unless the page says otherwise. -#}
+{%- set f = config.extra.features -%}
+{%- set code_attrs = ' data-f-code-ln="' ~ page.extra?.code_line_numbers | default(value=f.code_line_numbers)
+    ~ '" data-f-code-wrap="' ~ page.extra?.code_wrap | default(value=f.code_wrap)
+    ~ '" data-f-code-frame="' ~ page.extra?.code_frame | default(value=f.code_frame) ~ '"' -%}
 {%- if has_toc %}
-<main id="main" class="f-docs f-prose">
+<main id="main" class="f-docs f-prose"{{ code_attrs | safe }}>
   {% include "partials/toc.html" %}
   <article class="site-post">
     {% include "partials/post_header.html" %}
@@ -16,7 +21,7 @@
   </article>
 </main>
 {%- else %}
-<main id="main" class="f-reading f-page f-prose site-post">
+<main id="main" class="f-reading f-page f-prose site-post"{{ code_attrs | safe }}>
   {% include "partials/post_header.html" %}
   {%- if toc_mode == "inline" and page.toc | length > 0 %}{% include "partials/toc.html" %}{% endif %}
   {{ page.content | safe }}

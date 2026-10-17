@@ -41,25 +41,28 @@ def test_chromatron_switches_looks(site_url, page_factory):
     page.goto(f"{site_url}{CHROMATRON}")
     assert page.locator(".f-docs .f-toc a").count() >= 2  # posts get a TOC by default
     loaded = page.locator(".f-figure img, .f-gallery img").evaluate_all(
-        "els => els.filter(e => !e.hidden).map(e => e.complete && e.naturalWidth > 0)"
+        "els => els.filter(e => e.checkVisibility()).map(e => e.complete && e.naturalWidth > 0)"
     )
     assert loaded and all(loaded)
     modern = page.locator('[data-f-variant="look:modern"]').first
     classic = page.locator('[data-f-variant="look:classic"]').first
     assert modern.is_visible() and not classic.is_visible()
-    page.click('[data-f-variants="look"] [data-variant="classic"]')
+    page.click('[data-f-variants="look"] label:has-text("Classic")')
     assert classic.is_visible() and not modern.is_visible()
 
 
-def test_chromatron_without_js_shows_modern_and_no_dead_control(site_url, browser):
+def test_chromatron_switches_without_js(site_url, browser):
     ctx = browser.new_context(java_script_enabled=False, viewport={"width": 1280, "height": 900})
     ctx.route(third_party, stub_third_party)
     ctx.route(f"{BASE_URL}/**", serve_from_public)
     try:
         page = ctx.new_page()
         page.goto(f"{site_url}{CHROMATRON}")
-        assert page.locator('[data-f-variants="look"]').is_hidden()
+        # facet's radio form switches in CSS alone: modern by default, classic after a click.
         assert page.locator('[data-f-variant="look:modern"]:visible').count() == 4
         assert page.locator('[data-f-variant="look:classic"]:visible').count() == 0
+        page.click('[data-f-variants="look"] label:has-text("Classic")')
+        assert page.locator('[data-f-variant="look:classic"]:visible').count() == 4
+        assert page.locator('[data-f-variant="look:modern"]:visible').count() == 0
     finally:
         ctx.close()
