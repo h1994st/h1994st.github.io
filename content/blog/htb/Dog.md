@@ -18,7 +18,7 @@ sudo nmap -vv -sC -sV -T4 -A <target IP>
 
 Results:
 
-```txt
+```txt,wrap=false
 ...
 PORT   STATE SERVICE REASON         VERSION
 22/tcp open  ssh     syn-ack ttl 63 OpenSSH 8.2p1 Ubuntu 4ubuntu0.12 (Ubuntu Linux; protocol 2.0)
@@ -88,7 +88,7 @@ We can establish a reverse shell now, but there is a cleanup task running at the
 
 After logining into the account, we can find a flag file in the user's home directory.
 
-```txt
+```txt,wrap=false
 johncusack@dog:~$ ls -alh
 total 28K
 drwxr-xr-x 3 johncusack johncusack 4.0K Feb  7  2025 .
