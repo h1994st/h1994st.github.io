@@ -11,18 +11,21 @@
 {%- set code_attrs = ' data-f-code-ln="' ~ page.extra?.code_line_numbers | default(value=f.code_line_numbers)
     ~ '" data-f-code-wrap="' ~ page.extra?.code_wrap | default(value=f.code_wrap)
     ~ '" data-f-code-frame="' ~ page.extra?.code_frame | default(value=f.code_frame) ~ '"' -%}
+{#- A post with a banner opens on a cover, outside <main> so it runs edge to edge. -#}
+{%- set cover = page.extra?.banner -%}
+{%- if cover %}{% include "partials/post_header.html" %}{% endif %}
 {%- if has_toc %}
 <main id="main" class="f-docs f-prose"{{ code_attrs | safe }}>
   {% include "partials/toc.html" %}
   <article class="site-post">
-    {% include "partials/post_header.html" %}
+    {%- if not cover %}{% include "partials/post_header.html" %}{% endif %}
     {{ page.content | safe }}
     {% include "partials/post_footer.html" %}
   </article>
 </main>
 {%- else %}
 <main id="main" class="f-reading f-page f-prose site-post"{{ code_attrs | safe }}>
-  {% include "partials/post_header.html" %}
+  {%- if not cover %}{% include "partials/post_header.html" %}{% endif %}
   {%- if toc_mode == "inline" and page.toc | length > 0 %}{% include "partials/toc.html" %}{% endif %}
   {{ page.content | safe }}
   {% include "partials/post_footer.html" %}

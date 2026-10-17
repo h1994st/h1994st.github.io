@@ -1,4 +1,14 @@
+{#- A post's title block. With an [extra] banner it is facet's cover: the image fills the first
+    screen and the title sits on it (page.html places it before <main>, and the nav floats clear). -#}
+{%- set banner = page.extra?.banner -%}
+{%- if banner %}
+{%- set b = resize_image(path=page.colocated_path ~ banner, width=1920, op="fit_width", format="webp", quality=85) %}
+<header class="f-cover" id="cover">
+  <img class="f-cover__media" src="{{ b.url }}" width="{{ b.width }}" height="{{ b.height }}" alt="" decoding="async" fetchpriority="high">
+  <div class="f-cover__inner">
+{%- else %}
 <header class="f-reading__title">
+{%- endif %}
   {%- if page.ancestors | length > 1 %}
   {%- set parent = get_section(path=page.ancestors | last) %}
   <p class="f-kicker"><a href="{{ parent.permalink }}">{{ parent.title }}</a></p>
@@ -12,4 +22,8 @@
     {%- if config.extra.features.share %} · <button class="f-btn f-btn--quiet site-share" type="button">Share</button><span class="site-share-status" role="status"></span>{% endif %}
   </p>
   {%- endif %}
+{%- if banner %}
+  </div>
+  <span class="f-cover__cue" aria-hidden="true"></span>
+{%- endif %}
 </header>

@@ -1,4 +1,4 @@
-<nav class="f-nav f-nav--fixed" aria-label="Site">
+<nav class="f-nav f-nav--fixed{% if page?.extra?.banner %} f-nav--over" data-f-nav-cover="#cover{% endif %}" aria-label="Site">
   <a class="f-nav__brand" href="{{ get_url(path='/') }}">{{ config.extra.author.handle }}</a>
   {%- for link in config.extra.nav.links %}
   {%- set url = get_url(path=link.url) %}
