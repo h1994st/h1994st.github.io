@@ -40,7 +40,8 @@ def test_chromatron_switches_looks(site_url, page_factory):
     page = page_factory()
     page.goto(f"{site_url}{CHROMATRON}")
     assert page.locator(".f-docs .f-toc a").count() >= 2  # posts get a TOC by default
-    loaded = page.locator(".f-figure img, .f-gallery img").evaluate_all(
+    assert page.locator("header .site-post-banner").is_visible()
+    loaded = page.locator(".site-post-banner, .f-figure img, .f-gallery img").evaluate_all(
         "els => els.filter(e => e.checkVisibility()).map(e => e.complete && e.naturalWidth > 0)"
     )
     assert loaded and all(loaded)

@@ -12,4 +12,8 @@
     {%- if config.extra.features.share %} · <button class="f-btn f-btn--quiet site-share" type="button">Share</button><span class="site-share-status" role="status"></span>{% endif %}
   </p>
   {%- endif %}
+  {%- if page.extra?.banner %}
+  {%- set b = resize_image(path=page.colocated_path ~ page.extra.banner, width=1400, op="fit_width", format="webp", quality=85) %}
+  <img class="site-post-banner" src="{{ b.url }}" width="{{ b.width }}" height="{{ b.height }}" alt="" decoding="async" fetchpriority="high">
+  {%- endif %}
 </header>

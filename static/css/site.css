@@ -96,6 +96,7 @@
 /* Posts. */
 .site-post-meta { display: flex; flex-wrap: wrap; gap: 0 var(--f-space-2); align-items: center; }
 .site-post-meta .site-share { padding: 0.1rem 0.6rem; font-size: inherit; }
+.site-post-banner { display: block; width: 100%; height: auto; margin-top: var(--f-space-5); border-radius: var(--f-r-lg); corner-shape: squircle; }
 .site-toc-sub { padding-left: var(--f-space-4); font-size: var(--f-text-sm); }
 .site-backlinks, .site-prev-next { margin-top: var(--f-space-7); padding-top: var(--f-space-4); border-top: 1px solid var(--f-line-2); }
 .site-backlinks h2 { font-size: var(--f-text-lg); }

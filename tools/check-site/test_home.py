@@ -41,3 +41,12 @@ def test_crt_art_fits_without_scrolling(site_url, page_factory):
             "(() => { const e = document.querySelector('.site-hero .site-crt pre'); return [e.scrollWidth, e.clientWidth]; })()"
         )
         assert sw <= cw + 1, (width, sw, cw)
+    # Every glyph, the block art included, comes from facet's Geist Mono: a system fallback
+    # (Consolas on Windows) has other widths and heights and breaks the art apart.
+    page.evaluate("document.fonts.ready")
+    cdp = page.context.new_cdp_session(page)
+    root = cdp.send("DOM.getDocument")["root"]["nodeId"]
+    pre = cdp.send("DOM.querySelector", {"nodeId": root, "selector": ".site-hero .site-crt pre"})["nodeId"]
+    cdp.send("CSS.enable")
+    fonts = {f["familyName"] for f in cdp.send("CSS.getPlatformFontsForNode", {"nodeId": pre})["fonts"]}
+    assert fonts == {"Geist Mono"}, fonts
