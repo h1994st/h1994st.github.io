@@ -145,7 +145,7 @@
 .ffi-life .ffi-step.is-dead .ffi-bar {
 	background: repeating-linear-gradient(
 		to bottom,
-		var(--f-line-2) 0 2px,
+		var(--f-fg-3) 0 2px,
 		transparent 2px 5px
 	);
 }
