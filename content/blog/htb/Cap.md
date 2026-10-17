@@ -21,7 +21,7 @@ Actually, no need to specify a large number like 6000. Using the default 1000 sh
 
 Results:
 
-```txt,wrap=false
+```txt,f-code-wrap=false
 ...
 PORT   STATE SERVICE REASON  VERSION
 21/tcp open  ftp     syn-ack vsftpd 3.0.3

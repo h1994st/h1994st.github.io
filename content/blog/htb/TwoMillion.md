@@ -22,7 +22,7 @@ Note that, we may need to add a reference to `/etc/hosts` so that we can access 
 
 Results:
 
-```txt,wrap=false
+```txt,f-code-wrap=false
 ...
 PORT   STATE SERVICE REASON         VERSION
 22/tcp open  ssh     syn-ack ttl 63 OpenSSH 8.9p1 Ubuntu 3ubuntu0.1 (Ubuntu Linux; protocol 2.0)

@@ -203,7 +203,7 @@ rllvm-query --catalog $CAT defs $FN
 rllvm-query --catalog $CAT callers $FN
 ```
 
-```txt,wrap=false
+```txt,f-code-wrap=false
 quiche/src/ffi.rs:1154  quiche_connection_id_iter_next
 log_source_ids
     cid_logger.c:20  direct    quiche_connection_id_iter_next
@@ -218,7 +218,7 @@ panic-handling edges that every Rust function carries:
 rllvm-query --catalog $CAT callees $FN | grep -v panic
 ```
 
-```txt,wrap=false
+```txt,f-code-wrap=false
 quiche/src/ffi.rs:1157  direct    <quiche::ffi::ConnectionIdIter as core::iter::traits::iterator::Iterator>::next
 quiche/src/ffi.rs:1157  intrinsic llvm.memcpy.p0.p0.i64
 quiche/src/ffi.rs:1158  direct    <quiche::packet::ConnectionId as core::convert::AsRef<[u8]>>::as_ref
@@ -229,7 +229,7 @@ quiche/src/ffi.rs:1162  direct    core::ptr::drop_glue::<quiche::packet::Connect
 Clone, take a pointer, free. Run the same query against 0.29.2 and the
 `drop_glue` lines are gone, because the fix stopped owning anything:
 
-```txt,wrap=false
+```txt,f-code-wrap=false
 quiche/src/ffi.rs:1146  direct    <alloc::vec::Vec<quiche::packet::ConnectionId> as core::ops::deref::Deref>::deref
 quiche/src/ffi.rs:1146  direct    <[quiche::packet::ConnectionId]>::get::<usize>
 quiche/src/ffi.rs:1147  direct    <quiche::packet::ConnectionId as core::convert::AsRef<[u8]>>::as_ref
@@ -337,7 +337,7 @@ For a caller that does exist, `callees log_source_ids` lists its calls in
 program order, so you can see what happens after the crossing (the arrows are
 mine):
 
-```txt,wrap=false
+```txt,f-code-wrap=false
 cid_logger.c:15  direct    quiche_conn_source_ids
 cid_logger.c:20  direct    quiche_connection_id_iter_next   <- the crossing
 cid_logger.c:22  direct    fprintf                          <- after it
