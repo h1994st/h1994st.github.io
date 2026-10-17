@@ -111,7 +111,10 @@ def test_nav_fits_on_phones(site_url, page_factory, path):
         assert sw <= cw, (path, width, sw, cw)
         box = page.locator("[data-f-theme-toggle]").bounding_box()
         assert box["x"] >= 0 and box["x"] + box["width"] <= width, (path, width, box)
+    page.set_viewport_size({"width": 1280, "height": 900})
     btn = page.locator(".site-search-open")
-    assert btn.get_attribute("aria-label") == "Search"
-    btn.click()  # the magnifier still opens search
+    # A magnifier at every width, so search never reads as another page link.
+    assert btn.get_attribute("aria-label") == "Search" and btn.inner_text().strip() == ""
+    assert page.locator(".site-search-open .site-search-icon").is_visible()
+    btn.click()  # the magnifier opens search
     page.wait_for_selector("#site-search[open]")
