@@ -2,7 +2,8 @@
 
 Source of [shengtuo.me](https://shengtuo.me): Markdown and TOML rendered by [Zola](https://www.getzola.org/)
 0.23.6, styled with [facet](https://github.com/h1994st/facet). facet is a git submodule at
-`static/vendor/facet`, pinned to a release tag; only its `dist/` is published. There is no JS build step.
+`static/vendor/facet`, pinned to a release tag or a commit on facet's `main`; only its `dist/` is
+published. There is no JS build step.
 
 ## Setup
 
@@ -47,9 +48,12 @@ uv run --with fonttools --with brotli --with resvg-py --with pillow tools/icon/r
 
 ## Updating facet
 
+Point the submodule at a release tag, or at a commit on facet's `main` to take a fix before it is
+released, then commit the move:
+
 ```bash
-git -C static/vendor/facet fetch --tags
-git -C static/vendor/facet checkout vX.Y.Z
+git -C static/vendor/facet fetch --tags origin
+git -C static/vendor/facet checkout vX.Y.Z     # a tag, or a commit such as origin/main
 git add static/vendor/facet && git commit -m "chore: bump facet to vX.Y.Z"
 ```
 
