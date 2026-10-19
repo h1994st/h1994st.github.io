@@ -20,16 +20,17 @@ def test_home_renders_its_sections_with_a_shuffled_intro(site_url, page_factory)
     assert "Who am I" in page.locator(".site-about").inner_text()
 
 
-def test_home_is_still_under_reduced_motion(site_url, page_factory):
+def test_home_has_no_motion_under_reduced_motion(site_url, page_factory):
     page = page_factory(reduced_motion=True)
     page.clock.install()
     page.goto(f"{site_url}/")
     page.wait_for_timeout(300)
     running = page.evaluate("document.getAnimations().filter(a => a.playState === 'running').length")
     assert running == 0
-    text = page.locator(".site-intro [data-f-type]").inner_text()
-    page.clock.run_for(3000)  # past the typewriter's 2.5 s hold, without waiting for it
-    assert page.locator(".site-intro [data-f-type]").inner_text() == text
+    typed = page.locator(".site-intro [data-f-type]")
+    phrases, text = json.loads(typed.get_attribute("data-f-type")), typed.inner_text()
+    page.clock.run_for(3000)  # past the typewriter's 2.5 s hold: the next phrase, whole, not typed
+    assert typed.inner_text() != text and typed.inner_text() in phrases
 
 
 def test_crt_art_fits_without_scrolling(site_url, page_factory):
