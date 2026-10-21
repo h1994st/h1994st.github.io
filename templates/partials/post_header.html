@@ -1,5 +1,6 @@
 {#- A post's title block. With an [extra] banner it is facet's cover: the image fills the first
-    screen and the title sits on it (page.html places it before <main>, and the nav floats clear). -#}
+    screen and the title sits on it (page.html places it before <main>, and the nav floats clear).
+    The cover also shows the page's [[extra.actions]] ({ url, name }) as buttons, the first one primary. -#}
 {%- set banner = page.extra?.banner -%}
 {%- if banner %}
 {%- set b = resize_image(path=page.colocated_path ~ banner, width=1920, op="fit_width", format="webp", quality=85) %}
@@ -23,6 +24,13 @@
   </p>
   {%- endif %}
 {%- if banner %}
+  {%- if page.extra?.actions %}
+  <div class="site-cover-actions">
+    {%- for a in page.extra.actions %}
+    <a class="f-btn {% if loop.first %}f-btn--primary{% else %}f-btn--on-media{% endif %}" href="{{ a.url }}">{{ a.name }}</a>
+    {%- endfor %}
+  </div>
+  {%- endif %}
   </div>
   <span class="f-cover__cue" aria-hidden="true"></span>
 {%- endif %}

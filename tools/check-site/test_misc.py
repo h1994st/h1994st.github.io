@@ -43,15 +43,22 @@ def test_chromatron_switches_looks(site_url, page_factory):
     # Its banner opens the post as a cover, with the nav floating over it.
     assert page.locator("#cover.f-cover h1").is_visible()
     assert page.locator(".f-nav.f-nav--over.is-ready").count() == 1
+    # Its [extra.actions] put the web version first: on the cover, and again on the first card.
+    play = "https://shengtuo.me/chromatron-remake/"
+    assert page.locator(".site-cover-actions a.f-btn--primary").get_attribute("href") == play
+    assert page.locator(".site-post > .f-hero:first-child a.f-btn--primary").get_attribute("href") == play
     loaded = page.locator(".f-cover__media, .f-figure img, .f-gallery img").evaluate_all(
         "els => els.filter(e => e.checkVisibility()).map(e => e.complete && e.naturalWidth > 0)"
     )
     assert loaded and all(loaded)
     modern = page.locator('[data-f-variant="look:modern"]').first
+    light = page.locator('[data-f-variant="look:light"]').first
     classic = page.locator('[data-f-variant="look:classic"]').first
-    assert modern.is_visible() and not classic.is_visible()
+    assert modern.is_visible() and not light.is_visible() and not classic.is_visible()
+    page.click('[data-f-variants="look"] label:has-text("Light")')
+    assert light.is_visible() and not modern.is_visible()
     page.click('[data-f-variants="look"] label:has-text("Classic")')
-    assert classic.is_visible() and not modern.is_visible()
+    assert classic.is_visible() and not light.is_visible()
 
 
 def test_chromatron_switches_without_js(site_url, browser):

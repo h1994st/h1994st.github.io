@@ -125,7 +125,7 @@
       <rect x="494" y="274" width="56" height="52" rx="12"/>
     </g>
 
-    <!-- Beams: wide bloom, coloured glow, core; on the dark panel they add up like light (screen) -->
+    <!-- Beams: wide bloom, colored glow, core; on the dark panel they add up like light (screen) -->
     <g class="beams" stroke-linecap="round" fill="none">
       <g class="bloom" filter="url(#bloom)" stroke-width="16">
         <path class="white-glow" d="M96 130H236"/>

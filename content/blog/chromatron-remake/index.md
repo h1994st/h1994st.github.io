@@ -9,11 +9,28 @@ tags = ["Chromatron", "Claude Code", "Reverse Engineering", "Rust", "Games"]
 card = "card.png"
 card_fit = "fill"
 banner = "banner.jpg"
+actions = [
+  { url = "https://shengtuo.me/chromatron-remake/", name = "Play it in your browser" },
+  { url = "https://github.com/h1994st/chromatron-remake/releases/latest", name = "Get the Mac apps" },
+]
 +++
 
+<section class="f-hero site-play">
+<div>
+<p class="f-hero__kicker">Play now · free</p>
+<p class="f-hero__title">Chromatron 1–4, in your browser</p>
+<p class="f-hero__lead">All four games, no install, phones included. The same engine runs natively on Apple Silicon.</p>
+<div class="f-hero__actions">
+<a class="f-btn f-btn--primary" href="https://shengtuo.me/chromatron-remake/">Play it now</a>
+<a class="f-btn" href="https://github.com/h1994st/chromatron-remake/releases/latest">Mac apps</a>
+<a class="f-btn" href="https://github.com/h1994st/chromatron-remake">Source</a>
+</div>
+</div>
+</section>
+
 Around 2006, my dad and I played a little puzzle game called Chromatron. You get a
-few lasers, some mirrors and colour filters, and a board of targets that light up
-when the right colour of light reaches them.
+few lasers, some mirrors and color filters, and a board of targets that light up
+when the right color of light reaches them.
 
 The version we played was not Sean Barrett's original, though. It was a Flash
 port by Hawkpeng79, and it only covered the first Chromatron, split into two
@@ -29,13 +46,7 @@ where the mirrors went before I had really looked at the board.
 I did not write a single line of code for this. Claude Code did. This post is
 about how that went, from the point of view of the person who mostly played.
 
-**Play it here: [shengtuo.me/chromatron-remake](https://shengtuo.me/chromatron-remake/)**,
-all four games, phones included. The code is on
-[GitHub](https://github.com/h1994st/chromatron-remake), and the native Apple
-Silicon apps are on its
-[release page](https://github.com/h1994st/chromatron-remake/releases/tag/v1.0.0).
-
-{{<youtube id="CMuqV2ZrpB4" name="Chromatron Remake - Classic Laser Puzzles, Now in Your Browser" upload_date="2026-10-13T23:08:02-07:00" duration="PT31S" description="The Chromatron Remake trailer. Chromatron is a classic laser puzzle series from 2003-2004 by Sean Barrett: place mirrors, filters, prisms and splitters, mix coloured light, and light every target. Now playable in the browser and natively on Apple Silicon." />}}
+{{<youtube id="CMuqV2ZrpB4" name="Chromatron Remake - Classic Laser Puzzles, Now in Your Browser" upload_date="2026-10-13T23:08:02-07:00" duration="PT31S" description="The Chromatron Remake trailer. Chromatron is a classic laser puzzle series from 2003-2004 by Sean Barrett: place mirrors, filters, prisms and splitters, mix colored light, and light every target. Now playable in the browser and natively on Apple Silicon." />}}
 
 <p class="f-meta">The trailer. Its puzzles were made new for the video, not taken from the original levels.</p>
 
@@ -50,34 +61,48 @@ today, the original apps are icons that refuse to launch.
 
 <figure class="f-figure f-figure--bare">
 <img src="concept.svg" alt="Diagram: a white laser passes a red filter and turns red, a mirror bounces it onto a target, and a green laser hits the same target, which lights up yellow because red and green light add up to yellow." width="720" height="420">
-<figcaption>Steer coloured lasers with mirrors and filters, and mix the light so every target gets exactly its colour.</figcaption>
+<figcaption>Steer colored lasers with mirrors and filters, and mix the light so every target gets exactly its color.</figcaption>
 </figure>
 
 Each level gives you some fixed pieces and a toolbox of movable ones. You drag
 them onto the grid and turn them in 45° steps. Light mixes the way light does, so
 red and green make yellow, and a target only lights up when it gets exactly its
-own colour. A level is solved when every target is lit at the same time. Each
+own color. A level is solved when every target is lit at the same time. Each
 sequel adds stranger pieces: twisters in Chromatron 2, quad-benders in 3, logic
 gates and teleporters in 4.
 
+## A new look
+
 <div>
 <div class="f-segmented" role="radiogroup" aria-label="Look" data-f-variants="look">
-<label><input type="radio" name="chromatron-look" value="modern" checked>Modern</label>
+<label><input type="radio" name="chromatron-look" value="modern" checked>Dark</label>
+<label><input type="radio" name="chromatron-look" value="light">Light</label>
 <label><input type="radio" name="chromatron-look" value="classic">Classic</label>
 </div>
 <ul class="f-gallery">
-<li><img data-f-variant="look:modern" src="chromatron1-modern.jpg" alt="Chromatron, level 46 solved, in the modern look" width="960" height="600"><img data-f-variant="look:classic" src="chromatron1.png" alt="Chromatron, level 46 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron</span></li>
-<li><img data-f-variant="look:modern" src="chromatron2-modern.jpg" alt="Chromatron 2, level 22 solved, in the modern look" width="960" height="600"><img data-f-variant="look:classic" src="chromatron2.png" alt="Chromatron 2, level 22 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 2</span></li>
-<li><img data-f-variant="look:modern" src="chromatron3-modern.jpg" alt="Chromatron 3, level 41 solved, in the modern look" width="960" height="600"><img data-f-variant="look:classic" src="chromatron3.png" alt="Chromatron 3, level 41 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 3</span></li>
-<li><img data-f-variant="look:modern" src="chromatron4-modern.jpg" alt="Chromatron 4, level 21 solved, in the modern look" width="960" height="600"><img data-f-variant="look:classic" src="chromatron4.png" alt="Chromatron 4, level 21 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 4</span></li>
+<li><img data-f-variant="look:modern" src="chromatron1-modern.jpg" alt="Chromatron, level 46 solved, in the modern look's dark theme" width="960" height="600"><img data-f-variant="look:light" src="chromatron1-light.jpg" alt="Chromatron, level 46 solved, in the modern look's light theme" width="960" height="600"><img data-f-variant="look:classic" src="chromatron1.png" alt="Chromatron, level 46 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron</span></li>
+<li><img data-f-variant="look:modern" src="chromatron2-modern.jpg" alt="Chromatron 2, level 22 solved, in the modern look's dark theme" width="960" height="600"><img data-f-variant="look:light" src="chromatron2-light.jpg" alt="Chromatron 2, level 22 solved, in the modern look's light theme" width="960" height="600"><img data-f-variant="look:classic" src="chromatron2.png" alt="Chromatron 2, level 22 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 2</span></li>
+<li><img data-f-variant="look:modern" src="chromatron3-modern.jpg" alt="Chromatron 3, level 41 solved, in the modern look's dark theme" width="960" height="600"><img data-f-variant="look:light" src="chromatron3-light.jpg" alt="Chromatron 3, level 41 solved, in the modern look's light theme" width="960" height="600"><img data-f-variant="look:classic" src="chromatron3.png" alt="Chromatron 3, level 41 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 3</span></li>
+<li><img data-f-variant="look:modern" src="chromatron4-modern.jpg" alt="Chromatron 4, level 21 solved, in the modern look's dark theme" width="960" height="600"><img data-f-variant="look:light" src="chromatron4-light.jpg" alt="Chromatron 4, level 21 solved, in the modern look's light theme" width="960" height="600"><img data-f-variant="look:classic" src="chromatron4.png" alt="Chromatron 4, level 21 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 4</span></li>
 </ul>
 </div>
 
-The web version got a new look a few days after the first release: beams sweep
-out from their lasers, targets flash as they light up, and pieces lift and turn
-as you move them. The classic look is still there, the way I remember it. Flip
-the switch above to compare, or use **Actions ▸ Classic look** in the game. The
-Mac apps keep the classic look.
+The original games have no animation at all. Claude found that they never ask
+the system for a clock or a timer: the board simply redraws when you click. So a
+few days after the first release, the remake got a new look built around the
+light. Beams sweep out from their lasers, targets flash as they light up, and
+pieces lift and turn as you move them. It started in the browser and has since
+come to the Mac apps, with a light theme that follows your system.
+
+The classic look is one switch away, the way I remember it: **View ▸ Classic
+Look** on the Mac, **Actions ▸ Classic look** in the browser. Its pixels have not
+changed through any of the redesign; Claude checked them at every step.
+
+The hardest part was making the light arrive in the right order. A beam that
+splits, crosses itself or comes back along its own path has to light up the way
+light would actually travel. The first two tries got some levels visibly wrong.
+The third follows the game's own rules, and it is checked against every original
+level.
 
 ## Claude Code did the engineering
 
@@ -91,8 +116,10 @@ From there, Claude did all of the engineering:
 
 - It ran Ghidra on the command line to decompile the PowerPC code into C.
 - Subagents read through the decompiled output and wrote notes on how each game
-  works, about 6,800 lines across the four games. Games 2 to 4 were worked out
-  by comparing them against game 1.
+  works, about 6,200 lines across the four games. Each sequel was worked out by
+  comparing it with an earlier game: 2 against 1, then 3 and 4 against 2.
+- Where the decompiled C looked wrong, it read the PowerPC instructions
+  themselves. That happened more than once.
 - It wrote a design, split the work into plans, and built the Rust code one task
   at a time, with a separate reviewer checking each task.
 
@@ -106,7 +133,7 @@ Remake did not use REA; Claude Code just drove Ghidra from the command line. But
 it is the same idea, and seeing both at once made it click for me: an old program
 you can no longer run does not have to be the end of it.
 
-## How it fits together
+## One engine, two platforms
 
 <figure class="f-figure f-figure--bare">
 <picture>
@@ -116,11 +143,17 @@ you can no longer run does not have to be the end of it.
 <figcaption>Drawn as a Chromatron board: the original game is the white light, the Rust engine is the prism, and the green beam is me.</figcaption>
 </figure>
 
-What I like most as a player is that there is one engine underneath everything.
-The four Mac apps and the web page share the same rules, levels and drawing code,
-so once the Mac version was right, the browser version was mostly new wiring
-around it. Saves and copied solutions even use the original games' formats, so a
-solution copied in the browser pastes straight into the Mac app.
+This was never only a port from PowerPC to Apple Silicon. The same Rust engine
+is built twice: as native apps for Apple Silicon Macs, and as WebAssembly for the
+browser. The rules, the levels and both looks are shared code. Each platform only
+adds a thin shell: windows, menus and system text on the Mac, a canvas and touch
+controls on the web. Even the new look is drawn by the engine itself, pixel by
+pixel, with no graphics library, so both draw the board the same way.
+
+That makes the browser version the full game, not a lite edition, and the whole
+page, all four games included, is under 300 KB to download. Saves and copied
+solutions use the original games' formats, so a solution copied in the browser
+pastes straight into the Mac app.
 
 The repository itself contains no game data. The build reads the levels, graphics
 and text from the original apps, downloaded from Sean Barrett's site. The apps on
@@ -149,6 +182,14 @@ known about otherwise:
 
 - Chromatron 1 has 62 levels inside it, but only 50 are playable. The other 12
   are still there, and they still solve.
+- Every level carries its own solution. The pieces you move are stored in their
+  solved spots and swept into the toolbox when the level opens, so Claude could
+  test every level against itself. All of them win except Chromatron 1's level
+  16, whose mirror is stored a little off.
+- Chromatron 3 already has Chromatron 4's logic gate, starburst and movable
+  teleporter fully built in, used only by levels you cannot reach.
+- Each game has a hidden key that wins the level on the spot, and it is a
+  different key in each: `L`, `z`, `^` and Ctrl-O.
 - Chromatron 3's unused levels have placeholder names like "level005", with hints
   that just say "foobar" and "blah".
 - The "silverspaceship.com" at the bottom of the screen is not stored as plain
