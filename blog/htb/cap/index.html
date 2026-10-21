@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en" data-accent="moss" data-f-ga4="G-ZMH6NLL7C7">
+<head>
+<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" /><script>try{var t=localStorage.getItem("facet-theme");if(/^(dark|light|auto)$/.test(t))document.documentElement.dataset.theme=t}catch(e){}</script>
+	<meta name="description" content="Hack The Box - Cap" />
+	<meta name="author" content="Shengtuo Hu" />
+	<meta name="theme-color" content="#13161c" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f5f7f9" media="(prefers-color-scheme: light)" />
+	<title>Cap - nu1lptr</title>
+	<link rel="canonical" href="https://shengtuo.me/blog/htb/cap/" /><link rel="icon" href="https://shengtuo.me/favicon.ico" sizes="32x32" />
+	<link rel="icon" href="https://shengtuo.me/favicon.svg" type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="https://shengtuo.me/apple-touch-icon.png" />
+	<link rel="alternate" type="application/rss+xml" title="nu1lptr - RSS Feed" href="https://shengtuo.me/rss.xml" />
+	<link rel="alternate" type="application/atom+xml" title="nu1lptr - Atom Feed" href="https://shengtuo.me/atom.xml" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/facet.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/cast/cast-layered.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/icons.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/giallo.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/site.css" />
+
+	<meta property="og:site_name" content="nu1lptr" /><meta property="og:title" content="Cap" />
+	<meta property="og:url" content="https://shengtuo.me/blog/htb/cap/" />
+	<meta property="og:description" content="Hack The Box - Cap" />
+	<meta property="og:image" content="https://shengtuo.me/cards/blog/htb/cap.png" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="article:published_time" content="2025-06-06T10:00:00-07:00" />
+	<meta property="article:author" content="Shengtuo Hu" />
+	<meta property="article:tag" content="HackTheBox" /><meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Cap" />
+	<meta name="twitter:description" content="Hack The Box - Cap" />
+	<meta name="twitter:image" content="https://shengtuo.me/cards/blog/htb/cap.png" />
+	<meta name="twitter:site" content="@ShengtuoHu" />
+	<meta name="twitter:creator" content="@ShengtuoHu" /><script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	"@id": "https://shengtuo.me/blog/htb/cap/#article",
+	"mainEntityOfPage": "https://shengtuo.me/blog/htb/cap/",
+	"url": "https://shengtuo.me/blog/htb/cap/",
+	"headline": "Cap",
+	"description": "Hack The Box - Cap",
+	"datePublished": "2025-06-06T10:00:00-07:00",
+	"dateModified": "2025-06-06T10:00:00-07:00",
+	"image": "https://shengtuo.me/cards/blog/htb/cap.png",
+	"keywords": ["HackTheBox"],
+	"inLanguage": "en",
+	"author": {
+		"@type": "Person",
+		"@id": "https://shengtuo.me/#person",
+		"name": "Shengtuo Hu",
+		"url": "https://shengtuo.me/"
+	},
+	"publisher": { "@id": "https://shengtuo.me/#person" }
+}
+</script>
+
+
+
+</head>
+<body>
+  <a class="f-visually-hidden" href="#main">Skip to content</a>
+  <nav class="f-nav f-nav--fixed" aria-label="Site">
+  <a class="f-nav__brand" href="https://shengtuo.me">nu1lptr</a>
+  <a href="https://shengtuo.me/blog/" aria-current="page">Blog</a>
+  <a href="https://shengtuo.me/projects/">Projects</a>
+  <a href="https://shengtuo.me/resume/">Resume</a>
+  <button class="f-btn f-btn--quiet site-search-open" type="button" aria-label="Search" title="Search (/)" hidden>
+    <svg class="site-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+  </button>
+  <button class="f-theme-toggle" type="button" data-f-theme-toggle>Auto</button>
+</nav>
+
+  
+<main id="main" class="f-docs f-prose" data-f-code-ln="true" data-f-code-wrap="true" data-f-code-frame="false">
+  <nav class="f-toc" aria-label="On this page" data-f-scrollspy>
+  <p class="f-docs__label">On this page</p>
+  <a href="#port-scanning">Port Scanning</a>
+  <a href="#pcap-analysis">PCAP Analysis</a>
+  <a href="#exploit">Exploit</a>
+</nav>
+
+  <article class="site-post">
+<header class="f-reading__title">
+  <p class="f-kicker"><a href="https://shengtuo.me/blog/">nu1lptr&#39;s Blog</a></p>
+  <h1>Cap</h1>
+  <p class="f-meta site-post-meta">
+    <time datetime="2025-06-06">Jun 6, 2025</time> · 1 min read · <a href="https://shengtuo.me/tags/hackthebox/">HackTheBox</a> · <button class="f-btn f-btn--quiet site-share" type="button">Share</button><span class="site-share-status" role="status"></span>
+  </p>
+</header>
+
+    <ul>
+<li>Cap (Easy): <a rel="noopener external" target="_blank" href="https://www.hackthebox.com/machines/cap">https://www.hackthebox.com/machines/cap</a></li>
+<li>My notes: <a rel="noopener external" target="_blank" href="https://github.com/h1994st/HTB/blob/main/Cap/NOTES.md">https://github.com/h1994st/HTB/blob/main/Cap/NOTES.md</a></li>
+</ul>
+<h2 id="port-scanning"><a class="zola-anchor" href="#port-scanning" aria-label="Link to this section">#</a>
+Port Scanning</h2>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">sudo</span><span class="z-6"> nmap -vv -n -sS -T4 --top-ports</span><span class="z-10"> 6000 10.10.10.245</span></span>
+<span class="giallo-l"><span class="z-12">sudo</span><span class="z-6"> nmap -vv -sC -sV -T4 -A --top-ports</span><span class="z-10"> 80 10.10.10.245</span></span></code></pre>
+<p>Actually, no need to specify a large number like 6000. Using the default 1000 should be sufficient.</p>
+<p>Results:</p>
+<pre class="giallo z-code" data-lang="plain" data-wrap="false"><code data-lang="plain" data-wrap="false"><span class="giallo-l"><span>...</span></span>
+<span class="giallo-l"><span>PORT   STATE SERVICE REASON  VERSION</span></span>
+<span class="giallo-l"><span>21/tcp open  ftp     syn-ack vsftpd 3.0.3</span></span>
+<span class="giallo-l"><span>22/tcp open  ssh     syn-ack OpenSSH 8.2p1 Ubuntu 4ubuntu0.2 (Ubuntu Linux; protocol 2.0)</span></span>
+<span class="giallo-l"><span>| ssh-hostkey:</span></span>
+<span class="giallo-l"><span>|   3072 fa:80:a9:b2:ca:3b:88:69:a4:28:9e:39:0d:27:d5:75 (RSA)</span></span>
+<span class="giallo-l"><span>| ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC2vrva1a+HtV5SnbxxtZSs+D8/EXPL2wiqOUG2ngq9zaPlF6cuLX3P2QYvGfh5bcAIVjIqNUmmc1eSHVxtbmNEQjyJdjZOP4i2IfX/RZUA18dWTfEWlNaoVDGBsc8zunvFk3nkyaynnXmlH7n3BLb1nRNyxtouW+q7VzhA6YK3ziOD6tXT7MMnDU7CfG1PfMqdU297OVP35BODg1gZawthjxMi5i5R1g3nyODudFoWaHu9GZ3D/dSQbMAxsly98L1Wr6YJ6M6xfqDurgOAl9i6TZ4zx93c/h1MO+mKH7EobPR/ZWrFGLeVFZbB6jYEflCty8W8Dwr7HOdF1gULr+Mj+BcykLlzPoEhD7YqjRBm8SHdicPP1huq+/3tN7Q/IOf68NNJDdeq6QuGKh1CKqloT/+QZzZcJRubxULUg8YLGsYUHd1umySv4cHHEXRl7vcZJst78eBqnYUtN3MweQr4ga1kQP4YZK5qUQCTPPmrKMa9NPh1sjHSdS8IwiH12V0=</span></span>
+<span class="giallo-l"><span>|   256 96:d8:f8:e3:e8:f7:71:36:c5:49:d5:9d:b6:a4:c9:0c (ECDSA)</span></span>
+<span class="giallo-l"><span>| ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBDqG/RCH23t5Pr9sw6dCqvySMHEjxwCfMzBDypoNIMIa8iKYAe84s/X7vDbA9T/vtGDYzS+fw8I5MAGpX8deeKI=</span></span>
+<span class="giallo-l"><span>|   256 3f:d0:ff:91:eb:3b:f6:e1:9f:2e:8d:de:b3:de:b2:18 (ED25519)</span></span>
+<span class="giallo-l"><span>|_ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPbLTiQl+6W0EOi8vS+sByUiZdBsuz0v/7zITtSuaTFH</span></span>
+<span class="giallo-l"><span>80/tcp open  http    syn-ack Gunicorn</span></span>
+<span class="giallo-l"><span>|_http-server-header: gunicorn</span></span>
+<span class="giallo-l"><span>|_http-title: Security Dashboard</span></span>
+<span class="giallo-l"><span>| http-methods:</span></span>
+<span class="giallo-l"><span>|_  Supported Methods: GET HEAD OPTIONS</span></span>
+<span class="giallo-l"><span>Service Info: OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel</span></span>
+<span class="giallo-l"><span>...</span></span></code></pre><h2 id="pcap-analysis"><a class="zola-anchor" href="#pcap-analysis" aria-label="Link to this section">#</a>
+PCAP Analysis</h2>
+<p>We need to download all available pcaps. After several tries, we find out there are 24 pcap files in total. All of them can be downloaded via <code>/download/{id}</code> endpoint.</p>
+<p><code>get_pcaps.sh</code>:</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-1 z-i">#!/bin/bash</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>dest_dir</span><span class="z-3">=&quot;</span><span class="z-6">pcaps</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-1 z-i"># Check if the destination directory exists, if not create it</span></span>
+<span class="giallo-l"><span class="z-3 z-i">if</span><span class="z-3"> [ ! -d &quot;</span><span>$dest_dir</span><span class="z-3">&quot; ];</span><span class="z-3 z-i"> then</span></span>
+<span class="giallo-l"><span class="z-12">    mkdir</span><span class="z-3"> &quot;</span><span>$dest_dir</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3 z-i">fi</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i"># This script is used to get the pcap files from the HTB Cap challenge</span></span>
+<span class="giallo-l"><span class="z-3 z-i">for</span><span class="z-3"> ((</span><span>i</span><span class="z-3">=</span><span class="z-10">0</span><span class="z-3">;</span><span> i</span><span class="z-3">&lt;=</span><span class="z-10">23</span><span class="z-3">;</span><span> i</span><span class="z-3">++))</span></span>
+<span class="giallo-l"><span class="z-3 z-i">do</span></span>
+<span class="giallo-l"><span class="z-12">    wget</span><span class="z-6"> -O</span><span class="z-3"> &quot;${</span><span>dest_dir</span><span class="z-3">}</span><span class="z-6">/</span><span class="z-3">${</span><span>i</span><span class="z-3">}</span><span class="z-6">.pcap</span><span class="z-3">&quot; &quot;</span><span class="z-6">http://10.10.10.245/download/</span><span class="z-3">${</span><span>i</span><span class="z-3">}&quot;</span></span>
+<span class="giallo-l"><span class="z-3 z-i">done</span></span></code></pre>
+<p>Luckily, <code>0.pcap</code> contains the sensitive information. The FTP traffice exposes the password of <code>nathan</code>.</p>
+<h2 id="exploit"><a class="zola-anchor" href="#exploit" aria-label="Link to this section">#</a>
+Exploit</h2>
+<p>After getting the password of <code>nathan</code>, we can try to ssh into the box, as the port 22 is available. It is not difficult to get the user's flag. The remainnig question is how to obtain the root permission.</p>
+<p>Randomly running two available bash scripts under the home directory of <code>nathan</code>, we notice that <code>/usr/bin/python3.8</code> has <code>CAP_SETUID</code> capability, allowing us to execute arbitrary commands via <code>os.setuid(0)</code>. Then, simply listing files under <code>/root</code> will lead to the root flag.</p>
+
+    
+<nav class="site-prev-next" aria-label="More posts"><a href="https://shengtuo.me/blog/htb/lame/">← Older: Lame</a><a href="https://shengtuo.me/blog/htb/twomillion/">Newer: TwoMillion →</a>
+</nav>
+
+  </article>
+</main>
+
+  <footer class="f-footer"><div class="f-footer__cats" aria-hidden="true"></div>
+  <ul class="f-social site-footer-social" aria-label="Elsewhere">
+    <li><a class="f-social__link" href="https://github.com/h1994st" rel="me noopener"><span class="f-icon f-icon--github" aria-hidden="true"></span><span class="f-visually-hidden">GitHub</span></a></li>
+    <li><a class="f-social__link" href="https://scholar.google.com/citations?user=VOefXMMAAAAJ" rel="me noopener"><span class="f-icon f-icon--google-scholar" aria-hidden="true"></span><span class="f-visually-hidden">Google Scholar</span></a></li>
+    <li><a class="f-social__link" href="https://www.linkedin.com/in/shengtuo/" rel="me noopener"><span class="f-icon f-icon--linkedin" aria-hidden="true"></span><span class="f-visually-hidden">LinkedIn</span></a></li>
+    <li><a class="f-social__link" href="https://x.com/ShengtuoHu" rel="me noopener"><span class="f-icon f-icon--x" aria-hidden="true"></span><span class="f-visually-hidden">X</span></a></li>
+    <li><a class="f-social__link" href="https://www.instagram.com/hst_nullderef/" rel="me noopener"><span class="f-icon f-icon--instagram" aria-hidden="true"></span><span class="f-visually-hidden">Instagram</span></a></li>
+  </ul>
+  <p class="site-footer-links"><a href="https://shengtuo.me/blog/">Blog</a> · <a href="https://shengtuo.me/notebook/">Notebook</a> · <a href="https://shengtuo.me/misc/">Misc.</a> · 
+    <a href="https://shengtuo.me/atom.xml">Feed</a>
+  </p>
+  <p>© 2026 Shengtuo Hu</p>
+</footer>
+
+  <dialog class="f-sheet" id="site-search" aria-label="Search" data-index="https://shengtuo.me/search_index.en.json">
+  <div class="f-sheet__panel">
+    <input class="f-input f-search" type="search" placeholder="Search posts and notes" aria-label="Search" autocomplete="off" />
+    <p class="f-meta site-search-status" role="status"></p>
+    <ol class="site-search-results"></ol>
+  </div>
+</dialog>
+<script type="module" src="https://shengtuo.me/js/site/search.js"></script>
+
+  
+  <script type="module" src="https://shengtuo.me/vendor/facet/dist/js/facet.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/cats.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/code-copy.js"></script><script type="module" src="https://shengtuo.me/js/site/share.js"></script>
+
+</body>
+</html>

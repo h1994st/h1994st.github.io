@@ -1,0 +1,9 @@
+User-agent: *
+Disallow:
+Allow: /
+Sitemap: https://shengtuo.me/sitemap.xml
+Sitemap: https://shengtuo.me/rllvm/sitemap.xml
+Sitemap: https://shengtuo.me/rules_rllvm/sitemap.xml
+Sitemap: https://shengtuo.me/my-resume/sitemap.xml
+Sitemap: https://shengtuo.me/chromatron-remake/sitemap.xml
+Sitemap: https://shengtuo.me/facet/sitemap.xml

@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en" data-accent="moss" data-f-ga4="G-ZMH6NLL7C7">
+<head>
+<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" /><script>try{var t=localStorage.getItem("facet-theme");if(/^(dark|light|auto)$/.test(t))document.documentElement.dataset.theme=t}catch(e){}</script>
+	<meta name="description" content="Side projects by Shengtuo Hu: rllvm and rules_rllvm for whole-program LLVM bitcode, Grammar-Mutator for AFL++, Chromatron Remake, my-resume, cairn and Hack The Box notes." />
+	<meta name="author" content="Shengtuo Hu" />
+	<meta name="theme-color" content="#13161c" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f5f7f9" media="(prefers-color-scheme: light)" />
+	<title>Projects - nu1lptr</title>
+	<link rel="canonical" href="https://shengtuo.me/projects/" /><link rel="icon" href="https://shengtuo.me/favicon.ico" sizes="32x32" />
+	<link rel="icon" href="https://shengtuo.me/favicon.svg" type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="https://shengtuo.me/apple-touch-icon.png" />
+	<link rel="alternate" type="application/rss+xml" title="nu1lptr - RSS Feed" href="https://shengtuo.me/rss.xml" />
+	<link rel="alternate" type="application/atom+xml" title="nu1lptr - Atom Feed" href="https://shengtuo.me/atom.xml" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/facet.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/cast/cast-layered.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/icons.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/giallo.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/site.css" />
+
+	<meta property="og:site_name" content="nu1lptr" /><meta property="og:title" content="Projects" />
+	<meta property="og:url" content="https://shengtuo.me/projects/" />
+	<meta property="og:description" content="Side projects by Shengtuo Hu: rllvm and rules_rllvm for whole-program LLVM bitcode, Grammar-Mutator for AFL++, Chromatron Remake, my-resume, cairn and Hack The Box notes." />
+	<meta property="og:image" content="https://shengtuo.me/projects/card.png" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="website" /><meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Projects" />
+	<meta name="twitter:description" content="Side projects by Shengtuo Hu: rllvm and rules_rllvm for whole-program LLVM bitcode, Grammar-Mutator for AFL++, Chromatron Remake, my-resume, cairn and Hack The Box notes." />
+	<meta name="twitter:image" content="https://shengtuo.me/projects/card.png" />
+	<meta name="twitter:site" content="@ShengtuoHu" />
+	<meta name="twitter:creator" content="@ShengtuoHu" />
+
+<link rel="stylesheet" href="https://shengtuo.me/css/projects.css" />
+</head>
+<body>
+  <a class="f-visually-hidden" href="#main">Skip to content</a>
+  <nav class="f-nav f-nav--fixed" aria-label="Site">
+  <a class="f-nav__brand" href="https://shengtuo.me">nu1lptr</a>
+  <a href="https://shengtuo.me/blog/">Blog</a>
+  <a href="https://shengtuo.me/projects/" aria-current="page">Projects</a>
+  <a href="https://shengtuo.me/resume/">Resume</a>
+  <button class="f-btn f-btn--quiet site-search-open" type="button" aria-label="Search" title="Search (/)" hidden>
+    <svg class="site-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+  </button>
+  <button class="f-theme-toggle" type="button" data-f-theme-toggle>Auto</button>
+</nav>
+
+  
+<main id="main" class="f-wrap f-prose site-pj-page">
+	<header>
+		<h1>Projects</h1><p>Things I build on the side: compiler tooling, fuzzing, a game I loved as a kid, and notes from breaking things on purpose.</p>
+	</header>
+
+	<div class="site-pj-filter" role="group" aria-label="Filter projects" hidden>
+		<button class="f-chip" type="button" aria-pressed="true" data-filter="all">All<span></span></button>
+		<button class="f-chip" type="button" aria-pressed="false" data-filter="tools">Tools<span></span></button>
+		<button class="f-chip" type="button" aria-pressed="false" data-filter="security">Security<span></span></button>
+		<button class="f-chip" type="button" aria-pressed="false" data-filter="games">Games<span></span></button>
+	</div>
+
+	<div class="site-pj-grid" data-f-liquid>
+		<article class="f-card site-pj-card site-pj-wide" id="rllvm" data-tags="tools" data-has-detail style="--brand: #2a7bff" aria-labelledby="rllvm-name">
+			<div class="f-card__media site-pj-top site-pj-has-banner site-pj-contain">
+				<img class="site-pj-banner" src="https://shengtuo.me/processed_images/rllvm-banner.846b8a77a6659f3d.webp" width="1200" height="400" alt="" loading="lazy" decoding="async">
+				<span class="site-pj-term" aria-hidden="true"><span class="site-pj-cmd" style="--n: 23">$ rllvm-get-bc ./server</span> <span class="site-pj-out">→ server.bc</span></span>
+			</div>
+			<div class="f-card__body site-pj-body">
+				<div class="site-pj-head">
+					<h2 id="rllvm-name">rllvm &amp; rules_rllvm</h2>
+					<span class="site-pj-meta"><span class="site-pj-yr">2022 – now</span></span>
+				</div>
+				<p>Extract whole-program LLVM bitcode from any build: compiler wrappers for Make, CMake and Cargo, and Bazel rules that need no wrapper at all.</p>
+				
+<div class="site-pj-links">
+	<a class="site-pj-primary" href="https://shengtuo.me/rllvm/">rllvm <span aria-hidden="true">↗</span></a>
+	<a class="site-pj-primary" href="https://shengtuo.me/rules_rllvm/">rules_rllvm <span aria-hidden="true">↗</span></a>
+</div>
+			</div>
+			<template class="site-pj-detail">
+				<h2 class="site-pj-d-title">rllvm &amp; rules_rllvm</h2><p class="f-meta site-pj-kicker">Rust · Starlark · 2022 – now</p>
+				<p>Static analysis wants the whole program as one LLVM module, but a real build spreads it across hundreds of compile commands. These two get it back out without changing how you build.</p>
+				<div class="site-pj-parts">
+					<div><div><b>rllvm</b><span>Compiler wrappers for any build system. On Homebrew and crates.io, with a Claude Code plugin.</span></div>
+<div class="site-pj-links">
+	<a href="https://shengtuo.me/rllvm/">Site</a>
+	<a href="https://github.com/h1994st/rllvm">Code</a>
+</div></div>
+					<div><div><b>rules_rllvm</b><span>Bazel rules: one lazy bitcode action per translation unit, no wrapper.</span></div>
+<div class="site-pj-links">
+	<a href="https://shengtuo.me/rules_rllvm/">Site</a>
+	<a href="https://github.com/h1994st/rules_rllvm">Code</a>
+</div></div>
+				</div>
+			</template>
+		</article>
+		<article class="f-card site-pj-card" id="grammar-mutator" data-tags="tools security" data-has-detail style="--brand: #5b45d6" aria-labelledby="grammar-mutator-name">
+			<div class="f-card__media site-pj-top site-pj-dots">
+				<span class="site-pj-app"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+  <rect width="64" height="64" fill="#f1edff"/>
+  <g stroke="#5b45d6" stroke-width="2.6" fill="none" stroke-linecap="round"><path d="M32 17 18 31M32 17 46 31M18 31 11 45M18 31 25 45M46 31 46 45"/></g>
+  <circle class="gm-root" cx="32" cy="15" r="5.5" fill="#5b45d6"/>
+  <circle cx="18" cy="31" r="4.5" fill="#7c66f0"/><circle cx="46" cy="31" r="4.5" fill="#7c66f0"/>
+  <rect class="gm-a" x="7" y="44" width="8" height="8" rx="2" fill="#f0a500"/><rect x="21" y="44" width="8" height="8" rx="2" fill="#bdb2fb"/><rect class="gm-b" x="42" y="44" width="8" height="8" rx="2" fill="#bdb2fb"/>
+</svg>
+</span>
+			</div>
+			<div class="f-card__body site-pj-body">
+				<div class="site-pj-head">
+					<h2 id="grammar-mutator-name">Grammar-Mutator</h2>
+					<span class="site-pj-meta"><span class="site-pj-star" title="GitHub stars"><span class="site-pj-star-icon">★</span> 276</span><span class="site-pj-yr">2020 – now</span></span>
+				</div>
+				<p>Grammar-based mutator for AFL++. My Google Summer of Code 2020 project, which I still maintain.</p>
+				
+<div class="site-pj-links">
+	<a href="https://github.com/AFLplusplus/Grammar-Mutator">Code</a>
+</div>
+			</div>
+			<template class="site-pj-detail">
+				<h2 class="site-pj-d-title">Grammar-Mutator <span class="site-pj-star" title="GitHub stars"><span class="site-pj-star-icon">★</span> 276</span></h2><p class="f-meta site-pj-kicker">C · AFL++ · 2020 – now</p>
+				<p>A custom mutator that lets AFL++ fuzz highly structured inputs, like JSON or Ruby, by mutating parse trees instead of bytes.</p>
+				<ul class="site-pj-facts">
+					<li>Tree-based mutation and trimming, after Nautilus and F1</li>
+					<li>An ANTLR4 shim that parses test cases at runtime</li>
+					<li>Started in Google Summer of Code 2020, mentored by Marc Heuse and Andrea Fioraldi</li>
+				</ul>
+				
+<div class="site-pj-links">
+	<a href="https://github.com/AFLplusplus/Grammar-Mutator">Code</a>
+</div>
+			</template>
+		</article>
+		<article class="f-card site-pj-card" id="my-resume" data-tags="tools" data-has-detail style="--brand: #64748b" aria-labelledby="my-resume-name">
+			<div class="f-card__media site-pj-top site-pj-dots">
+				<span class="site-pj-app"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+  <rect width="64" height="64" fill="#f2f3f5"/>
+  <path d="M32 6v52" stroke="#c3c6cb" stroke-width="6"/>
+  <circle class="rs-ring" cx="32" cy="32" r="12" fill="#fff" stroke="#374151" stroke-width="7"/>
+</svg>
+</span><span class="site-pj-mascot cat is-idle" data-cat="duna"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 190" aria-hidden="true">
+  <!-- Duna, the my-resume mascot, from site/cast.js in github.com/h1994st/my-resume.
+       Coloured by CSS variables (coat, stripe, light, iris, nose) set in css/projects.css. -->
+  <defs><clipPath id="pj-duna-tail"><path d="M90 157 C 110 161, 128 155, 135 138 l 4 -1 l -3 -3 C 139 122, 138 108, 131 98 l 3 -3 l -5 0 C 124 88, 116 84, 110 86 C 103 88, 102 96, 108 100 C 116 106, 121 116, 120 127 C 119 137, 110 143, 92 144 Z"/></clipPath></defs>
+  <ellipse class="cat-ground" cx="70" cy="186" rx="48" ry="4.5"/>
+   <g class="cat-tail">
+  <path class="cat-o" d="M90 157 C 110 161, 128 155, 135 138 l 4 -1 l -3 -3 C 139 122, 138 108, 131 98 l 3 -3 l -5 0 C 124 88, 116 84, 110 86 C 103 88, 102 96, 108 100 C 116 106, 121 116, 120 127 C 119 137, 110 143, 92 144 Z" fill="var(--coat)"/>
+  <g clip-path="url(#pj-duna-tail)" stroke="var(--stripe)" stroke-width="5" fill="none">
+  <path d="M120 133 L 142 150 M123 115 L 145 113 M116 101 L 134 84"/>
+  </g>
+  </g>
+  <g class="cat-breath">
+  <path class="cat-o" fill="var(--coat)" d="M30 182 C 26 170, 24 160, 26 150 l -4 -3 l 5 -2 C 28 130, 36 114, 50 104 L 90 104 C 104 114, 112 130, 113 145 l 5 2 l -4 3 C 116 160, 114 170, 110 182 Q 104 186 98 182 Q 92 187 86 182 Q 76 187 70 182 Q 62 187 54 182 Q 46 187 42 182 Q 36 186 30 182 Z"/>
+  <path class="cat-o" fill="var(--light)" d="M46 96 Q 42 112 44 122 Q 48 128 52 122 Q 54 138 62 130 Q 66 146 70 134 Q 74 146 78 130 Q 86 138 88 122 Q 92 128 96 122 Q 98 112 94 96 Z"/>
+  <path d="M38 142 q 8 -4 14 2 M36 158 q 10 -4 16 2 M102 142 q -8 -4 -14 2 M104 158 q -10 -4 -16 2" stroke="var(--stripe)" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+  </g>
+  <g class="cat-o">
+  <path d="M34 50 L 36 12 L 62 34 Z" fill="var(--coat)"/>
+  <path d="M106 50 L 104 12 L 78 34 Z" fill="var(--coat)"/>
+  </g>
+  <path d="M40 40 L 41 22 L 54 33 Z M100 40 L 99 22 L 86 33 Z" fill="var(--nose)" opacity=".5"/>
+  <path d="M42 39 q 2 -7 7 -10 M45 41 q 4 -5 10 -6 M98 39 q -2 -7 -7 -10 M95 41 q -4 -5 -10 -6" stroke="var(--light)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+  <path d="M37 14 l -3 -7 M37 14 l 2 -8 M103 14 l 3 -7 M103 14 l -2 -8" stroke="var(--coat)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path class="cat-o" fill="var(--coat)" d="M70 26 C 96 26, 110 44, 110 64 L 118 70 L 109 74 L 116 82 L 104 84 C 96 98, 84 104, 70 104 C 56 104, 44 98, 36 84 L 24 82 L 31 74 L 22 70 L 30 64 C 30 44, 44 26, 70 26 Z"/>
+  <g stroke="var(--stripe)" stroke-width="3.2" fill="none" stroke-linecap="round">
+  <path d="M58 36 l 4 10 l 8 -8 l 8 8 l 4 -10"/>
+  <path d="M33 66 q 8 2 12 0 M31 74 q 9 2 14 -1 M107 66 q -8 2 -12 0 M109 74 q -9 2 -14 -1"/>
+  </g>
+  <ellipse cx="70" cy="80" rx="17" ry="12" fill="var(--light)"/>
+  <g class="cat-eye">
+  <ellipse cx="56" cy="64" rx="7" ry="7.5" fill="var(--iris)"/>
+  <ellipse cx="56" cy="64" rx="2.6" ry="6" fill="#1d1a18"/>
+  <circle cx="58" cy="61" r="1.6" fill="#fff"/>
+  </g>
+  <g class="cat-eye">
+  <ellipse cx="84" cy="64" rx="7" ry="7.5" fill="var(--iris)"/>
+  <ellipse cx="84" cy="64" rx="2.6" ry="6" fill="#1d1a18"/>
+  <circle cx="86" cy="61" r="1.6" fill="#fff"/>
+  </g>
+  <path d="M66 76 h8 l-4 4.5 z" fill="var(--nose)"/>
+  <path d="M70 80.5 q -4 5 -8 2.5 M70 80.5 q 4 5 8 2.5" stroke="#1d1a18" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M52 78 h-20 M52 83 l-19 4 M88 78 h20 M88 83 l19 4" stroke="#1d1a18" stroke-width="1" opacity=".45"/>
+  <g class="cat-paw-l">
+  <ellipse class="cat-o" cx="56" cy="183" rx="10" ry="6" fill="var(--light)"/>
+  <path d="M53 179 v4 M59 179 v4" stroke="#1d1a18" stroke-width="1" opacity=".3"/>
+  </g>
+  <g class="cat-paw-r">
+  <ellipse class="cat-o" cx="84" cy="183" rx="10" ry="6" fill="var(--light)"/>
+  <path d="M81 179 v4 M87 179 v4" stroke="#1d1a18" stroke-width="1" opacity=".3"/>
+  </g>
+  <g class="cat-wave">
+  <path class="cat-wave-edge" d="M88 134 C 95 122, 103 111, 110 101"/>
+  <path d="M88 134 C 95 122, 103 111, 110 101" stroke="var(--coat)" stroke-width="14" stroke-linecap="round" fill="none"/>
+  <path d="M93 121 l 7 4 M99 112 l 7 4" stroke="var(--stripe)" stroke-width="3" stroke-linecap="round"/>
+  <ellipse class="cat-o" cx="112" cy="96" rx="9" ry="9.5" fill="var(--light)"/>
+  <ellipse cx="112" cy="98.5" rx="3.6" ry="3" fill="var(--nose)" opacity=".75"/>
+  <path d="M107 91 a1.6 1.6 0 1 0 0.1 0 M112 89.5 a1.6 1.6 0 1 0 0.1 0 M117 91 a1.6 1.6 0 1 0 0.1 0" fill="var(--nose)" opacity=".75"/>
+  </g>
+<g class="cat-lids">
+  <ellipse class="cat-lid" cx="56" cy="64" rx="8" ry="8.4" fill="var(--coat)"/>
+  <ellipse class="cat-lid" cx="84" cy="64" rx="8" ry="8.4" fill="var(--coat)"/>
+  <path class="cat-lash" d="M49 65 q 7 5 14 0 M77 65 q 7 5 14 0" stroke="#1d1a18" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>
+</span>
+			</div>
+			<div class="f-card__body site-pj-body">
+				<div class="site-pj-head">
+					<h2 id="my-resume-name">my-resume</h2>
+					<span class="site-pj-meta"><span class="site-pj-yr">2026</span></span>
+				</div>
+				<p>A résumé you can <code>git diff</code>, tailored per job with Claude Code.</p>
+				
+<div class="site-pj-links">
+	<a class="site-pj-primary" href="https://shengtuo.me/my-resume/">Site <span aria-hidden="true">↗</span></a>
+	<a href="https://github.com/h1994st/my-resume">Code</a>
+</div>
+			</div>
+			<template class="site-pj-detail">
+				<h2 class="site-pj-d-title">my-resume</h2><p class="f-meta site-pj-kicker">XeLaTeX · Claude Code · 2026</p>
+				<img class="site-pj-shot" src="https://shengtuo.me/processed_images/my-resume.2f91ede65027faf0.webp" width="1200" height="675" alt="Three sample resume pages from the template">
+				<p>One canonical LaTeX resume, tailored variants per job, facts defined once so they can't drift, and a template tested like code.</p>
+				
+<div class="site-pj-links">
+	<a class="site-pj-primary" href="https://shengtuo.me/my-resume/">Site <span aria-hidden="true">↗</span></a>
+	<a href="https://github.com/h1994st/my-resume">Code</a>
+</div>
+			</template>
+		</article>
+		<article class="f-card site-pj-card site-pj-wide" id="chromatron" data-tags="games" data-has-detail style="--brand: #ff2a55" aria-labelledby="chromatron-name">
+			<div class="f-card__media site-pj-top site-pj-has-banner">
+				<img class="site-pj-banner" src="https://shengtuo.me/processed_images/banner.f391d46cd6627c44.webp" width="1400" height="787" alt="" loading="lazy" decoding="async"><span class="site-pj-sweep" aria-hidden="true"></span>
+			</div>
+			<div class="f-card__body site-pj-body">
+				<div class="site-pj-head">
+					<h2 id="chromatron-name">Chromatron Remake</h2>
+					<span class="site-pj-meta"><span class="site-pj-yr">2026</span></span>
+				</div>
+				<p>Chromatron 1–4, rebuilt in Rust for Apple Silicon and the browser. The game I played with my dad in 2006.</p>
+				
+<div class="site-pj-links">
+	<a class="site-pj-primary" href="https://shengtuo.me/chromatron-remake/">Play <span aria-hidden="true">↗</span></a>
+	<a href="https://github.com/h1994st/chromatron-remake">Code</a>
+	<a href="https://shengtuo.me/blog/chromatron-remake/">Blog post</a>
+</div>
+			</div>
+			<template class="site-pj-detail">
+				<h2 class="site-pj-d-title">Chromatron Remake</h2><p class="f-meta site-pj-kicker">Rust · WebAssembly · Ghidra · 2026</p>
+				<img class="site-pj-shot" src="https://shengtuo.me/processed_images/chromatron1-modern.298a8c1950301a5b.webp" width="1200" height="750" alt="Chromatron, level 46 solved, in the modern look">
+				<p>Sean Barrett's laser puzzle games, rebuilt from a decompilation of the PowerPC originals. Four native Mac apps and the browser share one engine.</p>
+				
+<div class="site-pj-links">
+	<a class="site-pj-primary" href="https://shengtuo.me/chromatron-remake/">Play <span aria-hidden="true">↗</span></a>
+	<a href="https://github.com/h1994st/chromatron-remake">Code</a>
+	<a href="https://shengtuo.me/blog/chromatron-remake/">Blog post</a>
+</div>
+			</template>
+		</article>
+		<article class="f-card site-pj-card" id="cairn" data-tags="security" data-has-detail style="--brand: #a07a55" aria-labelledby="cairn-name">
+			<div class="f-card__media site-pj-top site-pj-dots">
+				<span class="site-pj-app"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+  <rect width="64" height="64" fill="#efe9e1"/>
+  <ellipse class="st" cx="32" cy="50" rx="19" ry="7" fill="#8a7b6c"/>
+  <ellipse class="st st2" cx="31" cy="38.5" rx="14.5" ry="6" fill="#a49482"/>
+  <ellipse class="st st3" cx="33" cy="28.5" rx="10.5" ry="5" fill="#bba996"/>
+  <ellipse class="st st4" cx="32" cy="20" rx="7" ry="4" fill="#d1c1ad"/>
+  <circle class="st st5" cx="32" cy="12.5" r="3.2" fill="#e15b3a"/>
+</svg>
+</span>
+			</div>
+			<div class="f-card__body site-pj-body">
+				<div class="site-pj-head">
+					<h2 id="cairn-name">cairn</h2>
+					<span class="site-pj-meta"><span class="site-pj-yr">2026</span></span>
+				</div>
+				<p>Public CVEs reproduced in Rust, one crate each.</p>
+				
+<div class="site-pj-links">
+	<a href="https://github.com/h1994st/cairn">Code</a>
+</div>
+			</div>
+			<template class="site-pj-detail">
+				<h2 class="site-pj-d-title">cairn</h2><p class="f-meta site-pj-kicker">Rust · 2026</p>
+				<p>A cairn is a stack of stones that marks a route. Each CVE I reproduce is one stone: a self-contained crate with the same layout, notes and verification steps.</p>
+				<ul class="site-pj-facts">
+					<li>Two reproductions so far, including Copy Fail (CVE-2026-31431)</li>
+					<li>Public, patched bugs only, credited to the original researchers</li>
+				</ul>
+				
+<div class="site-pj-links">
+	<a href="https://github.com/h1994st/cairn">Code</a>
+</div>
+			</template>
+		</article>
+		<article class="f-card site-pj-card" id="htb" data-tags="security" data-has-detail style="--brand: #6fb300" aria-labelledby="htb-name">
+			<div class="f-card__media site-pj-top site-pj-dots">
+				<span class="site-pj-app"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+  <rect width="64" height="64" fill="#141d2b"/>
+  <path d="M14 22l9 8-9 8" fill="none" stroke="#9fef00" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="htb-cur" d="M28 40h10" stroke="#9fef00" stroke-width="4" stroke-linecap="round"/>
+  <path d="M44 14v30" stroke="#a4b1cd" stroke-width="3" stroke-linecap="round"/>
+  <path class="htb-flag" d="M45.5 15h9l-3 4.5 3 4.5h-9z" fill="#9fef00"/>
+</svg>
+</span>
+			</div>
+			<div class="f-card__body site-pj-body">
+				<div class="site-pj-head">
+					<h2 id="htb-name">HTB notes</h2>
+					<span class="site-pj-meta"><span class="site-pj-yr">2025 – now</span></span>
+				</div>
+				<p>Hack The Box machines, written up step by step.</p>
+				
+<div class="site-pj-links">
+	<a class="site-pj-primary" href="https://shengtuo.me/blog/htb/">Writeups</a>
+	<a href="https://github.com/h1994st/HTB">Code</a>
+</div>
+			</div>
+			<template class="site-pj-detail">
+				<h2 class="site-pj-d-title">HTB notes</h2><p class="f-meta site-pj-kicker">Writeups · 2025 – now</p>
+				<p>Hack The Box machines I've solved, written up step by step on this blog, with the notebooks and scripts on GitHub.</p>
+				
+<div class="site-pj-links">
+	<a class="site-pj-primary" href="https://shengtuo.me/blog/htb/">Writeups</a>
+	<a href="https://github.com/h1994st/HTB">Code</a>
+</div>
+			</template>
+		</article>
+		<a class="f-card site-pj-card site-pj-more" href="https://github.com/h1994st" data-tags="all">
+			<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 0-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.3-3.1-.2-.4-.6-1.6 0-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.6 18.3 5 18.3 5c.7 1.6.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.1 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.1.9 2.2v3.3c0 .3.1.7.8.6A12 12 0 0 0 12 .3"/></svg>
+			<b>More on GitHub <span aria-hidden="true">→</span></b>
+			<small>My playground, CTF scripts and older research code</small>
+		</a>
+	</div>
+
+	<dialog class="f-sheet site-pj-sheet" aria-labelledby="site-pj-sheet-title">
+		<div class="f-sheet__panel site-pj-sheet-body"></div>
+	</dialog>
+</main>
+
+  <footer class="f-footer"><div class="f-footer__cats" aria-hidden="true"></div>
+  <ul class="f-social site-footer-social" aria-label="Elsewhere">
+    <li><a class="f-social__link" href="https://github.com/h1994st" rel="me noopener"><span class="f-icon f-icon--github" aria-hidden="true"></span><span class="f-visually-hidden">GitHub</span></a></li>
+    <li><a class="f-social__link" href="https://scholar.google.com/citations?user=VOefXMMAAAAJ" rel="me noopener"><span class="f-icon f-icon--google-scholar" aria-hidden="true"></span><span class="f-visually-hidden">Google Scholar</span></a></li>
+    <li><a class="f-social__link" href="https://www.linkedin.com/in/shengtuo/" rel="me noopener"><span class="f-icon f-icon--linkedin" aria-hidden="true"></span><span class="f-visually-hidden">LinkedIn</span></a></li>
+    <li><a class="f-social__link" href="https://x.com/ShengtuoHu" rel="me noopener"><span class="f-icon f-icon--x" aria-hidden="true"></span><span class="f-visually-hidden">X</span></a></li>
+    <li><a class="f-social__link" href="https://www.instagram.com/hst_nullderef/" rel="me noopener"><span class="f-icon f-icon--instagram" aria-hidden="true"></span><span class="f-visually-hidden">Instagram</span></a></li>
+  </ul>
+  <p class="site-footer-links"><a href="https://shengtuo.me/blog/">Blog</a> · <a href="https://shengtuo.me/notebook/">Notebook</a> · <a href="https://shengtuo.me/misc/">Misc.</a> · 
+    <a href="https://shengtuo.me/atom.xml">Feed</a>
+  </p>
+  <p>© 2026 Shengtuo Hu</p>
+</footer>
+
+  <dialog class="f-sheet" id="site-search" aria-label="Search" data-index="https://shengtuo.me/search_index.en.json">
+  <div class="f-sheet__panel">
+    <input class="f-input f-search" type="search" placeholder="Search posts and notes" aria-label="Search" autocomplete="off" />
+    <p class="f-meta site-search-status" role="status"></p>
+    <ol class="site-search-results"></ol>
+  </div>
+</dialog>
+<script type="module" src="https://shengtuo.me/js/site/search.js"></script>
+
+  
+  <script type="module" src="https://shengtuo.me/vendor/facet/dist/js/facet.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/cats.js"></script>
+  <script src="https://shengtuo.me/js/projects.js" defer></script>
+</body>
+</html>

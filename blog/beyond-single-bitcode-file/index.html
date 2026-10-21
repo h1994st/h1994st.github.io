@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en" data-accent="moss" data-f-ga4="G-ZMH6NLL7C7">
+<head>
+<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" /><script>try{var t=localStorage.getItem("facet-theme");if(/^(dark|light|auto)$/.test(t))document.documentElement.dataset.theme=t}catch(e){}</script>
+	<meta name="description" content="rllvm 0.5 keeps modules, provenance, and choices intact until an analysis is ready to use them." />
+	<meta name="author" content="Shengtuo Hu" />
+	<meta name="theme-color" content="#13161c" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f5f7f9" media="(prefers-color-scheme: light)" />
+	<title>Beyond a Single Bitcode File - nu1lptr</title>
+	<link rel="canonical" href="https://shengtuo.me/blog/beyond-single-bitcode-file/" /><link rel="icon" href="https://shengtuo.me/favicon.ico" sizes="32x32" />
+	<link rel="icon" href="https://shengtuo.me/favicon.svg" type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="https://shengtuo.me/apple-touch-icon.png" />
+	<link rel="alternate" type="application/rss+xml" title="nu1lptr - RSS Feed" href="https://shengtuo.me/rss.xml" />
+	<link rel="alternate" type="application/atom+xml" title="nu1lptr - Atom Feed" href="https://shengtuo.me/atom.xml" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/facet.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/cast/cast-layered.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/icons.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/giallo.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/site.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/rllvm-substrate.css" />
+
+	<meta property="og:site_name" content="nu1lptr" /><meta property="og:title" content="Beyond a Single Bitcode File" />
+	<meta property="og:url" content="https://shengtuo.me/blog/beyond-single-bitcode-file/" />
+	<meta property="og:description" content="rllvm 0.5 keeps modules, provenance, and choices intact until an analysis is ready to use them." />
+	<meta property="og:image" content="https://shengtuo.me/cards/blog/beyond-single-bitcode-file.png" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="article:published_time" content="2026-09-13T18:00:00-07:00" />
+	<meta property="article:author" content="Shengtuo Hu" />
+	<meta property="article:tag" content="rllvm" />
+	<meta property="article:tag" content="LLVM" />
+	<meta property="article:tag" content="Rust" />
+	<meta property="article:tag" content="Static Analysis" /><meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Beyond a Single Bitcode File" />
+	<meta name="twitter:description" content="rllvm 0.5 keeps modules, provenance, and choices intact until an analysis is ready to use them." />
+	<meta name="twitter:image" content="https://shengtuo.me/cards/blog/beyond-single-bitcode-file.png" />
+	<meta name="twitter:site" content="@ShengtuoHu" />
+	<meta name="twitter:creator" content="@ShengtuoHu" /><script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	"@id": "https://shengtuo.me/blog/beyond-single-bitcode-file/#article",
+	"mainEntityOfPage": "https://shengtuo.me/blog/beyond-single-bitcode-file/",
+	"url": "https://shengtuo.me/blog/beyond-single-bitcode-file/",
+	"headline": "Beyond a Single Bitcode File",
+	"description": "rllvm 0.5 keeps modules, provenance, and choices intact until an analysis is ready to use them.",
+	"datePublished": "2026-09-13T18:00:00-07:00",
+	"dateModified": "2026-09-13T18:00:00-07:00",
+	"image": "https://shengtuo.me/cards/blog/beyond-single-bitcode-file.png",
+	"keywords": ["rllvm","LLVM","Rust","Static Analysis"],
+	"inLanguage": "en",
+	"author": {
+		"@type": "Person",
+		"@id": "https://shengtuo.me/#person",
+		"name": "Shengtuo Hu",
+		"url": "https://shengtuo.me/"
+	},
+	"publisher": { "@id": "https://shengtuo.me/#person" }
+}
+</script>
+
+
+
+</head>
+<body>
+  <a class="f-visually-hidden" href="#main">Skip to content</a>
+  <nav class="f-nav f-nav--fixed" aria-label="Site">
+  <a class="f-nav__brand" href="https://shengtuo.me">nu1lptr</a>
+  <a href="https://shengtuo.me/blog/" aria-current="page">Blog</a>
+  <a href="https://shengtuo.me/projects/">Projects</a>
+  <a href="https://shengtuo.me/resume/">Resume</a>
+  <button class="f-btn f-btn--quiet site-search-open" type="button" aria-label="Search" title="Search (/)" hidden>
+    <svg class="site-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+  </button>
+  <button class="f-theme-toggle" type="button" data-f-theme-toggle>Auto</button>
+</nav>
+
+  
+<main id="main" class="f-docs f-prose" data-f-code-ln="true" data-f-code-wrap="true" data-f-code-frame="false">
+  <nav class="f-toc" aria-label="On this page" data-f-scrollspy>
+  <p class="f-docs__label">On this page</p>
+  <a href="#tl-dr">TL;DR</a>
+  <a href="#the-bc-file-was-only-the-first-output">The .bc file was only the first output</a>
+  <a href="#modules-before-merging">Modules before merging</a>
+  <a href="#two-kinds-of-build-evidence">Two kinds of build evidence</a>
+  <a href="#select-then-materialize">Select, then materialize</a>
+  <a href="#real-builds-are-mostly-edge-cases">Real builds are mostly edge cases</a>
+  <a href="#measuring-the-tax">Measuring the tax</a>
+  <a href="#the-lineage-now-has-a-fork">The lineage now has a fork</a>
+  <a href="#what-comes-next">What comes next</a>
+</nav>
+
+  <article class="site-post">
+<header class="f-reading__title">
+  <p class="f-kicker"><a href="https://shengtuo.me/blog/">nu1lptr&#39;s Blog</a></p>
+  <h1>Beyond a Single Bitcode File</h1>
+  <p class="f-meta site-post-meta">
+    <time datetime="2026-09-13">Sep 13, 2026</time> · 7 min read · <a href="https://shengtuo.me/tags/rllvm/">rllvm</a> · <a href="https://shengtuo.me/tags/llvm/">LLVM</a> · <a href="https://shengtuo.me/tags/rust/">Rust</a> · <a href="https://shengtuo.me/tags/static-analysis/">Static Analysis</a> · <button class="f-btn f-btn--quiet site-share" type="button">Share</button><span class="site-share-status" role="status"></span>
+  </p>
+</header>
+
+    <h2 id="tl-dr"><a class="zola-anchor" href="#tl-dr" aria-label="Link to this section">#</a>
+TL;DR</h2>
+<p><code>rllvm</code> used to produce one answer: a merged whole-program <code>.bc</code> file. Version
+0.5 can instead inventory the modules first, keep their identities and known
+provenance in a catalog, select the ones an analysis needs, and only then copy,
+archive, or merge them. It can acquire those modules from a wrapped build or
+regenerate selected C and C++ compilations from <code>compile_commands.json</code>.</p>
+<p>The original wrapper workflow still works. It now sits inside a larger model:
+<strong>acquire, catalog, select, materialize</strong>.</p>
+<h2 id="the-bc-file-was-only-the-first-output"><a class="zola-anchor" href="#the-bc-file-was-only-the-first-output" aria-label="Link to this section">#</a>
+The <code>.bc</code> file was only the first output</h2>
+<p>In <a href="https://shengtuo.me/blog/whole-program-bitcode/">my previous post</a>, I described <code>rllvm</code> as the
+third tool in the <code>wllvm</code> and <code>gllvm</code> lineage: replace the compiler, build
+normally, then recover one LLVM module from the linked program. I also wrote that
+there was little urgency to switch if either older tool already worked for you.</p>
+<p>That remains fair for the narrow job of producing one <code>.bc</code> file. It no longer
+describes the whole project.</p>
+<p>A merged module is useful, but merging is a poor first step. It collapses module
+boundaries before a consumer can decide what belongs in an analysis. It also
+hides useful distinctions: two compilations of the same source can use different
+flags, a missing module is different from an unsupported one, and a module found
+in an executable says something different from one regenerated from a compilation
+database.</p>
+<p><code>rllvm</code> 0.5 makes the unmerged modules addressable. The whole-program file becomes
+one possible output rather than the only interface.</p>
+<h2 id="modules-before-merging"><a class="zola-anchor" href="#modules-before-merging" aria-label="Link to this section">#</a>
+Modules before merging</h2>
+<p><code>rllvm-info --json</code> now inventories bitcode, objects, executables, regular
+archives, and existing catalogs without merging anything:</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">rllvm-info</span><span class="z-6"> app --json</span><span class="z-3"> &gt;</span><span class="z-6"> catalog.json</span></span></code></pre>
+<p>Each catalog entry has an opaque module ID and a content hash. Where available,
+it also records source associations, target and data layout, compilation
+configuration, debug-information presence, and diagnostics. A module can be
+<code>available</code>, <code>missing</code>, <code>unsupported</code>, or <code>failed</code>; failure does not erase the
+other evidence.</p>
+<p>The catalog is deliberately careful about what it does not know. Finding a
+source filename in debug information does not prove which compiler produced it.
+Finding several modules in an archive does not prove that they form a complete
+program. Those fields stay empty, and whole-program completeness stays unknown.</p>
+<figure class="f-figure substrate-fig substrate-acquire" aria-label="Two acquisition paths feed a module catalog: a wrapped build provides link membership, while a compilation database provides compilation configurations from the current source tree">
+<div class="substrate-sources">
+<div class="substrate-card">
+<p class="f-figure__kicker">live build</p>
+<strong>object · archive · binary</strong>
+<small>which modules reached the link</small>
+</div>
+<div class="substrate-card">
+<p class="f-figure__kicker">recorded build</p>
+<strong>compile_commands.json</strong>
+<small>how each source was compiled</small>
+</div>
+</div>
+<div class="substrate-down" aria-hidden="true"><span></span><span></span></div>
+<div class="substrate-catalog">
+<p class="f-figure__kicker">shared representation</p>
+<strong>module catalog</strong>
+<small>identity · integrity · provenance · uncertainty</small>
+</div>
+<figcaption>Both paths produce modules and the same catalog format, but they provide different evidence.</figcaption>
+</figure>
+<h2 id="two-kinds-of-build-evidence"><a class="zola-anchor" href="#two-kinds-of-build-evidence" aria-label="Link to this section">#</a>
+Two kinds of build evidence</h2>
+<p>The wrapper observes a real build. A path recorded in the finished executable is
+evidence that the corresponding object participated in that link. This answers
+the whole-program question, but the old path section does not record a complete
+compiler identity, environment, or source snapshot.</p>
+<p>A compilation database answers a different question. It preserves one command
+per translation unit, so <code>rllvm-compdb</code> can list those entries and regenerate only
+the current-tree modules an analysis asks for:</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">rllvm-compdb</span><span class="z-6"> list build/</span><span class="z-3"> &gt;</span><span class="z-6"> compilations.json</span></span>
+<span class="giallo-l"><span class="z-12">rllvm-compdb</span><span class="z-6"> generate build/ --source src/parser.c</span><span> \</span></span>
+<span class="giallo-l"><span class="z-6">  --extra-arg=-O0 --output-dir analysis/parser</span></span></code></pre>
+<p>The importer keeps duplicate compilations distinct, records the original and
+effective arguments, and puts failures beside successful modules. It does not
+pretend to reconstruct the historical build. Generated headers must exist now,
+the original environment is unknown, and a compile command says nothing about
+which executable eventually used its object.</p>
+<p>This distinction matters for analysis. Use wrapper capture when linked membership
+is the fact you need. Use the compilation database when you want selected,
+repeatable analysis compilations from the current tree.</p>
+<h2 id="select-then-materialize"><a class="zola-anchor" href="#select-then-materialize" aria-label="Link to this section">#</a>
+Select, then materialize</h2>
+<p>Catalogs can be filtered by module ID, source, or known configuration. Alternatives
+within one selector are combined; different selector types intersect. An unmatched
+selector is an error rather than an empty success.</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">rllvm-get-bc</span><span class="z-6"> app --source src/parser.c --output-dir analysis/selected</span></span>
+<span class="giallo-l"><span class="z-12">rllvm-get-bc</span><span class="z-6"> analysis/selected/catalog.json -o parser.bc</span></span></code></pre>
+<p>The first command copies separate, hash-checked modules into a new directory and
+writes the catalog last. Its module paths are relative, so the directory can move
+as a unit. The second command chooses to merge that collection. Archive and partial
+merge strategies remain available when one large link is the wrong shape.</p>
+<figure class="f-figure substrate-fig substrate-materialize" aria-label="A module catalog is filtered before three possible outputs: a relocatable collection, a bitcode archive, or merged whole-program bitcode">
+<div class="substrate-modules" aria-label="catalog modules">
+<span><b>01</b> parse.c <i>debug</i></span>
+<span><b>02</b> parse.c <i>release</i></span>
+<span><b>03</b> lexer.c <i>release</i></span>
+<span class="substrate-dim"><b>04</b> plugin.c <i>missing</i></span>
+</div>
+<div class="substrate-filter">
+<p class="f-figure__kicker">selection</p>
+<strong>source + configuration</strong>
+</div>
+<div class="substrate-outputs">
+<span>relocatable<br><b>collection</b></span>
+<span>bitcode<br><b>archive</b></span>
+<span>merged<br><b>.bc</b></span>
+</div>
+<figcaption>Selection preserves the useful boundary. Materialization can remain separate or merge only the chosen modules.</figcaption>
+</figure>
+<h2 id="real-builds-are-mostly-edge-cases"><a class="zola-anchor" href="#real-builds-are-mostly-edge-cases" aria-label="Link to this section">#</a>
+Real builds are mostly edge cases</h2>
+<p>The high-level model works only if acquisition survives actual compiler command
+lines. Recent work therefore looks less glamorous and matters just as much.</p>
+<p>Response files are expanded for classification while the real compiler still
+receives the original arguments. Nested files, quoting, escapes, byte-order marks,
+and relative paths follow Clang's rules. Commands generated by <code>rllvm</code> switch to
+response files automatically when the operating system's argument limit would be
+too small.</p>
+<p>LTO needs separate handling because its “object” may already be bitcode. The
+default marker mode covers full and ThinLTO on ELF and Mach-O; save-temps mode can
+capture a full-LTO linker's optimized module. Rust needs crate-aware markers and
+archive updates. Cross-target builds need architecture and sysroot choices to
+survive secondary compilations.</p>
+<p>eBPF was the pleasant counterexample. An eBPF object built through <code>rllvm-cc</code>
+already carried the ordinary <code>.rllvm_bc</code> section. <code>libbpf</code> ignored that section
+when loading the program and preserved it when linking objects. Supporting the
+target required an integration test and documentation, not a new production
+backend. A mechanism that composes with a tool it was not written for is a useful
+kind of validation.</p>
+<h2 id="measuring-the-tax"><a class="zola-anchor" href="#measuring-the-tax" aria-label="Link to this section">#</a>
+Measuring the tax</h2>
+<p>Compiler wrappers are not free. C and C++ normally compile twice: once for the
+native object and once for analysis bitcode. <code>rllvm</code> now has a reproducible
+workflow harness that validates native behavior and extracted IR before accepting
+a timing sample.</p>
+<p>The first recorded baseline used an Apple M4, LLVM 22.1.8, eight build jobs, and
+three repetitions. Clean build-only time relative to native compilation was:</p>
+<table><thead><tr><th>Workload</th><th style="text-align: right">Cache off</th><th style="text-align: right">Primed cache</th></tr></thead><tbody>
+<tr><td>nghttp2 C</td><td style="text-align: right">1.84×</td><td style="text-align: right">1.61×</td></tr>
+<tr><td>nghttp2 C++</td><td style="text-align: right">1.83×</td><td style="text-align: right">1.20×</td></tr>
+<tr><td>Quiche</td><td style="text-align: right">1.59×</td><td style="text-align: right">1.50×</td></tr>
+</tbody></table>
+<p>The cache avoids repeated C/C++ bitcode compilation, but still preprocesses and
+hashes current inputs before declaring a hit. It does not cache Rust compilation.
+The measurements also had an uncontrolled filesystem cache and normal desktop
+activity, so they are evidence for these workloads rather than a universal ratio.
+They compare <code>rllvm</code> with native builds, not with <code>gllvm</code> or <code>wllvm</code>.</p>
+<h2 id="the-lineage-now-has-a-fork"><a class="zola-anchor" href="#the-lineage-now-has-a-fork" aria-label="Link to this section">#</a>
+The lineage now has a fork</h2>
+<p><code>wllvm</code>, <code>gllvm</code>, and <code>rllvm</code> still share the same good trick: record sidecar
+bitcode paths in object files and let the linker accumulate them. The older tools
+center their interface on extracting a merged module or archive. <code>rllvm</code> now keeps
+that workflow while adding another acquisition path and a representation between
+capture and merge.</p>
+<p>That does not make it a strict superset. <code>gllvm</code> supports Fortran and thin
+archives; <code>wllvm</code> can drive GCC through dragonegg. But for Clang-based program
+analysis, <code>rllvm</code> now exposes a much larger surface: Rust, WebAssembly and eBPF,
+real LTO extraction, relocatable paths, validated caching, module catalogs,
+selection, and compilation-database imports.</p>
+<p>The meaningful difference is no longer implementation language or wrapper speed.
+It is where the tool stops. The older workflow stops when it produces bitcode.
+<code>rllvm</code> is starting to preserve the structure that the next tool will need.</p>
+<h2 id="what-comes-next"><a class="zola-anchor" href="#what-comes-next" aria-label="Link to this section">#</a>
+What comes next</h2>
+<p><a href="https://shengtuo.me/blog/whole-program-bitcode/#what-comes-next">My previous post</a> ended with a
+query interface for coding assistants: definitions, callers, callees,
+reachability, possible indirect targets, and an inspectable path back to source.
+The roadmap now gives that idea a clearer shape.</p>
+<p>The first step is to make program facts easy to ask for. Scripts and coding
+assistants should be able to query a catalog in source-level terms and receive
+the locations and paths that support each answer. Missing modules, unresolved
+calls, and unavailable mappings should remain visible rather than turning into
+false certainty.</p>
+<p>The second is to make the ask, edit, rebuild, ask loop practical. Unchanged work
+should be reused without letting an answer from an older build appear current.
+From there, simple reachability can grow into deeper security evidence when a
+question needs it, and program facts can be compared across revisions or build
+configurations. The useful result is still evidence a person can inspect, not an
+automatic verdict.</p>
+<p>The final direction is broader reach: following calls across Rust and C/C++
+boundaries, and carrying a verified analysis snapshot to another machine after
+the original build tree is gone.</p>
+<p>The progression is from artifacts, to facts, to evidence. Extraction was the
+prerequisite. The catalog is the substrate that keeps every later answer tied to
+what was actually analyzed and what remains unknown.</p>
+<hr />
+<p><code>rllvm</code> is Apache-2.0 and available on
+<a rel="noopener external" target="_blank" href="https://github.com/h1994st/rllvm">GitHub</a>. The repository includes the
+<a rel="noopener external" target="_blank" href="https://github.com/h1994st/rllvm/blob/main/docs/CATALOG.md">catalog schema</a> and
+<a rel="noopener external" target="_blank" href="https://github.com/h1994st/rllvm/tree/main/benchmarks/baselines/2026-09-12-apple-m4">benchmark evidence</a>.</p>
+
+    
+<aside class="site-backlinks">
+  <h2>Pages linking here</h2>
+  <ul><li><a href="https://shengtuo.me/blog/from-capture-to-query/">rllvm: From Capture to Query</a></li></ul>
+</aside>
+<nav class="site-prev-next" aria-label="More posts"><a href="https://shengtuo.me/blog/whole-program-bitcode/">← Older: Two Ways to Extract Whole-Program Bitcode</a><a href="https://shengtuo.me/blog/from-capture-to-query/">Newer: rllvm: From Capture to Query →</a>
+</nav>
+
+  </article>
+</main>
+
+  <footer class="f-footer"><div class="f-footer__cats" aria-hidden="true"></div>
+  <ul class="f-social site-footer-social" aria-label="Elsewhere">
+    <li><a class="f-social__link" href="https://github.com/h1994st" rel="me noopener"><span class="f-icon f-icon--github" aria-hidden="true"></span><span class="f-visually-hidden">GitHub</span></a></li>
+    <li><a class="f-social__link" href="https://scholar.google.com/citations?user=VOefXMMAAAAJ" rel="me noopener"><span class="f-icon f-icon--google-scholar" aria-hidden="true"></span><span class="f-visually-hidden">Google Scholar</span></a></li>
+    <li><a class="f-social__link" href="https://www.linkedin.com/in/shengtuo/" rel="me noopener"><span class="f-icon f-icon--linkedin" aria-hidden="true"></span><span class="f-visually-hidden">LinkedIn</span></a></li>
+    <li><a class="f-social__link" href="https://x.com/ShengtuoHu" rel="me noopener"><span class="f-icon f-icon--x" aria-hidden="true"></span><span class="f-visually-hidden">X</span></a></li>
+    <li><a class="f-social__link" href="https://www.instagram.com/hst_nullderef/" rel="me noopener"><span class="f-icon f-icon--instagram" aria-hidden="true"></span><span class="f-visually-hidden">Instagram</span></a></li>
+  </ul>
+  <p class="site-footer-links"><a href="https://shengtuo.me/blog/">Blog</a> · <a href="https://shengtuo.me/notebook/">Notebook</a> · <a href="https://shengtuo.me/misc/">Misc.</a> · 
+    <a href="https://shengtuo.me/atom.xml">Feed</a>
+  </p>
+  <p>© 2026 Shengtuo Hu</p>
+</footer>
+
+  <dialog class="f-sheet" id="site-search" aria-label="Search" data-index="https://shengtuo.me/search_index.en.json">
+  <div class="f-sheet__panel">
+    <input class="f-input f-search" type="search" placeholder="Search posts and notes" aria-label="Search" autocomplete="off" />
+    <p class="f-meta site-search-status" role="status"></p>
+    <ol class="site-search-results"></ol>
+  </div>
+</dialog>
+<script type="module" src="https://shengtuo.me/js/site/search.js"></script>
+
+  
+  <script type="module" src="https://shengtuo.me/vendor/facet/dist/js/facet.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/cats.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/code-copy.js"></script><script type="module" src="https://shengtuo.me/js/site/share.js"></script>
+
+</body>
+</html>

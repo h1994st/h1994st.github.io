@@ -1,0 +1,61 @@
+/* /resume/ (templates/resume.html) on facet's Resume layout. facet's .f-resume owns the header
+   card, the section index (.f-toc + scrollspy), the timeline, publications, service lines, chips
+   and the one-column print style; this file only fills the gaps the generated data opens. */
+
+/* An entry's one-line domain summary under its title, location and dates. */
+.f-resume .f-timeline p {
+  margin: 0.25rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Org links in a role or school line read as the org, not as a bright link. */
+.f-resume__org a {
+  color: inherit;
+}
+
+.site-rs-dissertation {
+  font-style: italic;
+  font-size: var(--f-text-sm);
+}
+
+/* Project link chips: facet spaces and undecorates these only inside .f-pubs. */
+.f-timeline .f-cluster {
+  margin-top: 0.45rem;
+  --f-gap: 0.45rem;
+}
+
+.f-timeline a.f-chip {
+  text-decoration: none;
+}
+
+.f-resume a.f-chip:hover {
+  color: var(--f-fg);
+}
+
+@media print {
+  .f-resume section > h2,
+  .f-timeline > li,
+  .f-pubs > li,
+  .f-lines > li {
+    break-inside: avoid;
+  }
+
+  .f-resume section > h2 {
+    break-after: avoid;
+  }
+
+  /* On paper a link is only its text, so mark it, and spell out where the publication and
+     project links go. The header's contact links already read as their URLs. */
+  .f-resume__body a,
+  .f-timeline a.f-chip {
+    text-decoration: underline;
+  }
+
+  :is(.f-pubs, #projects) a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    font-weight: 400;
+    overflow-wrap: anywhere;
+  }
+}

