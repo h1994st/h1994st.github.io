@@ -100,8 +100,6 @@
 .site-cover-actions { display: flex; flex-wrap: wrap; gap: var(--f-space-3); margin-top: var(--f-space-5); }
 .site-cover-actions .f-btn { padding: 0.75rem 1.4rem; font-size: 1rem; }
 .site-cover-actions .f-btn--primary { box-shadow: 0 0 1.5rem color-mix(in oklch, var(--f-accent) 55%, transparent); }
-/* A hero card in a post: facet's kicker misses the card's color: inherit, so prose's p color wins. */
-.f-prose .f-hero__kicker { color: inherit; }
 .site-toc-sub { padding-left: var(--f-space-4); font-size: var(--f-text-sm); }
 .site-backlinks, .site-prev-next { margin-top: var(--f-space-7); padding-top: var(--f-space-4); border-top: 1px solid var(--f-line-2); }
 .site-backlinks h2 { font-size: var(--f-text-lg); }
