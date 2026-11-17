@@ -1,0 +1,154 @@
+/* Diagrams for the whole-program bitcode post.
+ *
+ * The vocabulary is borrowed from the rllvm and rules_rllvm project pages so
+ * the blog and the docs cannot disagree visually. The figure frame (margin,
+ * caption) is facet's .f-figure; this file draws only the diagrams, on facet's
+ * tokens, so both themes follow the site automatically. */
+
+.bc-fig > :not(figcaption, .f-figure__kicker) {
+	font-family: var(--f-font-mono);
+}
+
+/* ---------- the ledger: one path per object, concatenated ---------- */
+
+.bc-ledger ol {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	position: relative;
+	max-width: min(27rem, 100%);
+}
+
+/* The rule down the right edge is the section the linker is filling in: every
+   row terminates against the same line. */
+.bc-ledger ol::after {
+	content: "";
+	position: absolute;
+	right: 0;
+	top: 0.85rem;
+	bottom: 0.85rem;
+	width: 1px;
+	background: linear-gradient(
+		to bottom,
+		transparent,
+		var(--f-line-2) 14%,
+		var(--f-line-2) 86%,
+		transparent
+	);
+}
+
+.bc-ledger li {
+	display: grid;
+	grid-template-columns: auto minmax(1.5rem, 1fr) auto;
+	align-items: center;
+	gap: 0.7rem;
+	padding: 0.4rem 1.15rem 0.4rem 0;
+	font-size: var(--f-text-sm);
+	animation: bc-enter 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+	animation-delay: calc(var(--i) * 80ms);
+}
+
+.bc-ledger .tie {
+	height: 1px;
+	background: repeating-linear-gradient(
+		to right,
+		var(--f-line-2) 0 3px,
+		transparent 3px 6px
+	);
+}
+
+.bc-ledger .src {
+	color: var(--f-fg);
+}
+
+.bc-ledger .bc {
+	color: var(--f-fg-2);
+}
+
+.bc-ledger .sec {
+	color: var(--f-fg);
+}
+
+/* ---------- the graph: a diamond, deduplicated ---------- */
+
+.bc-graph svg {
+	display: block;
+	width: 100%;
+	height: auto;
+	max-width: min(30rem, 100%);
+	overflow: visible;
+}
+
+/* Dashed on purpose: these edges are declared during analysis and carry
+   nothing until an output group asks for them. */
+.bc-graph .edges line {
+	/* Not --f-line-2: a hairline that reads fine as a border disappears as a
+	   diagonal, and in dark it vanishes against the ground entirely. */
+	stroke: color-mix(in srgb, var(--f-fg) 40%, transparent);
+	stroke-width: 1.5;
+	stroke-dasharray: 3 3;
+	stroke-linecap: round;
+}
+
+.bc-graph .node rect {
+	fill: var(--f-bg-2);
+	stroke: var(--f-line-2);
+	stroke-width: 1;
+}
+
+.bc-graph text {
+	font-family: var(--f-font-mono);
+	text-anchor: middle;
+}
+
+.bc-graph .target {
+	fill: var(--f-fg);
+	font-size: 13px;
+}
+
+.bc-graph .bc {
+	fill: var(--f-fg-2);
+	font-size: 11px;
+}
+
+/* The shared node is the point of the picture, so it is the one thing allowed
+   to carry the accent color. */
+.bc-graph .shared rect {
+	stroke: var(--f-accent);
+}
+
+.bc-graph .shared .target {
+	fill: var(--f-accent);
+}
+
+.bc-graph .node,
+.bc-graph .edges {
+	transform-box: fill-box;
+	transform-origin: center;
+	animation: bc-enter 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+	animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+.bc-graph .edges {
+	animation-duration: 0.7s;
+	animation-delay: 150ms;
+}
+
+@keyframes bc-enter {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.bc-ledger li,
+	.bc-graph .node,
+	.bc-graph .edges {
+		animation: none;
+	}
+}
