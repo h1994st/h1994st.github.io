@@ -8,7 +8,7 @@ SAME_AS = [
     "https://scholar.google.com/citations?user=VOefXMMAAAAJ",
     "https://dblp.org/pid/203/0829.html",
     "https://www.linkedin.com/in/shengtuo/",
-    "https://x.com/ShengtuoHu",
+    "https://x.com/nu1lptr_ext",
     "https://www.instagram.com/hst_nullderef/",
 ]
 

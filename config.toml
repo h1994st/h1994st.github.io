@@ -76,7 +76,7 @@ icon = "linkedin"
 
 [[extra.profiles]]
 name = "X"
-url = "https://x.com/ShengtuoHu"
+url = "https://x.com/nu1lptr_ext"
 icon = "x"
 
 [[extra.profiles]]
@@ -93,7 +93,7 @@ show = false
 # Site-wide settings.
 [extra.site]
 home_title = "Shengtuo Hu - Security Researcher"
-twitter = "@ShengtuoHu"
+twitter = "@nu1lptr_ext"
 accent = "moss"                     # <html data-accent>
 facet = "/vendor/facet/dist"        # where facet's files are served from
 ga4 = "G-ZMH6NLL7C7"                # <html data-f-ga4>, read by facet's analytics.js
