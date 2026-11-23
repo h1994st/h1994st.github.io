@@ -191,7 +191,7 @@ links = [
 
 [[extra.service]]
 text = "Vehicle Security and Privacy (VehicleSec) Technical Program Committee"
-years = "2024–2026"
+years = "2024–2027"
 
 [[extra.service]]
 text = "USENIX Security Artifact Evaluation Committee"
