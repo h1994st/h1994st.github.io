@@ -1,0 +1,259 @@
+/* Copied from my-resume, branch `site`, site/style.css (bac2efa): the cast section. Mockup copy; keep in sync. */
+.cat {
+  --cat-wag: none;
+  --cat-breathe: none;
+  --cat-blink: none;
+  position: relative;
+  width: 140px;
+  aspect-ratio: 140 / 190;
+}
+.cat[data-cat="duna"] {
+  --coat: #9aa3ad;
+  --stripe: #59626d;
+  --light: #eceff2;
+  --iris: #e3a72f;
+  --nose: #e48b8b;
+}
+.cat[data-cat="dudu"] {
+  --coat: #8c939c;
+  --stripe: #8c939c;
+  --light: #b9bfc6;
+  --iris: #8fc27a;
+  --nose: #c98a8f;
+}
+.cat[data-cat="nangnang"] {
+  --coat: #b48c5f;
+  --stripe: #5a4230;
+  --light: #f2e7d7;
+  --iris: #b9c25a;
+  --nose: #d98579;
+}
+.cat-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.cast-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+/* Inside the symbol (styled through <use>; the variables reach it by inheritance). */
+.cat-o {
+  stroke: var(--cat-edge);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+.cat-tail {
+  transform-origin: 92px 150px;
+  animation: var(--cat-wag);
+}
+.cat-breath {
+  transform-origin: 70px 182px;
+  animation: var(--cat-breathe);
+}
+.cat-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: var(--cat-blink);
+}
+.cat-paw-l {
+  opacity: var(--cat-paw-l, 1);
+}
+.cat-paw-r {
+  opacity: var(--cat-paw-r, 1);
+}
+.cat.is-idle {
+  --cat-wag: cat-wag 1.8s ease-in-out var(--cat-delay, 0s) infinite;
+  --cat-breathe: cat-breathe 3s ease-in-out var(--cat-delay, 0s) infinite;
+  --cat-blink: cat-blink 4.5s var(--cat-delay, 0s) infinite;
+}
+@keyframes cat-wag {
+  50% {
+    transform: rotate(10deg);
+  }
+}
+@keyframes cat-breathe {
+  50% {
+    transform: scale(1.015, 0.99);
+  }
+}
+@keyframes cat-blink {
+  0%,
+  93%,
+  100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.1);
+  }
+}
+
+/* Poses: overlays over the symbol, hidden until their pose. */
+.cat-ground {
+  fill: var(--cat-shadow);
+  transform-origin: 70px 186px;
+}
+.cat-figure {
+  transform-origin: 70px 186px;
+}
+.cat-wave,
+.cat-tuck,
+.cat-tap,
+.cat-lids {
+  display: none;
+}
+.cat-wave-edge {
+  fill: none;
+  stroke: var(--cat-edge);
+  stroke-width: 17;
+  stroke-linecap: round;
+}
+.cat[data-pose="wave"] {
+  --cat-paw-r: 0;
+}
+.cat[data-pose="wave"] .cat-wave {
+  display: inline;
+  transform-origin: 88px 134px;
+  animation: cat-pose-wave 1.2s ease-in-out infinite;
+}
+@keyframes cat-pose-wave {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(14deg);
+  }
+}
+.cat[data-pose="jump"],
+.cat[data-pose="tap"] {
+  --cat-paw-l: 0;
+  --cat-paw-r: 0;
+}
+.cat[data-pose="jump"] .cat-tuck {
+  display: inline;
+}
+.cat[data-pose="jump"] .cat-figure {
+  animation: cat-pose-jump 1s cubic-bezier(0.3, 0, 0.3, 1) infinite;
+}
+.cat[data-pose="jump"] .cat-ground {
+  animation: cat-pose-ground 1s cubic-bezier(0.3, 0, 0.3, 1) infinite;
+}
+@keyframes cat-pose-jump {
+  0%,
+  100% {
+    transform: none;
+  }
+  14% {
+    transform: scale(1.05, 0.93);
+  }
+  46% {
+    transform: translateY(-34px) rotate(-5deg);
+  }
+  80% {
+    transform: translateY(-4px);
+  }
+  90% {
+    transform: scale(1.03, 0.96);
+  }
+}
+@keyframes cat-pose-ground {
+  46% {
+    transform: scale(0.6);
+    opacity: 0.6;
+  }
+}
+.cat[data-pose="tap"] .cat-tap {
+  display: inline;
+}
+.cat[data-pose="tap"] .cat-tap-l {
+  animation: cat-pose-tap 0.7s ease-in-out infinite;
+}
+.cat[data-pose="tap"] .cat-tap-r {
+  animation: cat-pose-tap 0.7s ease-in-out -0.35s infinite;
+}
+@keyframes cat-pose-tap {
+  0%,
+  50%,
+  100% {
+    transform: none;
+  }
+  25% {
+    transform: translateY(-7px);
+  }
+}
+.cat[data-pose="blink"] .cat-lids {
+  display: inline;
+}
+.cat-lid {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  transform: scaleY(0);
+}
+.cat-lash {
+  opacity: 0;
+}
+.cat[data-pose="blink"] .cat-lid {
+  animation: cat-pose-lid 3s ease-in-out infinite;
+}
+.cat[data-pose="blink"] .cat-lash {
+  animation: cat-pose-lash 3s ease-in-out infinite;
+}
+@keyframes cat-pose-lid {
+  0%,
+  12%,
+  88%,
+  100% {
+    transform: scaleY(0);
+  }
+  38%,
+  62% {
+    transform: scaleY(1);
+  }
+}
+@keyframes cat-pose-lash {
+  0%,
+  30%,
+  70%,
+  100% {
+    opacity: 0;
+  }
+  38%,
+  62% {
+    opacity: 1;
+  }
+}
+/* Reduced motion: no idle life; each pose holds its key frame. */
+@media (prefers-reduced-motion: reduce) {
+  .cat.is-idle {
+    --cat-wag: none;
+    --cat-breathe: none;
+    --cat-blink: none;
+  }
+  .cat .cat-svg * {
+    animation: none !important;
+  }
+  .cat[data-pose="wave"] .cat-wave {
+    transform: rotate(8deg);
+  }
+  .cat[data-pose="jump"] .cat-figure {
+    transform: translateY(-28px) rotate(-4deg);
+  }
+  .cat[data-pose="jump"] .cat-ground {
+    transform: scale(0.65);
+    opacity: 0.6;
+  }
+  .cat[data-pose="tap"] .cat-tap-l {
+    transform: translateY(-7px);
+  }
+  .cat[data-pose="blink"] .cat-lid {
+    transform: scaleY(1);
+  }
+  .cat[data-pose="blink"] .cat-lash {
+    opacity: 1;
+  }
+}
+

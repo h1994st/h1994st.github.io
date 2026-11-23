@@ -1,0 +1,168 @@
+/* Site-only styles on top of facet: unlayered, so they win without !important. */
+
+/* The CRT screen from the old theme, on facet tokens: a Moss glow, scanlines, phosphor text. The
+   screen is dark in both themes; in the light theme it is a softer deep green with a vignette, and
+   the phosphor stays lit (the dark theme's Moss), so it glows on a light page too. */
+.site-crt {
+  --site-phosphor: var(--f-unless-light, var(--f-accent)) var(--f-unless-dark, oklch(0.76 0.06 130));
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--f-r-lg);
+  corner-shape: squircle;
+  background: radial-gradient(
+    var(--f-unless-light, color-mix(in oklch, var(--f-accent) 34%, black))
+      var(--f-unless-dark, oklch(0.33 0.035 140)),
+    var(--f-unless-light, color-mix(in oklch, var(--f-accent) 9%, black))
+      var(--f-unless-dark, oklch(0.2 0.02 150)) 80%
+  );
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.06),
+    inset 0 0 2.5rem var(--f-unless-light, transparent) var(--f-unless-dark, rgb(0 0 0 / 0.45)),
+    var(--f-shadow);
+}
+.site-crt::before {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.22) 0 2px, transparent 2px 4px);
+  pointer-events: none;
+  content: "";
+}
+.site-crt pre {
+  margin: 0;
+  padding: var(--f-space-4) var(--f-space-5);
+  overflow: auto;
+  background: none;
+  color: var(--site-phosphor);
+  font: 0.62rem/1.15 var(--f-font-mono);
+  text-shadow:
+    0 0 0.25rem color-mix(in oklch, var(--site-phosphor) 55%, transparent),
+    0 0 0.75rem var(--site-phosphor);
+}
+
+/* Zola's GitHub alerts (blockquote.markdown-alert-<kind>) look like facet alerts. */
+.f-prose blockquote[class^="markdown-alert-"] {
+  margin: var(--f-space-5) 0;
+  padding: var(--f-space-3) var(--f-space-4);
+  border: 1px solid color-mix(in oklch, var(--site-alert) 40%, transparent);
+  border-radius: var(--f-r-md);
+  background: color-mix(in oklch, var(--site-alert) 14%, transparent);
+  color: var(--f-fg);
+}
+.f-prose blockquote[class^="markdown-alert-"] { position: relative; }
+.f-prose blockquote[class^="markdown-alert-"]::before {
+  display: block;
+  margin-bottom: var(--f-space-1);
+  padding-left: calc(1rem + var(--f-space-2));
+  /* facet's .f-alert__title color: nudged toward the text so the label keeps 4.5:1. */
+  color: color-mix(in oklch, var(--site-alert), var(--f-fg) 30%);
+  font: 600 var(--f-text-sm) / 1.4 var(--f-font-sans);
+  content: var(--site-alert-label);
+}
+/* The icon, drawn as facet's .f-alert__title::before does: a masked square of the label color. */
+.f-prose blockquote[class^="markdown-alert-"]::after {
+  position: absolute;
+  top: var(--f-space-3);
+  left: var(--f-space-4);
+  width: 1rem;
+  height: calc(1.4 * var(--f-text-sm));
+  background: color-mix(in oklch, var(--site-alert), var(--f-fg) 30%);
+  mask: var(--site-alert-icon) center / contain no-repeat;
+  content: "";
+}
+.f-prose .markdown-alert-note { --site-alert: var(--f-info); --site-alert-label: "Note"; --site-alert-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='8' cy='8' r='6.2'/%3E%3Cpath d='M8 7.2v3.6M8 5.1v.1'/%3E%3C/svg%3E"); }
+.f-prose .markdown-alert-tip { --site-alert: var(--f-success); --site-alert-label: "Tip"; --site-alert-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='6.2'/%3E%3Cpath d='m5.3 8.2 1.8 1.8 3.6-3.8'/%3E%3C/svg%3E"); }
+.f-prose .markdown-alert-important { --site-alert: var(--f-info); --site-alert-label: "Important"; --site-alert-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='8' cy='8' r='6.2'/%3E%3Cpath d='M8 7.2v3.6M8 5.1v.1'/%3E%3C/svg%3E"); }
+.f-prose .markdown-alert-warning { --site-alert: var(--f-warning); --site-alert-label: "Warning"; --site-alert-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 2.2 14.2 13H1.8z'/%3E%3Cpath d='M8 6.6v3M8 11.6v.1'/%3E%3C/svg%3E"); }
+.f-prose .markdown-alert-caution { --site-alert: var(--f-danger); --site-alert-label: "Caution"; --site-alert-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='8' cy='8' r='6.2'/%3E%3Cpath d='m5.9 5.9 4.2 4.2M10.1 5.9l-4.2 4.2'/%3E%3C/svg%3E"); }
+
+/* Year headings on the home page are h3s (under "Writing"): same look as facet's h2 rule. */
+.f-list__year > h3 {
+  position: sticky;
+  top: calc(var(--f-nav-clear) + 0.5rem);
+  align-self: start;
+  margin: 0.35rem 0 0;
+  color: var(--f-fg-3);
+  font-size: var(--f-text-lg);
+}
+@media (max-width: 640px) {
+  .f-list__year > h3 { position: static; }
+}
+
+/* Long bare URLs in posts (HTB writeups) wrap instead of widening the page on phones. */
+.f-prose {
+  overflow-wrap: break-word;
+}
+
+/* Posts. */
+.site-post-meta { display: flex; flex-wrap: wrap; gap: 0 var(--f-space-2); align-items: center; }
+.site-post-meta .site-share { padding: 0.1rem 0.6rem; font-size: inherit; }
+/* A cover's [extra.actions]: large buttons under the title, the first one lifted by a soft glow. */
+.site-cover-actions { display: flex; flex-wrap: wrap; gap: var(--f-space-3); margin-top: var(--f-space-5); }
+.site-cover-actions .f-btn { padding: 0.75rem 1.4rem; font-size: 1rem; }
+.site-cover-actions .f-btn--primary { box-shadow: 0 0 1.5rem color-mix(in oklch, var(--f-accent) 55%, transparent); }
+.site-toc-sub { padding-left: var(--f-space-4); font-size: var(--f-text-sm); }
+.site-backlinks, .site-prev-next { margin-top: var(--f-space-7); padding-top: var(--f-space-4); border-top: 1px solid var(--f-line-2); }
+.site-backlinks h2 { font-size: var(--f-text-lg); }
+.site-prev-next { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--f-space-3); }
+/* Code names in diagram captions read as code, as they did before facet's caption style. */
+:is(.bc-fig, .ffi-fig, .substrate-fig) figcaption b { font: 500 0.95em var(--f-font-mono); }
+/* Heading anchors from insert_anchor_links: quiet until hovered. */
+.f-prose .zola-anchor { margin-right: 0.3em; color: var(--f-fg-3); text-decoration: none; }
+.f-prose :is(h2, h3):hover .zola-anchor { color: var(--f-accent); }
+.site-video iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: var(--f-r-md); }
+.site-featured { display: block; margin: var(--f-space-5) 0 var(--f-space-6); color: inherit; text-decoration: none; }
+.site-featured .f-card__media { aspect-ratio: 3 / 1; }
+
+/* Notebook: the numbered contents (1., 1.1.) carry their own numbers, so the lists drop markers. */
+.site-notebook-toc ul { margin: 0; padding: 0; list-style: none; }
+.site-notebook-toc ul ul { padding-left: var(--f-space-5); }
+.site-notebook-toc li { margin: var(--f-space-1) 0; }
+
+/* Home. */
+.site-home { padding-top: calc(var(--f-nav-clear) + var(--f-space-5)); }
+.site-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: var(--f-space-7); align-items: center; }
+.site-hero h1 { margin: 0.25rem 0 0.75rem; font: 600 clamp(2.4rem, 5vw, 3.2rem) / 1.05 var(--f-font-serif); }
+.site-intro { margin: 0 0 var(--f-space-3); color: var(--f-accent); font: var(--f-text-md) / 1.5 var(--f-font-mono); min-height: 3em; }
+.site-prompt { color: var(--f-fg-3); }
+.site-lead { color: var(--f-fg-2); }
+.site-hero-actions { margin: var(--f-space-5) 0; }
+.site-home-below { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--f-space-7); margin-top: var(--f-space-7); }
+.site-projects ul { margin: 0; padding: 0; list-style: none; }
+.site-projects li a { display: grid; padding: var(--f-space-3) 0; border-bottom: 1px solid var(--f-line); color: inherit; text-decoration: none; }
+.site-projects li span { color: var(--f-fg-2); font-size: var(--f-text-sm); }
+.site-about { max-width: var(--f-measure); margin: var(--f-space-8) auto 0; }
+@media (max-width: 720px) {
+  .site-hero, .site-home-below { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Hero art: size the font so the 70-column banner fills the screen at any width. */
+.site-hero .site-crt { container-type: inline-size; }
+.site-hero .site-crt pre {
+  font-size: calc((100cqi - 2 * var(--f-space-5)) / (70 * 0.605));
+}
+
+/* Search sheet: the results scroll inside the sheet. */
+.site-search-results { margin: var(--f-space-3) 0 0; padding: 0; list-style: none; max-height: 60vh; overflow: auto; }
+.site-search-results li { padding: var(--f-space-2) 0; border-bottom: 1px solid var(--f-line); }
+.site-search-results p { margin: 0; color: var(--f-fg-2); font-size: var(--f-text-sm); }
+.site-search-results a, .site-search-results p { overflow-wrap: anywhere; }
+
+/* Nav: search is a magnifier at every width, so it never reads as another page link. On phones
+   the tighter padding lets the whole pill (theme toggle included) fit at 360px without scrolling. */
+.f-nav .site-search-open { display: inline-flex; padding-inline: 0.55rem; }
+.site-search-icon {
+  display: block;
+  width: 1.05em;
+  height: 1.05em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+@media (max-width: 640px) {
+  .f-nav { gap: 2px; padding-left: 0.8rem; }
+  .f-nav a { padding-inline: 0.45rem; }
+  .f-nav .f-nav__brand { margin-right: var(--f-space-1); padding-inline: 0; }
+  .f-nav .site-search-open { padding-inline: 0.5rem; }
+  .f-nav .f-theme-toggle { padding-inline: 0.55rem; }
+}
